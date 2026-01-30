@@ -13,8 +13,8 @@
 </template>
 
 <script setup>
-import HeadBar from '@/components/HeadBar.vue';
-import SideBar from '@/components/SideBar.vue';
+import HeadBar from '@/layouts/components/HeadBar.vue';
+import SideBar from '@/layouts/components/SideBar.vue';
 import { RouterView } from 'vue-router';
 </script>
 <style scoped>

@@ -2,22 +2,63 @@
 
 This template should help get you started developing with Vue 3 in Vite.
 
-## Recommended IDE Setup
+## 项目目录结构
 
-[VS Code](https://code.visualstudio.com/) + [Vue (Official)](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
-
-## Recommended Browser Setup
-
-- Chromium-based browsers (Chrome, Edge, Brave, etc.):
-  - [Vue.js devtools](https://chromewebstore.google.com/detail/vuejs-devtools/nhdogjmejiglipccpnnnanhbledajbpd)
-  - [Turn on Custom Object Formatter in Chrome DevTools](http://bit.ly/object-formatters)
-- Firefox:
-  - [Vue.js devtools](https://addons.mozilla.org/en-US/firefox/addon/vue-js-devtools/)
-  - [Turn on Custom Object Formatter in Firefox DevTools](https://fxdx.dev/firefox-devtools-custom-object-formatters/)
-
-## Customize configuration
-
-See [Vite Configuration Reference](https://vite.dev/config/).
+```plain text
+├── src/
+│   ├── pages/         # 按角色分层：admin（管理员）/normal（普通用户/打分用户）/public（公共页面）
+│   │   ├── public/    # 所有角色均可访问的公共页面（登录、403、404）
+│   │   │   ├── login/
+│   │   │   │   └── Login.vue
+│   │   │   ├── 403/
+│   │   │   │   └── Forbidden.vue
+│   │   │   └── 404/
+│   │   │       └── NotFound.vue
+│   │   ├── admin/     # 仅超级管理员/管理员可访问的页面（用户/项目/统计管理）
+│   │   │   ├── user/  # 用户管理模块
+│   │   │   │   ├── UserList.vue
+│   │   │   │   ├── UserAdd.vue
+│   │   │   │   └── UserEdit.vue
+│   │   │   ├── project/ # 项目管理模块
+│   │   │   │   ├── ProjectList.vue
+│   │   │   │   ├── ProjectAdd.vue
+│   │   │   │   └── ProjectEdit.vue
+│   │   │   └── statistic/ # 数据统计与导出模块
+│   │   │       └── StatisticPannel.vue
+│   │   └── normal/    # 打分用户/普通用户可访问（仅授权内容，管理员也可访问）
+│   │       ├── home/  # 后台首页
+│   │       │   └── HomePage.vue
+│   │       ├── scoring/ # 打分功能模块
+│   │       │   ├── ScoringList.vue # 授权打分项目列表
+│   │       │   └── GroupScoring.vue # 小组打分详情页
+│   ├── router/
+│   │   └── index.js   # 路由配置（核心：权限路由、角色拦截）
+│   ├── store/         # Pinia状态管理（用户信息、全局状态）
+│   │   ├── modules/
+│   │   │   └── userStore.js # 用户信息/登录态管理
+│   │   └── index.js
+│   ├── utils/
+│   │   ├── request.js # 已封装的Axios（之前优化版）
+│   │   └── format.js  # 新增：格式化工具（时间/数字）
+│   ├── api/           # 接口封装（之前已写user.js，后续补全其他）
+│   │   ├── user.js    # 已封装
+│   │   ├── project.js # 待开发
+│   │   ├── scoring.js # 待开发
+│   │   └── statistic.js # 待开发
+│   ├── layout/        # 布局组件（后台主布局：侧边栏+头部）
+│   │   ├── MainLayout.vue # 核心布局（admin/normal页面共用）
+│   │   ├── components/
+│   │   │   ├── Sidebar.vue # 侧边栏（按角色渲染菜单）
+│   │   │   └── Header.vue  # 头部（退出、用户信息）
+│   └── components/    # 全局公共组件
+│       ├── common/    # 基础公共组件
+│       │   ├── PaginationBar.vue # 分页组件
+│       │   ├── SearchInput.vue # 搜索输入框
+│       │   └── ConfirmDelete.vue # 删除确认弹窗
+│       └── business/  # 业务公共组件
+│           ├── ScoringForm.vue # 打分表单（核心业务组件）
+│           └── ProjectCard.vue # 项目卡片
+```
 
 ## 快速启动
 
