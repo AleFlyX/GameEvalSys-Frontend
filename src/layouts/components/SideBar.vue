@@ -13,8 +13,8 @@
 
 <script setup>
 import { useRouter } from "vue-router"
-import { routesMap } from "@/router/routes";
-console.log(routesMap)
+import { comn } from "@/router/commonRoutes";
+console.log(comn)
 const router = useRouter();
 // 跳转路由方法
 function gotoRoute(pathObj) {

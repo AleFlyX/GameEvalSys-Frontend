@@ -12,12 +12,12 @@
 <script setup>
 import { useRoute } from "vue-router";
 import { computed } from "vue";
-import { routesMap } from "@/router/routes";
+import { comn } from "@/router/commonRoutes";
 
 const route = useRoute();
 
 function getTitle(routePath) {
-  const result = routesMap.find(item => item.path === routePath)
+  const result = comn.find(item => item.path === routePath)
   return result ? result.name : "NULL"
 }
 

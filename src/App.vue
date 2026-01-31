@@ -3,7 +3,8 @@ import BasicLayout from './layouts/BasicLayout.vue';
 </script>
 
 <template>
-  <BasicLayout />
+  <RouterView></RouterView>
+  <!-- <BasicLayout /> -->
 </template>
 
 <style>

@@ -1,7 +1,7 @@
 import DashboardHome from "@/pages/DashboardHome.vue";
 import JudgePage from "@/pages/JudgePage.vue";
-import LoginPage from "@/pages/public/login/LoginPage.vue";
-export const routesMap = [
+
+export const comn = [
   {
     path: "/dashboard",
     name: "控制面板",
@@ -12,11 +12,6 @@ export const routesMap = [
     name: "项目评分",
     component: JudgePage,
   },
-  // {
-  //   path: "/",
-  //   name: "Login",
-  //   component: LoginPage,
-  // },
 
   // {
   //   path: '/about',
