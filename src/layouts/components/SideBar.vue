@@ -13,7 +13,7 @@
 
 <script setup>
 import { useRouter } from "vue-router"
-import { comn } from "@/router/commonRoutes";
+import { comn } from "@/router/testRoutes";
 console.log(comn)
 const router = useRouter();
 // 跳转路由方法
