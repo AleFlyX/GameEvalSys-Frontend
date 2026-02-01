@@ -1,3 +1,8 @@
+* {
+  --primary: rgba(6, 164, 255, 0.717);
+  --primary-box-shadow: rgba(1, 166, 255, 0.429);
+}
+
 /* @import './base.css';
 
 #app {
