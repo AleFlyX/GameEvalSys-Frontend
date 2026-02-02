@@ -20,7 +20,7 @@ export const pub = [
     name: "MainLayout",
     component: MainLayout,
     meta: { requireAuth: true },
-    children: [...norm, ...admin],
+    children: [...norm, ...admin], //主界面的路由
   },
   {
     path: "/403",
