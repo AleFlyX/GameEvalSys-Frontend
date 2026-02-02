@@ -1,6 +1,6 @@
 <template>
   <div class="">
-
+    GroupScoring Window
   </div>
 </template>
 

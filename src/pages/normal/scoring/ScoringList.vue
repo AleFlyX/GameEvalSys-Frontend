@@ -1,6 +1,6 @@
 <template>
   <div class="">
-
+    scoring
   </div>
 </template>
 
