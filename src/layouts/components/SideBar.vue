@@ -8,7 +8,7 @@
         {{ item.name }}
       </li>
       <!-- 折叠菜单组 -->
-      <li class="fold-menu-group">
+      <li class="fold-menu-group" v-if="userStore.isAdmin">
         <!-- 折叠菜单头部 -->
         <div class="fold-menu-header" @click="showSubMenu = !showSubMenu" :class="{ active: showSubMenu }">
           admin
@@ -31,10 +31,12 @@ import { ref, watch } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { norm } from "@/router/modules/normalRoutes";
 import { admin } from "@/router/modules/adminRoutes";
+import { useUserStore } from "@/stores/modules/userStore";
 
 const router = useRouter();
 const route = useRoute(); // 当前路由实例
 const showSubMenu = ref(false); // 折叠菜单展开状态
+const userStore = useUserStore();
 
 // 跳转路由方法
 const gotoRoute = (path) => {

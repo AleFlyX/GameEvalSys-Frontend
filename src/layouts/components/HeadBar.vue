@@ -10,14 +10,18 @@
         <button @click="goto('/login')">登录</button>
         <!-- <button>注册</button> -->
       </div>
-      <div class="avatar" v-if="userStore.isLogin">
-        <p>{{ username[0] }}</p>
-        <ul class="dropdown">
-          <li @click="goto('/personalInfo')">个人信息</li>
-          <li @click="goto('/about')">关于OJ</li>
-          <li @click="logout()" style="color: brown;">退出登录</li>
-        </ul>
+      <div class="personnal-info">
+        <div class="avatar" v-if="userStore.isLogin">
+          <p>{{ username[0] }}</p>
+          <ul class="dropdown">
+            <li @click="goto('/personalInfo')">个人信息</li>
+            <li @click="goto('/about')">关于OJ</li>
+            <li @click="logout()" style="color: brown;">退出登录</li>
+          </ul>
+        </div>
+        <p class="username">{{ username }},欢迎</p>
       </div>
+
     </div>
 
 
@@ -133,9 +137,24 @@ header {
   align-self: center;
 }
 
+.personnal-info {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  align-items: center;
+}
+
+.personnal-info .username {
+  padding-bottom: 1px;
+  padding-right: 5px;
+  font-size: 15px;
+  font-weight: 500;
+  /* align-self: flex-end; */
+}
+
 .avatar {
-  height: 40px;
-  width: 40px;
+  height: 35px;
+  width: 35px;
   /* margin: 10px; */
   display: flex;
   flex-direction: column;
@@ -152,14 +171,14 @@ header {
 
 .dropdown {
   right: 0.1rem;
-  width: 120px;
+  width: 140px;
   position: absolute;
   padding-top: 60px;
   opacity: 0;
   line-height: 45px;
   transform: translateY(-60px);
   /* border: 1px solid; */
-  transition: 0.2s;
+  transition: all 0.3s;
 }
 
 
@@ -187,6 +206,5 @@ header {
   border-bottom-left-radius: 10px;
   border-bottom-right-radius: 10px;
   transform: translateY(75px);
-  transition: 0.3s;
 }
 </style>
