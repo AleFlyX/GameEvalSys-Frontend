@@ -20,6 +20,7 @@ export const pub = [
     name: "MainLayout",
     component: MainLayout,
     meta: { requireAuth: true },
+    redirect: "/home",
     children: [...norm, ...admin], //主界面的路由
   },
   {
