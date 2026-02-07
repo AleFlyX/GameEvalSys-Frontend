@@ -31,7 +31,8 @@ export const createProjet = (params) => {
  * @returns {Promise} 响应数据（列表+总数）
  */
 export const getProjectList = (params = {}) => {
-  return service.get("/projects", params);
+  const defaultParams = { page: 1, size: 10, ...params };
+  return service.get("/projects", { params: defaultParams });
 };
 
 /**
