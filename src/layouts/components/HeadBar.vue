@@ -10,8 +10,8 @@
         <button @click="goto('/login')">登录</button>
         <!-- <button>注册</button> -->
       </div>
-      <div class="personnal-info">
-        <div class="avatar" v-if="userStore.isLogin">
+      <div class="personnal-info" v-if="userStore.isLogin">
+        <div class="avatar">
           <p>{{ username[0] }}</p>
           <ul class="dropdown">
             <li @click="goto('/personalInfo')">个人信息</li>

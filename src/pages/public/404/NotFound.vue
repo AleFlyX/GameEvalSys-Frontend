@@ -1,4 +1,3 @@
-<!-- src/pages/public/404/NotFound.vue -->
 <template>
   <div class="not-found-page">
     <el-icon size="80" color="#f56c6c">
@@ -18,6 +17,7 @@ const router = useRouter();
 const route = useRoute();
 
 // 获取用户输入的错误路径（通配符路由匹配到的路径）
+// 当前方法拿不到这路径，debug
 const errorPath = route.params.pathMatch || '/';
 
 // 返回首页
