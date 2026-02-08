@@ -1,5 +1,5 @@
 <template>
-  <div class="user-edit-card">
+  <div class="user-form-modal">
 
   </div>
 </template>

@@ -89,6 +89,7 @@ header {
   align-items: center;
   justify-content: space-between;
   box-shadow: 1px 1px 8px gray;
+  margin-bottom: 10px;
 }
 
 
@@ -179,6 +180,7 @@ header {
   transform: translateY(-60px);
   /* border: 1px solid; */
   transition: all 0.3s;
+  z-index: 999;
 }
 
 
