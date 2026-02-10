@@ -16,7 +16,7 @@
           <ul class="dropdown">
             <li @click="goto('/personalInfo')">个人信息</li>
             <li @click="goto('/about')">关于OJ</li>
-            <li @click="logout()" style="color: brown;">退出登录</li>
+            <li @click="logout()" style="color:#cc3300;">退出登录</li>
           </ul>
         </div>
         <p class="username">{{ username }},欢迎</p>
@@ -190,13 +190,13 @@ header {
   text-align: center;
   margin-top: 2px;
   border-radius: 5px;
-
+  background-color: rgb(252, 252, 252);
   box-shadow: 0px 0px 5px var(--gray-box-shadow);
 
 }
 
 .dropdown li:hover {
-  background-color: rgba(1, 200, 255, 0.116);
+  background-color: rgb(158, 234, 255);
   box-shadow: 0px 0px 10px rgba(1, 166, 255, 0.678);
   transition: 0.2s;
 }
