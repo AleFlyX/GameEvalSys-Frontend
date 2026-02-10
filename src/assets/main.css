@@ -2,6 +2,7 @@
   --primary: rgba(6, 164, 255, 0.717);
   --primary-box-shadow: rgba(1, 166, 255, 0.429);
   --gray-box-shadow: rgba(128, 128, 128, 0.381);
+  --gray-border: rgba(228, 228, 228, 0.5);
 }
 
 /* @import './base.css';
