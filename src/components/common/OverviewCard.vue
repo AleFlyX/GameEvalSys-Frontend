@@ -1,5 +1,5 @@
 <template>
-  <div class="overview-card">
+  <div class="overview-card" :style="customCardsStyle">
     <!-- 传入title ，date，icon -->
     <div class="card-top">
       <div class="card-icon" :style="customIconStyle">
@@ -15,9 +15,17 @@
   </div>
 </template>
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref } from 'vue';
 
 const props = defineProps({
+  width: {
+    type: [String, Number],
+    default: '100%'
+  },
+  height: {
+    type: [String, Number],
+    default: '120px'
+  },
   icon: {
     type: String,
     required: false,
@@ -26,16 +34,16 @@ const props = defineProps({
   iconColor: {
     type: String,
     required: false,
-    default: 'none'
+    default: '#409EFF'
   },
   iconBackground: {
     type: String,
     required: false,
-    default: 'none'
+    default: '#ecf5ff'
   },
   iconSize: {
     type: [String, Number],
-    default: 35
+    default: 30
   },
   iconBackgroundSize: {
     type: [String, Number],
@@ -52,13 +60,16 @@ const props = defineProps({
     default: 'none'
   }
 })
-
+const customCardsStyle = ref({
+  'width': props.width,
+  'height': props.height,
+})
 const customIconStyle = ref({
   'width': props.iconBackgroundSize + 'px',
   'height': props.iconBackgroundSize + 'px',
   'background-color': props.iconBackground
 })
-console.log(customIconStyle.value)
+// console.log(customIconStyle.value)
 
 </script>
 <style scoped>
@@ -71,7 +82,7 @@ console.log(customIconStyle.value)
   height: 120px;
   /* width: 300px; */
   width: 100%;
-  max-width: 300px;
+  /* max-width: 400px; */
 
   display: flex;
   flex-direction: column;
@@ -81,6 +92,13 @@ console.log(customIconStyle.value)
   border: 1px solid var(--gray-border);
   border-radius: 10px;
   box-shadow: 1px 1px 7px var(--gray-box-shadow);
+
+  transition: all 0.2s ease-in-out;
+}
+
+.overview-card:hover {
+  box-shadow: 2px 3px 7px var(--gray-box-shadow);
+  transform: translateY(-5px);
 }
 
 .card-icon {
