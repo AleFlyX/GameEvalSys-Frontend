@@ -12,7 +12,11 @@
         <!-- 折叠菜单头部 -->
         <div class="fold-menu-header" @click="showSubMenu = !showSubMenu" :class="{ active: showSubMenu }">
           admin
-          <span class="arrow" :class="{ active: showSubMenu }">^</span>
+          <span class="arrow" :class="{ active: showSubMenu }">
+            <el-icon>
+              <ArrowUpBold />
+            </el-icon>
+          </span>
         </div>
         <!-- 折叠菜单子项 -->
         <ul class="fold-submenu">
