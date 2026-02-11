@@ -28,15 +28,24 @@
           </template>
         </el-table-column>
       </el-table>
-      <PaginationBar></PaginationBar>
+      <div class="pagination">
+        <el-pagination v-model:current-page="pageParams.page" v-model:page-size="pageParams.size"
+          :page-sizes="[10, 20, 30]" size="middle" :disabled="pagenationDisabled" :total="totalData"
+          @size-change="handleSizeChange" layout="sizes, prev, pager, next" @current-change="handleCurrentChange" />
+        <!-- <PaginationBar></PaginationBar> -->
+      </div>
     </div>
+
   </div>
 </template>
 
 <script setup>
-import PaginationBar from '@/components/common/PaginationBar.vue'
+// import PaginationBar from '@/components/common/PaginationBar.vue'
 import OverviewCard from '@/components/common/overviewCard.vue'
 import DataTableColums from '@/components/common/DataTableColums.vue'
+import { userApi } from '@/api/user'
+import { ref, onMounted } from 'vue'
+import { ElMessage } from 'element-plus'
 
 const handleEdit = (index, row) => {
   console.log(index, row)
@@ -45,7 +54,7 @@ const handleDelete = (index, row) => {
   console.log(index, row)
 }
 
-const tableData = [
+const tableData = ref([
   {
     id: 131231,
     username: "admin2323",
@@ -72,29 +81,30 @@ const tableData = [
   },
   {
     id: 1567,
-    username: "admin",
-    name: "超级管理员",
+    username: "vue",
+    name: "VueNormal",
     role: "normal",
     isEnabled: true,
     createTime: "2026-01-27 09:00:00"
   },
   {
     id: 1998,
-    username: "admin",
-    name: "超级管理员",
+    username: "HTML",
+    name: "超级员",
     role: "normal",
     isEnabled: true,
     createTime: "2026-01-27 09:00:00"
   },
   {
     id: 17875,
-    username: "admin",
-    name: "超级管理员",
+    username: "ccb",
+    name: "超级管",
     role: "scorer",
     isEnabled: true,
     createTime: "2026-01-27 09:00:00"
   }
-]
+])
+
 const columnsRules = [
   {
     label: '用户ID',
@@ -151,6 +161,40 @@ const columnsRules = [
 
 ]
 
+const pagenationDisabled = ref(false);
+const totalData = ref(100);
+const pageParams = ref({
+  page: 1,
+  size: 10
+});
+
+const handleSizeChange = (val) => {
+  // console.log('pagesize CHANGE', val)
+  pageParams.value.size = val;
+  getUserData();
+}
+
+const handleCurrentChange = (val) => {
+  // console.log('page CHANGE', val)
+  pageParams.value.page = val;
+  getUserData();
+}
+
+const getUserData = async (pageParams) => {
+  try {
+    tableData.value = await userApi.getUserList(pageParams)
+    ElMessage.success('用户数据获取成功')
+    return Promise.resolve();
+  } catch (error) {
+    ElMessage.error(error)
+    return Promise.reject(error);
+  }
+}
+
+onMounted(() => {
+  getUserData(pageParams);
+})
+
 </script>
 
 <style scoped>
@@ -171,5 +215,12 @@ const columnsRules = [
   box-shadow: 0px 2px 8px gray;
   border-radius: 15px;
 
+}
+
+.pagination {
+  width: 99%;
+  display: flex;
+
+  justify-content: center;
 }
 </style>
