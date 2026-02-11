@@ -3,27 +3,13 @@
     <div style="display: flex; width: 100%; ">
       <OverviewCard icon="User" title="总用户数" data="235"></OverviewCard>
       <OverviewCard icon="Avatar" title="管理员" data="22"></OverviewCard>
-      <OverviewCard icon="Edit" icon-color="#66cc66" icon-background="#e6ffe6" title="打分用户" data="13">
-      </OverviewCard>
+      <OverviewCard icon="Edit" icon-color="#66cc66" icon-background="#e6ffe6" title="打分用户" data="13"></OverviewCard>
       <OverviewCard icon="Collection" icon-color="#ffaa00" icon-background="#ffeecc" title="普通用户" data="1">
       </OverviewCard>
     </div>
     <div class="data-list">
       <el-table :data="tableData" style="width: 100%;" stripe>
-        <DataTableColums :col-rules=columnsRules>
-        </DataTableColums>
-        <el-table-column label="角色" width="180">
-          <template #default="scope">
-            <el-tag :type="rolesMap[scope.row.role].tagType">{{ rolesMap[scope.row.role].roleName }}</el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column label="账户状态" width="180">
-          <template #default="scope">
-            <el-tag :type="scope.row.isEnabled == true ? 'success' : 'danger'">
-              {{ scope.row.isEnabled == true ? '可用' : '禁用' }}
-            </el-tag>
-          </template>
-        </el-table-column>
+        <DataTableColums :col-rules=columnsRules></DataTableColums>
         <el-table-column>
           <template #header>
             <div style="width: 50%; display: flex; gap: 10px;">
@@ -45,15 +31,12 @@
       <PaginationBar></PaginationBar>
     </div>
   </div>
-
-
 </template>
 
 <script setup>
 import PaginationBar from '@/components/common/PaginationBar.vue'
 import OverviewCard from '@/components/common/overviewCard.vue'
 import DataTableColums from '@/components/common/DataTableColums.vue'
-
 
 const handleEdit = (index, row) => {
   console.log(index, row)
@@ -115,22 +98,19 @@ const tableData = [
 const columnsRules = [
   {
     label: '用户ID',
-    width: '180',
+    width: '170',
     colDataName: 'id',
     icon: 'none',
-    // tagType: 'warning'
   },
   {
     label: '用户名',
-    width: '180',
+    width: '170',
     colDataName: 'username',
-    // icon: 'user'
   },
   {
     label: '昵称',
-    width: '180',
+    width: '170',
     colDataName: 'name',
-    // icon: 'user'
   },
   {
     label: '创建时间',
@@ -138,31 +118,41 @@ const columnsRules = [
     colDataName: 'createTime',
     icon: 'timer'
   },
+  {
+    label: '角色',
+    width: '150',
+    colDataName: 'role',
+    tagTypeMap: {
+      super_admin: 'primary',
+      admin: 'primary',
+      scorer: 'success',
+      normal: 'info'
+    },
+    tagNameMap: {
+      super_admin: '超级管理员',
+      admin: '管理员',
+      scorer: '打分用户',
+      normal: '普通用户'
+    },
+  },
+  {
+    label: '账户状态',
+    width: '150',
+    colDataName: 'isEnabled',
+    tagTypeMap: {
+      true: 'success',
+      false: 'danger'
+    },
+    tagNameMap: {
+      true: '可用',
+      false: '禁用'
+    },
+  }
 
 ]
-const rolesMap = {
-  super_admin: {
-    tagType: 'primary',
-    roleName: '超级管理员'
-  },
-  admin: {
-    tagType: 'primary',
-    roleName: '管理员'
-  },
-  scorer: {
-    tagType: 'success',
-    roleName: '打分用户'
-  },
-  normal: {
-    tagType: 'info',
-    roleName: '普通用户'
-  },
-
-}
-
-
 
 </script>
+
 <style scoped>
 .user-list {
   display: flex;
