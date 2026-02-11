@@ -17,8 +17,9 @@
 <script setup>
 const props = defineProps({
   colRules: {
-    type: Array,
-    default: [
+    type: Array,//Array类型的defaul必须是个匿名函数
+    //避免引用类型数据的共享污染问题
+    default: () => [
       {
         // label: 'test1',
         width: '150',
