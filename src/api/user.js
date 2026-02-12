@@ -7,7 +7,7 @@ import service from "@/utils/request.js";
  */
 export const userApi = {
   /**
-   * 登录接口
+   * @description 登录接口
    * @param {Object} params - 登录参数
    * @param {string} params.username - 用户名
    * @param {string} params.password - 密码
@@ -38,6 +38,14 @@ export const userApi = {
     const defaultParams = { page: 1, size: 10, ...params };
     return service.get("/users", { params: defaultParams });
   },
+
+  /**
+   * @description 模糊搜索
+   * @param
+   */
+  getRelateSearchUser: (params) => {
+    return service.get("/users",)
+  }
 
   /**
    * 创建新用户
