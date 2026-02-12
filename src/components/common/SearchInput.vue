@@ -1,8 +1,9 @@
 <template>
   <div class="search-bar">
-    <input class="search-input" type="text" :style="customSearchInputStyle" :placeholder="inputPlaceholder">
-    <button class="btns search-btn" :style="customBtnsStyle">查找</button>
-    <button class="btns add-btn" :style="customBtnsStyle">添加</button>
+    <input class="search-input" type="text" v-model="inputContent" @keyup.enter="handleInputSearch"
+      :style="customSearchInputStyle" :placeholder="inputPlaceholder">
+    <button class="btns search-btn" @click="handleInputSearch" :style="customBtnsStyle">查找</button>
+    <button class="btns add-btn" @click="handleAdd" :style="customBtnsStyle">添加</button>
     <!-- <el-input v-model="search" :placeholder=props.placeholder />
     <el-button>查找</el-button>
     <el-button type="primary">添加</el-button> -->
@@ -80,9 +81,22 @@ const customBtnsStyle = ref({
 // })
 console.log("input custom css", customSearchInputStyle.value)
 
-const emits = defineEmits({
+const emits = defineEmits([
+  'search',
+  'add'
+])
+const inputContent = ref('');
+const handleInputSearch = () => {
+  console.log('handleInputSearch', inputContent.value)
+  const value = inputContent.value.trim();
+  if (value) {
+    emits('search', value);
+  }
+}
 
-})
+const handleAdd = () => {
+  emits('add')
+}
 
 </script>
 
