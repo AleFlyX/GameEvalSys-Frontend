@@ -45,7 +45,7 @@ export const userApi = {
    */
   getRelateSearchUser: (params) => {
     return service.get("/users",)
-  }
+  },
 
   /**
    * 创建新用户
