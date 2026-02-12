@@ -1,15 +1,21 @@
 <template>
   <el-table-column v-for="rule in props.colRules" :key="rule.colDataName || rule.label || rule"
-    :label="(rule.label || '空标题')" :width="(rule.width || '100')">
+    :width="(rule.width || '100')">
+    <template #header>
+      <div class="table-header-cell">
+        {{ (rule.label || '空标题') }}
+      </div>
+    </template>
     <template #default="scope">
-      <div style="display: flex; align-items: center;">
+      <div class="table-body-cell">
         <el-icon v-if="hasIcon(rule)">
           <component v-if="hasIcon(rule)" :is="rule.icon"></component>
         </el-icon>
-        <el-tag v-if="hasTagCols(rule)" :type="rule.tagTypeMap[getColVal(scope.row, rule.colDataName)]">
+        <el-tag class="cell-tag" v-if="hasTagCols(rule)"
+          :type="rule.tagTypeMap[getColVal(scope.row, rule.colDataName)]">
           {{ rule.tagNameMap[getColVal(scope.row, rule.colDataName)] }}
         </el-tag>
-        <span v-if="!hasTagCols(rule)">{{ getColVal(scope.row, rule.colDataName) }}</span>
+        <span class="cell-text" v-if="!hasTagCols(rule)">{{ getColVal(scope.row, rule.colDataName) }}</span>
       </div>
     </template>
   </el-table-column>
@@ -68,3 +74,33 @@ const getColVal = (row, colDataName) => {
 
 console.log('COLUMNS RUle:', props.colRules)
 </script>
+<style scoped>
+.table-header-cell,
+.table-body-cell {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* padding: 0 8px; */
+  height: 100%;
+  box-sizing: border-box;
+}
+
+/* .table-header-cell {
+  font-weight: 600;
+} */
+
+/* 单元格元素间距 */
+/* .cell-icon {
+  margin-right: 4px;
+} */
+
+/* .cell-tag {
+  margin: 0;
+} */
+
+/* .cell-text {
+  line-height: 1.5;
+
+} */
+</style>
