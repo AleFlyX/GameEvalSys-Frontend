@@ -7,15 +7,20 @@
       <OverviewCard icon="Collection" icon-color="#ffaa00" icon-background="#ffeecc" title="普通用户" data="1">
       </OverviewCard>
     </div>
+    <div style="width: 100%; display: flex; justify-content: flex-start;">
+      <SearchInput size="middle" @search="handleSearch" @add="handleAdd"></SearchInput>
+    </div>
+
     <div class="data-list">
       <el-table :data="tableData" style="width: 100%;" stripe>
         <DataTableColums :col-rules=columnsRules></DataTableColums>
         <el-table-column>
           <template #header>
-            <div style="width: 50%; display: flex; gap: 10px;">
-              <el-input v-model="search" size="small" placeholder="Type to search" />
+            <div style="display: flex; justify-content: start;">
+              操作
+              <!-- <el-input v-model="search" size="small" placeholder="Type to search" />
               <el-button>查找</el-button>
-              <el-button>添加</el-button>
+              <el-button>添加</el-button> -->
             </div>
           </template>
           <template #default="scope">
@@ -27,6 +32,8 @@
             </el-button>
           </template>
         </el-table-column>
+        <!-- <el-table-column>
+        </el-table-column> -->
       </el-table>
       <div class="pagination">
         <el-pagination v-model:current-page="pageParams.page" v-model:page-size="pageParams.size"
@@ -46,6 +53,7 @@ import DataTableColums from '@/components/common/DataTableColums.vue'
 import { userApi } from '@/api/user'
 import { ref, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
+import SearchInput from '@/components/common/SearchInput.vue'
 
 const handleEdit = (index, row) => {
   console.log(index, row)
@@ -108,18 +116,18 @@ const tableData = ref([
 const columnsRules = [
   {
     label: '用户ID',
-    width: '170',
+    width: '120',
     colDataName: 'id',
     icon: 'none',
   },
   {
     label: '用户名',
-    width: '170',
+    width: '150',
     colDataName: 'username',
   },
   {
     label: '昵称',
-    width: '170',
+    width: '150',
     colDataName: 'name',
   },
   {
@@ -161,6 +169,22 @@ const columnsRules = [
 
 ]
 
+const handleSearch = async (val) => {
+  console.log('parent recv', val)
+  try {
+    tableData.value = await userApi.getRelateSearchUser(val);
+
+  } catch (error) {
+    console.log(error)
+  }
+}
+
+const showUserAddDialog = ref(false)
+const handleAdd = () => {
+  showUserAddDialog.value = !showUserAddDialog.value;
+  console.log('user aDD', showUserAddDialog.value)
+}
+
 const pagenationDisabled = ref(false);
 const totalData = ref(100);
 const pageParams = ref({
@@ -171,13 +195,13 @@ const pageParams = ref({
 const handleSizeChange = (val) => {
   // console.log('pagesize CHANGE', val)
   pageParams.value.size = val;
-  getUserData();
+  getUserData(pageParams.value);
 }
 
 const handleCurrentChange = (val) => {
   // console.log('page CHANGE', val)
   pageParams.value.page = val;
-  getUserData();
+  getUserData(pageParams.value);
 }
 
 const getUserData = async (pageParams) => {
@@ -192,7 +216,7 @@ const getUserData = async (pageParams) => {
 }
 
 onMounted(() => {
-  getUserData(pageParams);
+  getUserData(pageParams.value);
 })
 
 </script>
@@ -203,7 +227,7 @@ onMounted(() => {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  gap: 10px
+  gap: 15px
 }
 
 .data-list {
