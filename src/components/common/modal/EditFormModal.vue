@@ -1,5 +1,5 @@
 <template>
-  <div class="base-add-modal-form">
+  <div class="base-edit-modal-form">
 
   </div>
 </template>

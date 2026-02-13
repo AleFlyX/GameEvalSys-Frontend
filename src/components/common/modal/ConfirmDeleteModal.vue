@@ -1,15 +1,15 @@
 <template>
-  <div class="modal-mask">
-    <div class="confirm-delete">
+  <div class="modal-mask" @click="closeModal">
+    <div class="confirm-delete" @click.stop>
       <div class="title">
-        <h2>是否删除？</h2>
+        <h2>{{ props.title + '用户' + props.data.id + ' ' + props.data.name }}</h2>
       </div>
       <div class="content">
-        <p>删除后无法恢复</p>
+        <p>{{ props.title }}</p>
       </div>
       <div class="operation">
-        <button>确认</button>
-        <button>取消</button>
+        <button @click="confirmModal">确认</button>
+        <button @click="closeModal">取消</button>
       </div>
     </div>
   </div>
@@ -25,12 +25,28 @@ const props = defineProps({
     type: String,
     default: '删除后无法恢复'
   },
+  data: {
+    type: Object,
+    default: () => {
+      return {
+        id: '',
+        name: ''
+      }
+    }
+  }
 })
+
 const emits = defineEmits([
   'confirm-delete',
-  'cancel'
+  'close'
 ])
 
+const confirmModal = () => {
+  emits('confirm-delete', true)
+}
+const closeModal = () => {
+  emits('close', true)
+}
 </script>
 <style scoped>
 .modal-mask {
@@ -40,14 +56,20 @@ const emits = defineEmits([
   width: 100vw;
   height: 100vh;
   background: var(--modal-background);
+  display: flex;
   justify-content: center;
   align-items: center;
   z-index: 999;
 }
 
 .confirm-delete {
+  width: 400px;
+  min-height: 200px;
+  padding: 20px;
   display: flex;
   flex-direction: column;
-
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
 }
 </style>
