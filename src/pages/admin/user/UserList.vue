@@ -44,22 +44,50 @@
     </div>
 
   </div>
+  <UserFormModal v-if="showUserAddDialog" @close="showUserAddDialog = false"></UserFormModal>
+  <ConfirmDeleteModal v-if="showDeleteUserDialog" @confirm-delete="handleConfirmDelete()"
+    @close="showDeleteUserDialog = false" :data="waitToDelete"></ConfirmDeleteModal>
+  <!-- <button @click="showUserAddDialog = !showUserAddDialog">show</button> -->
 </template>
 
 <script setup>
 // import PaginationBar from '@/components/common/PaginationBar.vue'
-import OverviewCard from '@/components/common/overviewCard.vue'
-import DataTableColums from '@/components/common/DataTableColums.vue'
+import OverviewCard from '@/components/common/data/OverviewCard.vue'
+import DataTableColums from '@/components/common/data/DataTableColums.vue'
+import SearchInput from '@/components/common/data/SearchInput.vue'
+import UserFormModal from './components/UserFormModal.vue'
+import ConfirmDeleteModal from '@/components/common/modal/ConfirmDeleteModal.vue'
+
 import { userApi } from '@/api/user'
+import { columnsRules } from '@/pages/admin/user/utils/dataTableColumnsRule'
+
 import { ref, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
-import SearchInput from '@/components/common/SearchInput.vue'
 
+const showEditUserDialog = ref(false);
 const handleEdit = (index, row) => {
   console.log(index, row)
 }
+
+const showDeleteUserDialog = ref(false);
+const waitToDelete = ref({
+  name: '',
+  id: ''
+})
 const handleDelete = (index, row) => {
   console.log(index, row)
+  showDeleteUserDialog.value = true;
+  waitToDelete.value.name = row.name;
+  waitToDelete.value.id = row.id;
+}
+const handleConfirmDelete = (row) => {
+  showDeleteUserDialog.value = false;
+}
+
+const showUserAddDialog = ref(false)
+const handleAdd = () => {
+  showUserAddDialog.value = !showUserAddDialog.value;
+  console.log('user aDD', showUserAddDialog.value)
 }
 
 const tableData = ref([
@@ -113,77 +141,16 @@ const tableData = ref([
   }
 ])
 
-const columnsRules = [
-  {
-    label: '用户ID',
-    width: '120',
-    colDataName: 'id',
-    icon: 'none',
-  },
-  {
-    label: '用户名',
-    width: '150',
-    colDataName: 'username',
-  },
-  {
-    label: '昵称',
-    width: '150',
-    colDataName: 'name',
-  },
-  {
-    label: '创建时间',
-    width: '200',
-    colDataName: 'createTime',
-    icon: 'timer'
-  },
-  {
-    label: '角色',
-    width: '150',
-    colDataName: 'role',
-    tagTypeMap: {
-      super_admin: 'primary',
-      admin: 'primary',
-      scorer: 'success',
-      normal: 'info'
-    },
-    tagNameMap: {
-      super_admin: '超级管理员',
-      admin: '管理员',
-      scorer: '打分用户',
-      normal: '普通用户'
-    },
-  },
-  {
-    label: '账户状态',
-    width: '150',
-    colDataName: 'isEnabled',
-    tagTypeMap: {
-      true: 'success',
-      false: 'danger'
-    },
-    tagNameMap: {
-      true: '可用',
-      false: '禁用'
-    },
-  }
-
-]
-
-const handleSearch = async (val) => {
-  console.log('parent recv', val)
+const handleSearch = async (keywords) => {
+  console.log('parent recv', keywords)
   try {
-    tableData.value = await userApi.getRelateSearchUser(val);
+    tableData.value = await userApi.getRelateSearchUser(keywords);
 
   } catch (error) {
     console.log(error)
   }
 }
 
-const showUserAddDialog = ref(false)
-const handleAdd = () => {
-  showUserAddDialog.value = !showUserAddDialog.value;
-  console.log('user aDD', showUserAddDialog.value)
-}
 
 const pagenationDisabled = ref(false);
 const totalData = ref(100);
@@ -218,7 +185,6 @@ const getUserData = async (pageParams) => {
 onMounted(() => {
   getUserData(pageParams.value);
 })
-
 </script>
 
 <style scoped>
