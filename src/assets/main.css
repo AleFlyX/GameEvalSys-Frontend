@@ -3,6 +3,11 @@
   --primary-box-shadow: rgba(1, 166, 255, 0.429);
   --gray-box-shadow: rgba(128, 128, 128, 0.381);
   --gray-border: rgba(228, 228, 228, 0.5);
+  --box-background: #f8f9fabb;
+  --modal-background: rgba(0, 0, 0, 0.5);
+  --success: #e6ffe6;
+  --main: #ecf5ff;
+  --warning: #ffeecc;
 }
 
 /* @import './base.css';
