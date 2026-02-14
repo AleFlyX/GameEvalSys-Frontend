@@ -47,8 +47,8 @@
   <UserFormModal :visible="showUserAddDialog" @close="showUserAddDialog = false">parent
     <template #test>aatest</template>
   </UserFormModal>
-  <ConfirmDeleteModal v-if="showDeleteUserDialog" @confirm-delete="handleConfirmDelete()"
-    @close="showDeleteUserDialog = false" :data="waitToDelete"></ConfirmDeleteModal>
+  <ConfirmModal v-if="showDeleteUserDialog" @confirm-delete="handleConfirmDelete()"
+    @close="showDeleteUserDialog = false" :data="waitToDelete"></ConfirmModal>
   <!-- <button @click="showUserAddDialog = !showUserAddDialog">show</button> -->
 </template>
 
@@ -58,7 +58,7 @@ import OverviewCard from '@/components/common/data/OverviewCard.vue'
 import DataTableColums from '@/components/common/data/DataTableColums.vue'
 import SearchInput from '@/components/common/data/SearchInput.vue'
 import UserFormModal from './components/UserFormModal.vue'
-import ConfirmDeleteModal from '@/components/common/modal/ConfirmDeleteModal.vue'
+import ConfirmModal from '@/components/common/modal/ConfirmModal.vue'
 
 import { userApi } from '@/api/user'
 import { columnsRules } from '@/pages/admin/user/utils/dataTableColumnsRule'
