@@ -44,7 +44,9 @@
     </div>
 
   </div>
-  <UserFormModal v-if="showUserAddDialog" @close="showUserAddDialog = false"></UserFormModal>
+  <UserFormModal :visible="showUserAddDialog" @close="showUserAddDialog = false">parent
+    <template #test>aatest</template>
+  </UserFormModal>
   <ConfirmDeleteModal v-if="showDeleteUserDialog" @confirm-delete="handleConfirmDelete()"
     @close="showDeleteUserDialog = false" :data="waitToDelete"></ConfirmDeleteModal>
   <!-- <button @click="showUserAddDialog = !showUserAddDialog">show</button> -->
