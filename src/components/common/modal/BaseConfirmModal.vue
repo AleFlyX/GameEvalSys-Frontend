@@ -80,7 +80,7 @@ const closeModal = () => {
 
 .confirm-delete {
   width: 400px;
-  min-height: 200px;
+  /* min-height: 200px; */
   padding: 15px 20px;
   position: relative;
   display: flex;
@@ -109,6 +109,20 @@ const closeModal = () => {
 .default-close:hover {
   color: #409eff;
   /* 给个默认主色，避免var未定义 */
+}
+
+.content {
+  font-size: small;
+  color: gray;
+}
+
+.operation {
+  padding: 10px 5px;
+  display: flex;
+  align-items: center;
+  justify-content: end;
+  gap: 15px;
+
 }
 
 /* 修复动画选择器：原.modal-content不存在，改为.confirm-delete */
