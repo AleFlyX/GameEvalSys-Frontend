@@ -47,8 +47,11 @@
   <UserFormModal :visible="showUserAddDialog" @close="showUserAddDialog = false">parent
     <template #test>aatest</template>
   </UserFormModal>
-  <ConfirmModal v-if="showDeleteUserDialog" @confirm-delete="handleConfirmDelete()"
-    @close="showDeleteUserDialog = false" :data="waitToDelete"></ConfirmModal>
+
+  <!-- 确认删除 -->
+  <UserConfirmModal v-model:visible="showDeleteUserDialog" @confirm="handleConfirmDelete()"
+    @close="showDeleteUserDialog = false" :data="waitToDelete">
+  </UserConfirmModal>
   <!-- <button @click="showUserAddDialog = !showUserAddDialog">show</button> -->
 </template>
 
@@ -58,7 +61,7 @@ import OverviewCard from '@/components/common/data/OverviewCard.vue'
 import DataTableColums from '@/components/common/data/DataTableColums.vue'
 import SearchInput from '@/components/common/data/SearchInput.vue'
 import UserFormModal from './components/UserFormModal.vue'
-import ConfirmModal from '@/components/common/modal/ConfirmModal.vue'
+import UserConfirmModal from '@/pages/admin/user/components/UserConfirmDelete.vue'
 
 import { userApi } from '@/api/user'
 import { columnsRules } from '@/pages/admin/user/utils/dataTableColumnsRule'
@@ -78,13 +81,23 @@ const waitToDelete = ref({
 })
 const handleDelete = (index, row) => {
   console.log(index, row)
-  showDeleteUserDialog.value = true;
+
   waitToDelete.value.name = row.name;
   waitToDelete.value.id = row.id;
+  showDeleteUserDialog.value = true;
 }
-const handleConfirmDelete = (row) => {
-  showDeleteUserDialog.value = false;
-}
+// const handleConfirmDelete = async () => {
+//   try {
+//     const response = await userApi.deleteUser(waitToDelete.value.id)
+//     ElMessage.success(response.message)
+//     showDeleteUserDialog.value = false;
+//   }
+//   catch (err) {
+//     ElMessage.error(err)
+//     console.log(err)
+//   }
+
+// }
 
 const showUserAddDialog = ref(false)
 const handleAdd = () => {
