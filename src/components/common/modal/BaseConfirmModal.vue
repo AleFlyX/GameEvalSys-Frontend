@@ -125,6 +125,64 @@ const closeModal = () => {
 
 }
 
+/* 穿透scoped，作用到插槽内的所有按钮 */
+:deep(.operation button) {
+  /* 基础按钮样式 */
+  padding: 8px 20px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+/* 取消按钮（默认样式，可通过class="cancel-btn"指定） */
+:deep(.operation .cancel-btn) {
+  background-color: #f5f7fa;
+  color: #606266;
+  border-color: #e4e7ed;
+}
+
+:deep(.operation .cancel-btn:hover) {
+  background-color: #e8eaed;
+  border-color: #dcdfe6;
+}
+
+/* 确认按钮（默认样式，可通过class="confirm-btn"指定） */
+:deep(.operation .confirm-btn) {
+  background-color: #409eff;
+  color: #ffffff;
+}
+
+:deep(.operation .confirm-btn:hover) {
+  background-color: #66b1ff;
+}
+
+/* 危险按钮（比如删除，class="danger-btn"） */
+:deep(.operation .danger-btn) {
+  background-color: #f56c6c;
+  color: #ffffff;
+}
+
+:deep(.operation .danger-btn:hover) {
+  background-color: #f78989;
+}
+
+/* 禁用状态通用样式 */
+:deep(.operation button:disabled) {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+:deep(.operation button:disabled:hover) {
+  /* background-color: inherit;
+  border-color: inherit; */
+  /* 继承css属性会导致opacity=1 */
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 /* 修复动画选择器：原.modal-content不存在，改为.confirm-delete */
 /* 进入/离开的初始状态 */
 .modal-enter-from,
