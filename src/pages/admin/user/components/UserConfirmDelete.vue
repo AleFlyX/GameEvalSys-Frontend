@@ -67,6 +67,7 @@ const handleConfirm = async () => {
   }
   finally {
     dialogVisible.value = false;
+    disableBtn.value = false;
   }
 }
 const handleClose = () => {
