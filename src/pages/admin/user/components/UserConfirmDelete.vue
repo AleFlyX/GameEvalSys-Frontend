@@ -4,11 +4,11 @@
       确认删除?
     </template>
     <template #content>
-      用户: {{ props.data.name }},id: {{ props.data.id }}
+      用户: {{ props.data.name }} id: {{ props.data.id }}
     </template>
     <template #operations>
-      <button @click="handleConfirm()">确认</button>
-      <button @click="handleClose()">取消</button>
+      <button class="confirm-btn" @click="handleConfirm()" :disabled="disableBtn">确认</button>
+      <button class="cancel-btn" @click="handleClose()">取消</button>
     </template>
   </BaseConfirmModal>
 </template>
@@ -33,6 +33,10 @@ const props = defineProps({
     }
   }
 })
+
+const emits = defineEmits([
+  'update:visible'
+])
 // 定义本地响应式变量，初始值同步 props.visible
 const dialogVisible = ref(props.visible)
 // 监听 props.visible 变化，同步到本地变量（父组件修改时，子组件跟着变）
@@ -44,27 +48,29 @@ watch(dialogVisible, (newVal) => {
   emits('update:visible', newVal)
 })
 
-const emits = defineEmits([
-  'confirm',
-  'close'
-])
+
 // console.log(props.data)
+const disableBtn = ref(false);
 const handleConfirm = async () => {
-  console.log('UserConfirmDelete Emit CONFIRM')
-  ElMessage.success(`deleting ${props.data.id}`)
-  emits('confirm', true)
-  // try {
-  //   const response = await userApi.deleteUser(waitToDelete.value.id)
-  //   ElMessage.success(response.message)
-  //   showDeleteUserDialog.value = false;
-  // }
-  // catch (err) {
-  //   ElMessage.error(err)
-  //   console.log(err)
-  // }
+  // console.log('UserConfirmDelete Emit CONFIRM')
+  ElMessage.info(`正在删除 ${props.data.name}`);
+  disableBtn.value = true;
+
+  try {
+    const response = await userApi.deleteUser(props.data.id)
+    ElMessage.success(response.message)
+    // emits('close', true)
+  }
+  catch (err) {
+    ElMessage.error(err)
+    console.log(err)
+  }
+  finally {
+    dialogVisible.value = false;
+  }
 }
 const handleClose = () => {
-  console.log('UserConfirmDelete Emit CLOSE')
-  emits('close', true)
+  // console.log('UserConfirmDelete Emit CLOSE')
+  dialogVisible.value = false;
 }
 </script>
