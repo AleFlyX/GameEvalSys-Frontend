@@ -4,9 +4,6 @@
       :style="customSearchInputStyle" :placeholder="inputPlaceholder">
     <button class="btns search-btn" @click="handleInputSearch" :style="customBtnsStyle">查找</button>
     <button class="btns add-btn" @click="handleAdd" :style="customBtnsStyle">添加</button>
-    <!-- <el-input v-model="search" :placeholder=props.placeholder />
-    <el-button>查找</el-button>
-    <el-button type="primary">添加</el-button> -->
   </div>
 </template>
 
@@ -35,15 +32,6 @@ const props = defineProps({
 })
 
 const inputPlaceholder = ref(props.placeholder);
-// const bInputFocus = ref(false)
-// const handleInputFocus = () => {
-//   if (inputPlaceholder.value !== '') {
-//     inputPlaceholder.value = '';
-//   }
-//   else {
-//     inputPlaceholder.value = props.placeholder;
-//   }
-// }
 
 const validSizeVal = computed(() => {
   const validValues = ['small', 'middle', 'large']

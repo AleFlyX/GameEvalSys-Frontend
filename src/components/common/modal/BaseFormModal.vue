@@ -3,7 +3,7 @@
   <Transition name="modal">
     <div class="modal-mask" @click="closeModal" v-if="visible"> <!-- 外层也用v-if控制，避免遮罩残留 -->
       <!-- 改用v-if，且依赖props传入的visible -->
-      <div class="confirm-delete" @click.stop v-if="visible">
+      <div class="base-form" @click.stop v-if="visible">
         <button class="default-close" @click="closeModal">x</button>
         <div class="title">
           <h3>
@@ -14,14 +14,15 @@
         </div>
         <div class="content">
           <p>
-            <slot name="content">
-              <!-- 提示小字 -->
+            <slot name="form">
+              <!-- 表单具体输入内容 -->
             </slot>
           </p>
         </div>
         <div class="operation">
           <slot name="operations">
             <!-- 操作 -->
+            <!-- button class种类:primary-btn,cancel-btn -->
           </slot>
         </div>
       </div>
@@ -43,14 +44,13 @@ const props = defineProps({
 })
 
 const emits = defineEmits([
-  // 'clickMaskToClose',
   'update:visible' // 用于双向绑定，通知父组件更新显隐状态
 ])
 
 // 关闭弹窗的方法（通知父组件更新状态）
 const closeModal = () => {
   emits('update:visible', false)
-  emits('clickMaskToClose', true)
+  // emits('clickMaskToClose', true)
 }
 
 // 监听visible变化，确保动画执行完整
@@ -76,7 +76,7 @@ const closeModal = () => {
   transition: opacity 0.3s ease;
 }
 
-.confirm-delete {
+.base-form {
   width: 400px;
   /* min-height: 200px; */
   padding: 15px 20px;
@@ -145,13 +145,13 @@ const closeModal = () => {
   border-color: #dcdfe6;
 }
 
-/* 确认按钮（默认样式，可通过class="confirm-btn"指定） */
-:deep(.operation .confirm-btn) {
+/* 确认按钮（默认样式，可通过class="primary-btn"指定） */
+:deep(.operation .primary-btn) {
   background-color: #409eff;
   color: #ffffff;
 }
 
-:deep(.operation .confirm-btn:hover) {
+:deep(.operation .primary-btn:hover) {
   background-color: #66b1ff;
 }
 
@@ -199,17 +199,17 @@ const closeModal = () => {
 }
 
 /* 内容层位移动画（修复选择器） */
-.modal-enter-from .confirm-delete {
+.modal-enter-from .base-form {
   transform: translateY(40px);
   opacity: 0;
 }
 
-.modal-enter-to .confirm-delete {
+.modal-enter-to .base-form {
   transform: translateY(0);
   opacity: 1;
 }
 
-.modal-enter-active .confirm-delete {
+.modal-enter-active .base-form {
   transition: all 0.2s ease 0.1s;
 }
 </style>

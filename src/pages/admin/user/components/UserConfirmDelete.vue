@@ -1,5 +1,5 @@
 <template>
-  <BaseConfirmModal @clickMaskToClose="handleClose()" v-model:visible="dialogVisible">
+  <BaseConfirmModal v-model:visible="dialogVisible">
     <template #title>
       确认删除?
     </template>
@@ -52,7 +52,6 @@ watch(dialogVisible, (newVal) => {
 // console.log(props.data)
 const disableBtn = ref(false);
 const handleConfirm = async () => {
-  // console.log('UserConfirmDelete Emit CONFIRM')
   ElMessage.info(`正在删除 ${props.data.name}`);
   disableBtn.value = true;
 
