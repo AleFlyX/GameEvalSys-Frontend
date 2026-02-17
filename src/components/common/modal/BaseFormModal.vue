@@ -1,64 +1,46 @@
 <template>
-  <BaseModal>
-    <div class="modal-mask" @click="closeModal" v-if="visible"> <!-- 外层也用v-if控制，避免遮罩残留 -->
-      <!-- 改用v-if，且依赖props传入的visible -->
-      <div class="base-form" @click.stop v-if="visible">
-        <button class="default-close" @click="closeModal">x</button>
-        <div class="title">
-          <h3>
-            <slot name="title">
-              <!-- 标题 -->
-            </slot>
-          </h3>
-        </div>
-        <div class="content">
-          <slot name="form">
-            <!-- 表单具体输入内容 -->
+  <BaseModal v-bind="$attrs" @update:visible="$emit('update:visible', $event)">
+    <!-- 把这个事件往上抛给父组件，并把事件参数（$event，就是子组件触发事件时传的值
+      （比如 BaseModal 关闭时传的 false））一起传过去； -->
+    <!-- 等价写法：
+      <BaseModal @update:visible="(val) => emit('update:visible', val)" />
+    -->
+    <template #layout>
+      <div class="title">
+        <h3>
+          <slot name="title">
+            <!-- 标题 -->
           </slot>
-        </div>
-        <div class="operation">
-          <slot name="operations">
-            <!-- 操作 -->
-            <!-- button class种类:primary-btn,cancel-btn -->
-          </slot>
-        </div>
+        </h3>
       </div>
-    </div>
-
-
+      <div class="content">
+        <slot name="form">
+          <!-- 表单具体输入内容 -->
+        </slot>
+      </div>
+      <div class="operation">
+        <slot name="operations">
+          <!-- 操作 -->
+          <!-- button class种类:primary-btn,cancel-btn -->
+        </slot>
+      </div>
+    </template>
   </BaseModal>
-
 </template>
 
 <script setup>
 import BaseModal from './BaseModal.vue';
-
-const props = defineProps({
-  // 接收父组件传入的显隐控制参数
-  visible: {
-    type: Boolean,
-    required: true,
-    default: false
-  },
-
+//我自己控制 $attrs 传给谁，不要vue自动帮我绑到根 DOM。
+defineOptions({
+  inheritAttrs: false
 })
+
+defineProps([]);
 
 const emits = defineEmits([
   'update:visible' // 用于双向绑定，通知父组件更新显隐状态
 ])
 
-// 关闭弹窗的方法（通知父组件更新状态）
-const closeModal = () => {
-  emits('update:visible', false)
-  // emits('clickMaskToClose', true)
-}
-
-// 监听visible变化，确保动画执行完整
-// watch(() => props.visible, (newVal) => {
-//   if (!newVal) {
-//     // 这里可以加一些动画结束后的清理逻辑（如果需要）
-//   }
-// })
 </script>
 
 <style scoped>

@@ -1,11 +1,108 @@
 <template>
   <Transition name="modal">
-    <slot></slot>
+    <div class="modal-mask" @click="closeModal" v-if="visible"> <!-- 外层也用v-if控制，避免遮罩残留 -->
+      <!-- 用v-if，且依赖props传入的visible -->
+      <div class="base-form" @click.stop v-if="visible">
+        <button class="default-close" @click="closeModal">x</button>
+        <slot name="layout"></slot>
+      </div>
+    </div>
     <!-- 为了过渡样式的css而封装一个基础transition样式组件 -->
   </Transition>
 </template>
 
+<script setup>
+//我自己控制 $attrs 传给谁，不要vue自动帮我绑到根 DOM。
+defineOptions({
+  inheritAttrs: false
+})
+
+const props = defineProps({
+  // 接收父组件传入的显隐控制参数
+  visible: {
+    type: Boolean,
+    default: false
+  },
+
+})
+
+const emits = defineEmits([
+  'update:visible' // 用于双向绑定，通知父组件更新显隐状态
+])
+
+// 关闭弹窗的方法（通知父组件更新状态）
+const closeModal = () => {
+  emits('update:visible', false)
+}
+// (可扩展)监听visible变化，确保动画执行完整
+// watch(() => props.visible, (newVal) => {
+//   if (!newVal) {
+//     // 这里可以加一些动画结束后的清理逻辑（如果需要）
+//   }
+// })
+</script>
+
 <style scoped>
+.modal-mask {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+  transition: opacity 0.3s ease;
+}
+
+.base-form {
+  width: 400px;
+  /* min-height: 200px; */
+  padding: 15px 20px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background: white;
+  border-radius: 15px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+}
+
+.default-close {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 50px;
+  height: 50px;
+  padding: 10px;
+  font-size: 20px;
+  border: none;
+  outline: none;
+  background: transparent;
+  transition: all 0.2s ease-in-out;
+  cursor: pointer;
+}
+
+.default-close:hover {
+  color: #409eff;
+}
+
+.content {
+  font-size: small;
+  color: gray;
+}
+
+:deep(.operation) {
+  padding: 10px 5px;
+  display: flex;
+  align-items: center;
+  justify-content: end;
+  gap: 15px;
+
+}
+
+
 /* 穿透scoped，作用到插槽内的所有按钮 */
 :deep(.operation button) {
   /* 基础按钮样式 */
