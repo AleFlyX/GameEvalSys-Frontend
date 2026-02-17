@@ -7,6 +7,7 @@
       <OverviewCard icon="Collection" icon-color="#ffaa00" icon-background="#ffeecc" title="普通用户" data="1">
       </OverviewCard>
     </div>
+    <TestCard width="30%"></TestCard>
     <div style="width: 100%; display: flex; justify-content: flex-start;">
       <SearchInput size="middle" @search="handleSearch" @add="handleAdd"></SearchInput>
     </div>
@@ -49,10 +50,12 @@
   </UserFormModal>
 
   <!-- 确认删除 -->
-  <UserConfirmModal v-model:visible="showDeleteUserDialog" @confirm="handleConfirmDelete()"
-    @close="showDeleteUserDialog = false" :data="waitToDelete">
+  <UserConfirmModal v-model:visible="showDeleteUserDialog" :data="waitToDelete">
   </UserConfirmModal>
-  <!-- <button @click="showUserAddDialog = !showUserAddDialog">show</button> -->
+
+  <BaseFormModal v-model:visible="showEditUserDialog">
+  </BaseFormModal>
+  <button @click="showEditUserDialog = !showEditUserDialog">testBaseForm</button>
 </template>
 
 <script setup>
@@ -68,6 +71,8 @@ import { columnsRules } from '@/pages/admin/user/utils/dataTableColumnsRule'
 
 import { ref, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
+import TestCard from './components/testCard.vue'
+import BaseFormModal from '@/components/common/modal/BaseFormModal.vue'
 
 const showEditUserDialog = ref(false);
 const handleEdit = (index, row) => {
@@ -81,23 +86,10 @@ const waitToDelete = ref({
 })
 const handleDelete = (index, row) => {
   console.log(index, row)
-
   waitToDelete.value.name = row.name;
   waitToDelete.value.id = row.id;
   showDeleteUserDialog.value = true;
 }
-// const handleConfirmDelete = async () => {
-//   try {
-//     const response = await userApi.deleteUser(waitToDelete.value.id)
-//     ElMessage.success(response.message)
-//     showDeleteUserDialog.value = false;
-//   }
-//   catch (err) {
-//     ElMessage.error(err)
-//     console.log(err)
-//   }
-
-// }
 
 const showUserAddDialog = ref(false)
 const handleAdd = () => {
@@ -160,7 +152,6 @@ const handleSearch = async (keywords) => {
   console.log('parent recv', keywords)
   try {
     tableData.value = await userApi.getRelateSearchUser(keywords);
-
   } catch (error) {
     console.log(error)
   }
