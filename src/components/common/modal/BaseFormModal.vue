@@ -90,8 +90,7 @@ const emits = defineEmits([
 }
 
 .content {
-  font-size: small;
-  color: gray;
+  padding: 5px;
 }
 
 .operation {
