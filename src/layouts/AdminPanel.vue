@@ -1,5 +1,6 @@
 <template>
   <div class="admin-panel">
+    <!-- 避免各个管理面板组件的css部分冗余 -->
     <div style="display: flex; width: 100%; ">
       <slot name="dataCards">
         <!-- 数据预览小卡片区域 -->
@@ -14,10 +15,11 @@
       <slot name="dataTable">
         <!-- el table组件 -->
       </slot>
-      <slot name="footer">
-        <!-- 分页跳转组件等 -->
-      </slot>
-
+      <div class="footer">
+        <slot name="footer">
+          <!-- 分页跳转组件等 -->
+        </slot>
+      </div>
     </div>
 
   </div>
@@ -50,10 +52,9 @@
 
 }
 
-.pagination {
+.footer {
   width: 99%;
   display: flex;
-
   justify-content: center;
 }
 </style>
