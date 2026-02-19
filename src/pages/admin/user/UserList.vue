@@ -7,7 +7,7 @@
       <OverviewCard icon="Collection" icon-color="#ffaa00" icon-background="#ffeecc" title="普通用户" data="1">
       </OverviewCard>
     </div>
-    <TestCard width="30%"></TestCard>
+    <!-- <TestCard width="30%"></TestCard> -->
     <div style="width: 100%; display: flex; justify-content: flex-start;">
       <SearchInput size="middle" @search="handleSearch" @add="handleAdd"></SearchInput>
     </div>
@@ -19,9 +19,6 @@
           <template #header>
             <div style="display: flex; justify-content: start;">
               操作
-              <!-- <el-input v-model="search" size="small" placeholder="Type to search" />
-              <el-button>查找</el-button>
-              <el-button>添加</el-button> -->
             </div>
           </template>
           <template #default="scope">
@@ -33,29 +30,26 @@
             </el-button>
           </template>
         </el-table-column>
-        <!-- <el-table-column>
-        </el-table-column> -->
       </el-table>
       <div class="pagination">
         <el-pagination v-model:current-page="pageParams.page" v-model:page-size="pageParams.size"
           :page-sizes="[10, 20, 30]" size="middle" :disabled="pagenationDisabled" :total="totalData"
           @size-change="handleSizeChange" layout="sizes, prev, pager, next" @current-change="handleCurrentChange" />
-        <!-- <PaginationBar></PaginationBar> -->
       </div>
     </div>
 
   </div>
-  <UserFormModal :visible="showUserAddDialog" @close="showUserAddDialog = false">parent
+  <!-- <UserFormModal :visible="showUserAddDialog" @close="showUserAddDialog = false">parent
     <template #test>aatest</template>
-  </UserFormModal>
+  </UserFormModal> -->
 
   <!-- 确认删除 -->
   <UserConfirmModal v-model:visible="showDeleteUserDialog" :data="waitToDelete">
   </UserConfirmModal>
 
-  <BaseFormModal v-model:visible="showEditUserDialog">
-  </BaseFormModal>
-  <button @click="showEditUserDialog = !showEditUserDialog">testBaseForm</button>
+  <UserAdd v-model:visible="showUserAddDialog">
+  </UserAdd>
+  <button @click="showUserAddDialog = !showUserAddDialog">UserAdd</button>
 </template>
 
 <script setup>
@@ -63,7 +57,7 @@
 import OverviewCard from '@/components/common/data/OverviewCard.vue'
 import DataTableColums from '@/components/common/data/DataTableColums.vue'
 import SearchInput from '@/components/common/data/SearchInput.vue'
-import UserFormModal from './components/UserFormModal.vue'
+// import UserFormModal from './components/UserFormModal.vue'
 import UserConfirmModal from '@/pages/admin/user/components/UserConfirmDelete.vue'
 
 import { userApi } from '@/api/user'
@@ -72,7 +66,8 @@ import { columnsRules } from '@/pages/admin/user/utils/dataTableColumnsRule'
 import { ref, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import TestCard from './components/testCard.vue'
-import BaseFormModal from '@/components/common/modal/BaseFormModal.vue'
+// import BaseFormModal from '@/components/common/modal/BaseFormModal.vue'
+import UserAdd from './components/UserAdd.vue'
 
 const showEditUserDialog = ref(false);
 const handleEdit = (index, row) => {
