@@ -4,7 +4,7 @@
     <div class="card-top">
       <div class="card-icon" :style="customIconStyle">
         <el-icon :size=iconSize>
-          <component :is="`${icon}`" :color=iconColor></component>
+          <component :is="`${icon}`" :color=validateIconColor()></component>
         </el-icon>
       </div>
       <p class="card-title">{{ title }}</p>
@@ -15,7 +15,7 @@
   </div>
 </template>
 <script setup>
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 
 const props = defineProps({
   width: {
@@ -60,6 +60,17 @@ const props = defineProps({
     default: 'none'
   }
 })
+
+// 处理空字符串场景
+const validateIconColor = computed(() => {
+  // 如果传入的是空字符串/空值，用默认值，否则用传入的值
+  return props.iconColor?.trim() === '' ? '#409EFF' : props.iconColor
+})
+
+const validateIconBackground = computed(() => {
+  return props.iconBackground?.trim() === '' ? '#ecf5ff' : props.iconBackground
+})
+
 const customCardsStyle = ref({
   'width': props.width,
   'height': props.height,
@@ -67,7 +78,7 @@ const customCardsStyle = ref({
 const customIconStyle = ref({
   'width': props.iconBackgroundSize + 'px',
   'height': props.iconBackgroundSize + 'px',
-  'background-color': props.iconBackground
+  'background-color': validateIconBackground()
 })
 // console.log(customIconStyle.value)
 
