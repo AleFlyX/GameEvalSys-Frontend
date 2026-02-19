@@ -22,11 +22,15 @@
             </div>
           </template>
           <template #default="scope">
+            <!-- 删除用户移至编辑界面内 -->
             <el-button size="small" @click="handleEdit(scope.$index, scope.row)">
               编辑
             </el-button>
-            <el-button size="small" type="danger" @click="handleDelete(scope.$index, scope.row)">
-              删除
+            <el-button v-if="scope.row.isEnabled" size="small" type="danger" @click="handleDeactive(scope.row)">
+              禁用
+            </el-button>
+            <el-button v-if="!scope.row.isEnabled" size="small" type="primary" @click="handleActive(scope.row)">
+              启用
             </el-button>
           </template>
         </el-table-column>
@@ -43,12 +47,14 @@
     <template #test>aatest</template>
   </UserFormModal> -->
 
-  <!-- 确认删除 -->
-  <UserConfirmModal v-model:visible="showDeleteUserDialog" :data="waitToDelete">
-  </UserConfirmModal>
+  <!-- 确认删除/停用 -->
+  <UserConfirm v-model:visible="showUserConfirmDialog" :data="waitToHandle" :disable-btn="disableConfirmBtn"
+    @confirm="handleConfirm" :title="confirmDialogTitle">
+  </UserConfirm>
 
-  <UserAdd v-model:visible="showUserAddDialog">
-  </UserAdd>
+  <UserEdit v-model:visible="showEditUserDialog" :data="waitToHandle"></UserEdit>
+
+  <UserAdd v-model:visible="showUserAddDialog"></UserAdd>
   <button @click="showUserAddDialog = !showUserAddDialog">UserAdd</button>
 </template>
 
@@ -58,32 +64,74 @@ import OverviewCard from '@/components/common/data/OverviewCard.vue'
 import DataTableColums from '@/components/common/data/DataTableColums.vue'
 import SearchInput from '@/components/common/data/SearchInput.vue'
 // import UserFormModal from './components/UserFormModal.vue'
-import UserConfirmModal from '@/pages/admin/user/components/UserConfirmDelete.vue'
+import UserConfirm from '@/pages/admin/user/components/UserConfirm.vue'
 
 import { userApi } from '@/api/user'
 import { columnsRules } from '@/pages/admin/user/utils/dataTableColumnsRule'
 
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, reactive } from 'vue'
 import { ElMessage } from 'element-plus'
-import TestCard from './components/testCard.vue'
+// import TestCard from './components/testCard.vue'
 // import BaseFormModal from '@/components/common/modal/BaseFormModal.vue'
 import UserAdd from './components/UserAdd.vue'
+import UserEdit from './components/UserEdit.vue'
+
+const waitToHandle = reactive({})
 
 const showEditUserDialog = ref(false);
 const handleEdit = (index, row) => {
+  showEditUserDialog.value = true;
+  waitToHandle.value = row;
   console.log(index, row)
+  // console.log('reactive', waitToHandle.value)
 }
 
-const showDeleteUserDialog = ref(false);
-const waitToDelete = ref({
-  name: '',
-  id: ''
-})
+const showUserConfirmDialog = ref(false);
+const confirmDialogTitle = ref('')
+const disableConfirmBtn = ref(false)
+
+const handleDeactive = (row) => {
+  waitToHandle.name = row.name;
+  waitToHandle.id = row.id;
+  confirmDialogTitle.value = '是否禁用？';
+  showUserConfirmDialog.value = true;
+  // console.log(waitToHandle)
+}
+
+const handleConfirm = (event) => {
+  ElMessage.info(`确认事件${event}`)
+  console.log('Confirm event', event)
+}
+
+/**
+ * 禁用用户
+ * @param userId 用户ID
+ */
+const deactiveUser = async (userId) => {
+  ElMessage.info(`正在禁用用户ID${userId}`);
+  // console.log('正在禁用用户ID', userId)
+  disableConfirmBtn.value = true;
+  try {
+    const response = await userApi.deactiveUser(userId)
+    ElMessage.success(response.message)
+  }
+  catch (err) {
+    ElMessage.error(err)
+    console.log(err)
+  }
+  finally {
+    waitToHandle.value = {}
+    disableConfirmBtn.value = false;
+  }
+}
+const handleActive = () => {
+
+}
 const handleDelete = (index, row) => {
   console.log(index, row)
-  waitToDelete.value.name = row.name;
-  waitToDelete.value.id = row.id;
-  showDeleteUserDialog.value = true;
+  waitToHandle.value.name = row.name;
+  waitToHandle.value.id = row.id;
+  showUserConfirmDialog.value = true;
 }
 
 const showUserAddDialog = ref(false)
