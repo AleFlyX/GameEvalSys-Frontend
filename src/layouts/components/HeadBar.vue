@@ -4,7 +4,6 @@
       {{ title }}
     </span>
 
-
     <div class="header-right">
       <div class="not-login" v-if="!userStore.isLogin">
         <button @click="goto('/login')">登录</button>
@@ -21,14 +20,10 @@
         </div>
         <p class="username">{{ username }},欢迎</p>
       </div>
-
     </div>
-
-
-
   </header>
-
 </template>
+
 <script setup>
 import { useRoute, useRouter } from "vue-router";
 import { computed, ref } from "vue";
@@ -66,12 +61,7 @@ const logout = () => {
   userStore.logout();
   console.log("由头像dropdown登出")
 }
-// onMounted(()=>{
-//   getTitle();
-// })
-// const title=ref(routesMap[])
 
-// const title=routesMap.fin
 </script>
 <style scoped>
 * {
