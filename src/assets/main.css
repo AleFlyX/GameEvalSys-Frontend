@@ -1,6 +1,7 @@
 * {
   --primary: rgba(6, 164, 255, 0.717);
-  --havy-primary: #409eff;
+  --primary-light: #ecf5ff;
+  --primary-havy: #409eff;
   --primary-hover: #66b1ff;
   --primary-box-shadow: rgba(1, 166, 255, 0.429);
   --light-gray-background: #e3e5e7;
@@ -9,9 +10,12 @@
   --box-background: #f8f9fabb;
   --modal-background: rgba(0, 0, 0, 0.5);
   --danger: #f56c6c;
-  --success: #e6ffe6;
+  --danger-light: #ffd4d4;
+  --success-light: #e6ffe6;
+  --success: #66cc66;
   --main: #ecf5ff;
-  --warning: #ffeecc;
+  --warning: #ffaa00;
+  --warning-light: #ffeecc;
 }
 
 /* @import './base.css';
