@@ -6,33 +6,9 @@
     </template>
     <template #form>
       <div class="user-add-form">
-        <el-form ref="ruleFormRef" style="max-width: 600px" :model="ruleForm" status-icon :rules="rules"
-          label-width="auto">
-          <el-form-item label="登陆账号" prop="username">
-            <el-input v-model="ruleForm.username" type="text" autocomplete="off" />
-          </el-form-item>
-          <el-form-item label="用户昵称" prop="name">
-            <el-input v-model="ruleForm.name" type="text" autocomplete="off" />
-          </el-form-item>
-          <!-- <el-form-item label="Age" prop="age">
-            <el-input v-model.number="ruleForm.age" />
-          </el-form-item> -->
-          <el-form-item label="小组(开发中)">
-            <!--
-            需要启用use remote-show-suffix
-            -->
-            <el-select v-model="ruleForm.group" placeholder="搜索并选择所属组别" clearable>
-              <el-option label="Zone one" value="shanghai" />
-              <el-option label="Zone two" value="beijing" />
-            </el-select>
-          </el-form-item>
-          <!-- <el-form-item>
-            <el-button type="primary" @click="submitForm(ruleFormRef)">
-              Submit
-            </el-button>
-            <el-button @click="resetForm(ruleFormRef)">Reset</el-button>
-          </el-form-item> -->
-        </el-form>
+        <UserForm v-bind="$attrs">
+
+        </UserForm>
       </div>
     </template>
     <template #operations>
@@ -47,6 +23,7 @@
 <script setup>
 import { reactive, ref } from 'vue';
 import BaseFormModal from '@/components/common/modal/BaseFormModal.vue';
+import UserForm from './UserForm.vue';
 defineOptions({
   inheritAttrs: false
 })
@@ -65,15 +42,6 @@ const handleConfirm = () => {
   //post api
 }
 
-const ruleFormRef = ref();
-const ruleForm = reactive({
-  username: '',
-  name: '',
-})
-const rules = reactive({
-  name: { required: true, message: '请输入用户昵称', trigger: 'blur' },
-  username: { required: true, message: '请输入用户登录账户', trigger: 'blur' }
-})
 </script>
 
 
