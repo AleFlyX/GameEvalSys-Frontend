@@ -48,11 +48,11 @@
   </UserFormModal> -->
 
   <!-- 确认删除/停用 -->
-  <UserConfirm v-model:visible="showUserConfirmDialog" :data="waitToHandle" :disable-btn="disableConfirmBtn"
+  <UserConfirm v-model:visible="showUserConfirmDialog" :data="handlingData" :disable-btn="disableConfirmBtn"
     @confirm="handleConfirm" :title="confirmDialogTitle">
   </UserConfirm>
 
-  <UserEdit v-model:visible="showEditUserDialog" :data="waitToHandle"></UserEdit>
+  <UserEdit v-model:visible="showEditUserDialog" :data="handlingData"></UserEdit>
 
   <UserAdd v-model:visible="showUserAddDialog"></UserAdd>
   <button @click="showUserAddDialog = !showUserAddDialog">UserAdd</button>
@@ -76,14 +76,14 @@ import { ElMessage } from 'element-plus'
 import UserAdd from './components/UserAdd.vue'
 import UserEdit from './components/UserEdit.vue'
 
-const waitToHandle = reactive({})
+const handlingData = reactive({})
 
 const showEditUserDialog = ref(false);
 const handleEdit = (index, row) => {
   showEditUserDialog.value = true;
-  waitToHandle.value = row;
+  handlingData.value = row;
   console.log(index, row)
-  // console.log('reactive', waitToHandle.value)
+  // console.log('reactive', handlingData.value)
 }
 
 const showUserConfirmDialog = ref(false);
@@ -91,11 +91,11 @@ const confirmDialogTitle = ref('')
 const disableConfirmBtn = ref(false)
 
 const handleDeactive = (row) => {
-  waitToHandle.name = row.name;
-  waitToHandle.id = row.id;
+  handlingData.value.name = row.name;
+  handlingData.value.id = row.id;
   confirmDialogTitle.value = '是否禁用？';
   showUserConfirmDialog.value = true;
-  // console.log(waitToHandle)
+  // console.log(handlingData)
 }
 
 const handleConfirm = (event) => {
@@ -120,7 +120,7 @@ const deactiveUser = async (userId) => {
     console.log(err)
   }
   finally {
-    waitToHandle.value = {}
+    handlingData.value = {}
     disableConfirmBtn.value = false;
   }
 }
@@ -129,8 +129,8 @@ const handleActive = () => {
 }
 const handleDelete = (index, row) => {
   console.log(index, row)
-  waitToHandle.value.name = row.name;
-  waitToHandle.value.id = row.id;
+  handlingData.value.name = row.name;
+  handlingData.value.id = row.id;
   showUserConfirmDialog.value = true;
 }
 
