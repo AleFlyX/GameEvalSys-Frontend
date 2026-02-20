@@ -4,7 +4,7 @@
     <div class="card-top">
       <div class="card-icon" :style="customIconStyle">
         <el-icon :size=iconSize>
-          <component :is="`${icon}`" :color=validateIconColor()></component>
+          <component :is="`${icon}`" :color=validateIconColor></component>
         </el-icon>
       </div>
       <p class="card-title">{{ title }}</p>
@@ -34,12 +34,12 @@ const props = defineProps({
   iconColor: {
     type: String,
     required: false,
-    default: '#409EFF'
+    default: 'var(--primary-havy)'
   },
   iconBackground: {
     type: String,
     required: false,
-    default: '#ecf5ff'
+    default: 'var(--primary-light)'
   },
   iconSize: {
     type: [String, Number],
@@ -78,7 +78,7 @@ const customCardsStyle = ref({
 const customIconStyle = ref({
   'width': props.iconBackgroundSize + 'px',
   'height': props.iconBackgroundSize + 'px',
-  'background-color': validateIconBackground()
+  'background-color': validateIconBackground.value
 })
 // console.log(customIconStyle.value)
 
