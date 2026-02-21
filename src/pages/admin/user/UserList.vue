@@ -52,29 +52,26 @@
     @confirm="handleConfirm" :title="confirmDialogTitle">
   </UserConfirm>
 
-  <UserEdit v-model:visible="showEditUserDialog" :data="handlingData"></UserEdit>
+  <UserEdit v-model:visible="showEditUserDialog" :data="handlingData" @refresh="handleRefresh"></UserEdit>
 
-  <UserAdd v-model:visible="showUserAddDialog"></UserAdd>
+  <UserAdd v-model:visible="showUserAddDialog" @refresh="handleRefresh"></UserAdd>
   <button @click="showUserAddDialog = !showUserAddDialog">UserAdd</button>
 </template>
 
 <script setup>
-// import PaginationBar from '@/components/common/PaginationBar.vue'
+import { ref, onMounted, reactive } from 'vue'
+import { ElMessage } from 'element-plus'
+
 import OverviewCard from '@/components/common/data/OverviewCard.vue'
 import DataTableColums from '@/components/common/data/DataTableColums.vue'
 import SearchInput from '@/components/common/data/SearchInput.vue'
-// import UserFormModal from './components/UserFormModal.vue'
+
 import UserConfirm from '@/pages/admin/user/components/UserConfirm.vue'
+import UserAdd from './components/UserAdd.vue'
+import UserEdit from './components/UserEdit.vue'
 
 import { userApi } from '@/api/user'
 import { columnsRules } from '@/pages/admin/user/utils/dataTableColumnsRule'
-
-import { ref, onMounted, reactive } from 'vue'
-import { ElMessage } from 'element-plus'
-// import TestCard from './components/testCard.vue'
-// import BaseFormModal from '@/components/common/modal/BaseFormModal.vue'
-import UserAdd from './components/UserAdd.vue'
-import UserEdit from './components/UserEdit.vue'
 
 const handlingData = reactive({})
 
@@ -91,8 +88,8 @@ const confirmDialogTitle = ref('')
 const disableConfirmBtn = ref(false)
 
 const handleDeactive = (row) => {
-  handlingData.value.name = row.name;
-  handlingData.value.id = row.id;
+  console.log('handling deactive', row)
+  handlingData.value = row;
   confirmDialogTitle.value = '是否禁用？';
   showUserConfirmDialog.value = true;
   // console.log(handlingData)
@@ -211,16 +208,20 @@ const pageParams = ref({
 const handleSizeChange = (val) => {
   // console.log('pagesize CHANGE', val)
   pageParams.value.size = val;
-  getUserData(pageParams.value);
+  getUserDataList(pageParams.value);
 }
 
 const handleCurrentChange = (val) => {
   // console.log('page CHANGE', val)
   pageParams.value.page = val;
-  getUserData(pageParams.value);
+  getUserDataList(pageParams.value);
 }
 
-const getUserData = async (pageParams) => {
+const handleRefresh = () => {
+  getUserDataList()
+}
+
+const getUserDataList = async (pageParams = { page: 1, size: 10 }) => {
   try {
     tableData.value = await userApi.getUserList(pageParams)
     ElMessage.success('用户数据获取成功')
@@ -232,7 +233,7 @@ const getUserData = async (pageParams) => {
 }
 
 onMounted(() => {
-  getUserData(pageParams.value);
+  getUserDataList(pageParams.value);
 })
 </script>
 
