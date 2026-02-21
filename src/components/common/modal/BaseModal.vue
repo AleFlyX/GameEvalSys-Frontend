@@ -1,8 +1,10 @@
 <template>
   <Transition name="modal">
-    <div class="modal-mask" @click="closeModal" v-if="visible"> <!-- 外层也用v-if控制，避免遮罩残留 -->
+    <div class="modal-mask" @click="handleMaskClick" @mousedown="handleMaskMousedown" @mouseup="handleMaskMouseup"
+      @mouseleave="resetMaskState" v-if="visible">
+      <!-- 外层也用v-if控制，避免遮罩残留 -->
       <!-- 用v-if，且依赖props传入的visible -->
-      <div class="base-form" @click.stop v-if="visible">
+      <div class="base-modal" @click.stop v-if="visible" ref="modalContentRef">
         <button class="default-close" @click="closeModal">x</button>
         <slot name="layout"></slot>
       </div>
@@ -12,6 +14,7 @@
 </template>
 
 <script setup>
+import { ref } from 'vue'
 //我自己控制 $attrs 传给谁，不要vue自动帮我绑到根 DOM。
 defineOptions({
   inheritAttrs: false
@@ -23,7 +26,10 @@ const props = defineProps({
     type: Boolean,
     default: false
   },
-
+  allowMaskClose: {
+    type: Boolean,
+    default: true
+  }
 })
 
 const emits = defineEmits([
@@ -33,11 +39,48 @@ const emits = defineEmits([
 // 关闭弹窗的方法（通知父组件更新状态）
 const closeModal = () => {
   emits('update:visible', false)
+  resetMaskState() // 关闭后重置状态，避免残留
 }
+
+// 标记是否在遮罩层按下鼠标（解决拖拽穿过的问题）
+const isMaskDown = ref(false)
+const modalContentRef = ref(null)
+
+// 重置遮罩层鼠标状态
+const resetMaskState = () => {
+  isMaskDown.value = false
+}
+
+// 鼠标在遮罩层按下时：判断是否点在遮罩层空白处
+const handleMaskMousedown = (e) => {
+  if (!props.allowMaskClose) return
+
+  const contentDom = modalContentRef.value
+  // 只有点击遮罩层空白处（非内容区），才标记为“按下”
+  if (contentDom && !contentDom.contains(e.target)) {
+    isMaskDown.value = true
+  }
+}
+
+// 鼠标松开时：只有“按下在遮罩层+松开也在遮罩层”才关闭
+const handleMaskMouseup = (e) => {
+  if (!props.allowMaskClose || !isMaskDown.value) {
+    resetMaskState()
+    return
+  }
+
+  const contentDom = modalContentRef.value
+  // 二次确认：松开时仍在遮罩层空白处
+  if (contentDom && !contentDom.contains(e.target)) {
+    closeModal()
+  }
+  resetMaskState()
+}
+
 // (可扩展)监听visible变化，确保动画执行完整
 // watch(() => props.visible, (newVal) => {
 //   if (!newVal) {
-//     // 这里可以加一些动画结束后的清理逻辑（如果需要）
+//     // 这里可以加一些动画结束后的清理逻辑
 //   }
 // })
 </script>
@@ -53,11 +96,11 @@ const closeModal = () => {
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 999;
+  z-index: 1000;
   transition: opacity 0.3s ease;
 }
 
-.base-form {
+.base-modal {
   width: 400px;
   /* min-height: 200px; */
   padding: 15px 20px;
@@ -67,6 +110,7 @@ const closeModal = () => {
   background: white;
   border-radius: 15px;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  z-index: 1001;
 }
 
 .default-close {
@@ -181,17 +225,17 @@ const closeModal = () => {
 }
 
 /* 内容层位移动画（修复选择器） */
-.modal-enter-from .base-form {
+.modal-enter-from .base-modal {
   transform: translateY(40px);
   opacity: 0;
 }
 
-.modal-enter-to .base-form {
+.modal-enter-to .base-modal {
   transform: translateY(0);
   opacity: 1;
 }
 
-.modal-enter-active .base-form {
+.modal-enter-active .base-modal {
   transition: all 0.2s ease 0.1s;
 }
 </style>
