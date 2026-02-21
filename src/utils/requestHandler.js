@@ -3,6 +3,17 @@ import { useRouter } from "vue-router";
 
 const router = useRouter();
 
+/**
+ * 通用接口请求处理函数（封装 try/catch + 统一错误处理）
+ * @param {Function} apiFunc - API 文件夹下的接口方法（例 getUserList）
+ * @param {Object|Array} params - 接口参数（对象/数组，适配不同传参方式）
+ * @param {Object} options - 自定义配置
+ * @param {Boolean} options.showSuccessMsg - 是否显示成功提示（默认 false）
+ * @param {String} options.successText - 成功提示文案（默认 '操作成功'）
+ * @param {Boolean} options.showErrorMsg - 是否显示错误提示（默认 true）
+ * @param {Boolean} options.throwError - 是否抛出错误（让业务层自定义处理，默认 false）
+ * @returns {Object} { success: 布尔值, data: 接口返回数据/错误信息 }
+ */
 export const requestHandler = async (
   apiFunc,
   params = [],
