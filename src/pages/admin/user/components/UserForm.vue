@@ -7,13 +7,10 @@
     <el-form-item label="用户昵称" prop="name">
       <el-input v-model="formData.name" type="text" autocomplete="off" />
     </el-form-item>
-    <!-- <el-form-item label="Age" prop="age">
-            <el-input v-model.number="ruleForm.age" />
-          </el-form-item> -->
     <el-form-item label="小组(开发中)">
       <!--
-            需要启用use remote-show-suffix
-            -->
+      需要启用use remote-show-suffix
+      -->
       <el-select v-model="formData.group" placeholder="搜索并选择所属组别" clearable>
         <el-option label="Zone one" value="shanghai" />
         <el-option label="Zone two" value="beijing" />
@@ -27,8 +24,8 @@
         <el-option label="普通用户" value="normal" />
       </el-select>
     </el-form-item>
-    <el-form-item label="账户状态">
-      <el-switch disabled v-model="formData.isEnabled" size="large"
+    <el-form-item label="账户状态" v-if="editMode">
+      <el-switch v-model="formData.isEnabled" size="large"
         style="--el-switch-on-color: #13ce66; --el-switch-off-color: #ff4949" inline-prompt active-text="启用"
         inactive-text="停用" />
     </el-form-item>
@@ -51,9 +48,29 @@ const props = defineProps({
       role: 'admin'
     })
   },
+  editMode: {
+    type: Boolean,
+    default: false
+  }
 })
 
-const ruleFormRef = ref()
+const emits = defineEmits([
+  'update:data'
+])
+
+const ruleFormRef = ref(null)
+defineExpose({
+  validate: async () => {
+    try {
+      await ruleFormRef.value.validate();
+      return { valid: true, data: { ...formData.value } }
+    } catch (err) {
+      console.log('UserForm ERR', err)
+      return { valid: false, data: null }
+    }
+  }
+})
+
 
 // 初始化表单数据（安全克隆，不会报错）
 const formData = ref(safeDeepClone(props.data.value));//数据拷贝structuredClone API
@@ -67,5 +84,5 @@ watch(
   },
   { deep: true, immediate: true }
 );
-
+// emits('update:data', newVal.value);
 </script>
