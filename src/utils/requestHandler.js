@@ -1,0 +1,67 @@
+import { ElMessage, ElMessageBox } from "element-plus";
+import { useRouter } from "vue-router";
+
+const router = useRouter();
+
+export const requestHandler = async (
+  apiFunc,
+  params = [],
+  options = {
+    showSuccessMsg: false,
+    successText: '操作成功',
+    showErrorMsg: true,
+    throwError: false
+  }
+) => {
+  //如果 params 是对象，用对象传参；是数组，用解构传参
+  const requestParams = Array.isArray(params) ? params : [params];
+  try {
+    const response = await apiFunc(requestParams);
+    if (response.code == 200) {
+      if (options.showSuccessMsg) {
+        ElMessage.success(options.successText);
+      }
+      return {
+        success: true,
+        data: response.data || response
+      }
+    }
+    else {
+      const errorMsg = response.message || 'Operation Failed';
+      if (options.showErrorMsg) {
+        ElMessage.error(errorMsg);
+      }
+      if (options.throwError) {
+        throw new Error(errorMsg);
+      }
+      return {
+        success: false,
+        data: errorMsg
+      };
+    }
+  } catch (error) {
+    console.log(error);
+    const errorMsg = error.message || 'NetWork Error';
+    if (options.showErrorMsg) {
+      ElMessage.error(errorMsg);
+    }
+    // 401 未登录
+    if (error.response?.status === 401) {
+      ElMessageBox.confirm('登录状态已过期，请重新登录', '提示', {
+        confirmButtonText: '重新登录',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        // 跳转到登录页
+        router.push('/login')
+      });
+    }
+    if (options.throwError) {
+      throw error;
+    }
+    return {
+      success: false,
+      data: errorMsg
+    };
+  }
+};
