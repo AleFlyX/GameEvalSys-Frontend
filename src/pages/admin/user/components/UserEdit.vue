@@ -5,12 +5,14 @@
     </template>
     <template #form>
       <div class="user-add-form">
-        <UserForm v-bind="$attrs" @update:data="handleFormData" editMode ref="formRef"></UserForm>
+        <UserForm v-bind="$attrs" @update:data="handleFormData" editMode ref="userFormRef" :disabled="disableBehavior">
+        </UserForm>
+
       </div>
     </template>
     <template #operations>
       <!-- <button @click="handleReset()" class="reset-btn">重置</button> -->
-      <button @click="handleConfirm()" class="primary-btn" :disabled="disableBtn">保存</button>
+      <button @click="handleConfirm()" class="primary-btn" :disabled="disableBehavior">保存</button>
       <button @click="handleClose()">取消</button>
     </template>
   </BaseFormModal>
@@ -32,14 +34,14 @@ const handleClose = () => {
   emits('update:visible', false)
 }
 
-const formRef = ref(null);
-const disableBtn = ref(false)
+const userFormRef = ref(null);
+const disableBehavior = ref(false)
 const handleConfirm = async () => {
-  disableBtn.value = true;
-  //通过 formRef.value 访问子组件暴露的方法
-  if (!formRef.value) return; // 兜底 避免组件未挂载时调用
+  disableBehavior.value = true;
+  //通过 userFormRef.value 访问子组件暴露的方法
+  if (!userFormRef.value) return; // 兜底 避免组件未挂载时调用
 
-  const { valid, data } = await formRef.value.validate();
+  const { valid, data } = await userFormRef.value.validate();
   if (valid) {
     console.log('表单校验通过：', data);
     // 后续调用接口等逻辑
@@ -52,7 +54,7 @@ const handleConfirm = async () => {
       ElMessage.error(`保存用户编辑信息错误${err}`)
     }
     finally {
-      disableBtn.value = false;
+      disableBehavior.value = false;
     }
 
   }

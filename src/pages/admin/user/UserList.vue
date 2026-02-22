@@ -52,7 +52,7 @@
     @confirm="handleConfirm" :title="confirmDialogTitle">
   </UserConfirm>
 
-  <UserEdit v-model:visible="showEditUserDialog" :data="handlingData" @refresh="handleRefresh"></UserEdit>
+  <UserEdit v-model:visible="showEditUserDialog" :initData="handlingData" @refresh="handleRefresh"></UserEdit>
 
   <UserAdd v-model:visible="showUserAddDialog" @refresh="handleRefresh"></UserAdd>
   <button @click="showUserAddDialog = !showUserAddDialog">UserAdd</button>

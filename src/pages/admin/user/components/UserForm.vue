@@ -1,5 +1,5 @@
 <template>
-  <base-form ref="UserFormRef" :form-rules="userFormRules" :data="props.data" style="max-width: 800px" status-icon
+  <base-form ref="baseFormRef" :form-rules="userFormRules" :data="props.initData" style="max-width: 800px" status-icon
     label-width="auto" @update:data="handleChangedData">
     <el-form-item label="登陆账号" prop="username">
       <el-input v-model="formData.username" type="text" autocomplete="off" />
@@ -8,9 +8,6 @@
       <el-input v-model="formData.name" type="text" autocomplete="off" />
     </el-form-item>
     <el-form-item label="小组(开发中)">
-      <!--
-      需要启用use remote-show-suffix
-      -->
       <el-select v-model="formData.group" placeholder="搜索并选择所属组别" clearable>
         <el-option label="Zone one" value="shanghai" />
         <el-option label="Zone two" value="beijing" />
@@ -33,19 +30,20 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
-import { userFormRules } from '../utils/userFormRules';//表格规则
+import { ref, computed } from 'vue';
+import { userFormRules } from '../utils/userFormRules';
 import BaseForm from '@/components/common/form/BaseForm.vue';
+
 const props = defineProps({
-  data: {
+  initData: {
     type: Object,
     default: () => ({
-      id: '114514',
-      username: 'ec',
-      name: 'ccb',
-      group: '3',
+      id: '',
+      username: '',
+      name: '',
+      group: '',
       isEnabled: true,
-      role: 'admin'
+      role: 'normal'
     })
   },
   editMode: {
@@ -54,19 +52,23 @@ const props = defineProps({
   }
 })
 
-const emits = defineEmits([
-  'update:data'
-])
+const emits = defineEmits(['update:data'])
 
-const UserFormRef = ref(null)
+const baseFormRef = ref(null)
+
+// 通过 computed 获取 BaseForm 的 formData，避免创建重复的数据对象
+const formData = computed(() => {
+  return baseFormRef.value?.formData || {};
+})
+
 defineExpose({
   validate: async () => {
-    return await UserFormRef.value.validate();
+    return await baseFormRef.value.validate();
   }
 })
 
-const formData = ref({})
+// 当 BaseForm 发出数据更新时转发给父组件
 const handleChangedData = (newVal) => {
-  formData.value = { ...formData.value, ...newVal };
+  emits('update:data', newVal);
 }
 </script>

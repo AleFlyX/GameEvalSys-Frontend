@@ -6,12 +6,12 @@
     </template>
     <template #form>
       <div class="user-add-form">
-        <UserForm v-bind="$attrs" :editMode="false" ref="formRef"></UserForm>
+        <UserForm v-bind="$attrs" :editMode="false" ref="formRef" :disabled="disableBehavior"></UserForm>
       </div>
     </template>
     <template #operations>
       <!-- <button @click="handleReset()" class="reset-btn">重置</button> -->
-      <button @click="handleConfirm()" class="primary-btn" :disabled="disableBtn">确认</button>
+      <button @click="handleConfirm()" class="primary-btn" :disabled="disableBehavior">确认</button>
       <button @click="handleClose()">取消</button>
     </template>
   </BaseFormModal>
@@ -44,10 +44,10 @@ const handleClose = () => {
 
 
 const formRef = ref();
-const disableBtn = ref(false)
+const disableBehavior = ref(false)
 const handleConfirm = async () => {
   ElMessage.info(`创建新用户`)
-  disableBtn.value = true;
+  disableBehavior.value = true;
   //通过 formRef.value 访问子组件暴露的方法
   if (!formRef.value) return; // 兜底 避免组件未挂载时调用
 
@@ -64,9 +64,9 @@ const handleConfirm = async () => {
     //   ElMessage.error(`保存用户编辑信息错误${err}`)
     // }
     // finally {
-    //   disableBtn.value = false;
+    //   disableBehavior.value = false;
     // }
-    disableBtn.value = false;
+    disableBehavior.value = false;
   }
   else {
     ElMessage.error('请完善表单数据')
