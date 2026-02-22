@@ -59,7 +59,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, reactive } from 'vue'
+import { ref, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 
 import OverviewCard from '@/components/common/data/OverviewCard.vue'
@@ -73,7 +73,7 @@ import UserEdit from './components/UserEdit.vue'
 import { userApi } from '@/api/user'
 import { columnsRules } from '@/pages/admin/user/utils/dataTableColumnsRule'
 
-const handlingData = reactive({})
+const handlingData = ref({})
 
 const showEditUserDialog = ref(false);
 const handleEdit = (index, row) => {
