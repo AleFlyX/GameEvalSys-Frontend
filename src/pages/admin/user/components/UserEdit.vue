@@ -32,7 +32,7 @@ const handleClose = () => {
   emits('update:visible', false)
 }
 
-const formRef = ref();
+const formRef = ref(null);
 const disableBtn = ref(false)
 const handleConfirm = async () => {
   disableBtn.value = true;

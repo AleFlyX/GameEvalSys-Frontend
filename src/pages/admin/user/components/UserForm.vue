@@ -1,6 +1,6 @@
 <template>
-  <el-form ref="ruleFormRef" style="max-width: 600px" :model="formData" status-icon :rules="userFormRules"
-    label-width="auto">
+  <base-form ref="UserFormRef" :form-rules="userFormRules" :data="props.data" style="max-width: 800px" status-icon
+    label-width="auto" @update:data="handleChangedData">
     <el-form-item label="登陆账号" prop="username">
       <el-input v-model="formData.username" type="text" autocomplete="off" />
     </el-form-item>
@@ -29,13 +29,13 @@
         style="--el-switch-on-color: #13ce66; --el-switch-off-color: #ff4949" inline-prompt active-text="启用"
         inactive-text="停用" />
     </el-form-item>
-  </el-form>
+  </base-form>
 </template>
 
 <script setup>
-import { ref, watch } from 'vue';
-import { safeDeepClone } from '@/utils/proxyDataClone';
+import { ref } from 'vue';
 import { userFormRules } from '../utils/userFormRules';//表格规则
+import BaseForm from '@/components/common/form/BaseForm.vue';
 const props = defineProps({
   data: {
     type: Object,
@@ -58,31 +58,15 @@ const emits = defineEmits([
   'update:data'
 ])
 
-const ruleFormRef = ref(null)
+const UserFormRef = ref(null)
 defineExpose({
   validate: async () => {
-    try {
-      await ruleFormRef.value.validate();
-      return { valid: true, data: { ...formData.value } }
-    } catch (err) {
-      console.log('UserForm ERR', err)
-      return { valid: false, data: null }
-    }
+    return await UserFormRef.value.validate();
   }
 })
 
-
-// 初始化表单数据（安全克隆，不会报错）
-const formData = ref(safeDeepClone(props.data.value));//数据拷贝structuredClone API
-
-// 监听 props 变化，同步更新（同样用安全克隆）
-watch(
-  () => props.data,
-  (newVal) => {
-    formData.value = safeDeepClone(newVal.value);
-    // console.log(safeDeepClone(newVal.value))
-  },
-  { deep: true, immediate: true }
-);
-// emits('update:data', newVal.value);
+const formData = ref({})
+const handleChangedData = (newVal) => {
+  formData.value = { ...formData.value, ...newVal };
+}
 </script>
