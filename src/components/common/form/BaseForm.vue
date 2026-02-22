@@ -60,6 +60,6 @@ watch(// 监听 props 变化，同步更新（同样用安全克隆）
 
 defineExpose({
   validate,
-  // formData
+  formData
 })
 </script>
