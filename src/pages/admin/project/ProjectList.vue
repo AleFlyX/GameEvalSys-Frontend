@@ -18,20 +18,21 @@
             </div>
           </template>
           <template #default="scope">
+            <!-- 删除放到编辑里边 -->
             <el-button size="small" @click="handleEdit(scope.row)">
               编辑
             </el-button>
             <el-button v-if="!scope.row.isEnabled" size="small" type="primary"
               @click="handleStartProject(scope.$index, scope.row)">
-              开始
+              启用
             </el-button>
             <el-button v-if="scope.row.isEnabled" size="small" type="danger"
               @click="handleStopProject(scope.$index, scope.row)">
               停用
             </el-button>
-            <el-button size="small" type="danger" @click="handleDelete(scope.$index, scope.row)">
+            <!-- <el-button size="small" type="danger" @click="handleDelete(scope.$index, scope.row)">
               删除
-            </el-button>
+            </el-button> -->
           </template>
         </el-table-column>
       </el-table>
@@ -44,10 +45,12 @@
     </template>
 
     <template #modals>
-      <ProjectConfirmDelete v-model:visible="showDeleteProjectDialog" :data="waitToDelete"></ProjectConfirmDelete>
-      <ProjectAdd></ProjectAdd>
-      <ProjectEdit></ProjectEdit>
-      <button @click="showDeleteProjectDialog = !showDeleteProjectDialog">testDelete</button>
+      <ProjectConfirm v-model:visible="showDeleteProjectDialog" :data="waitToDelete" @refresh="handleRefresh">
+      </ProjectConfirm>
+      <ProjectAdd v-model:visible="showAddProjectDialog" @refresh="handleRefresh">
+      </ProjectAdd>
+      <ProjectEdit v-model:visible="showEditProjectDialog" :data="editingProject" @refresh="handleRefresh">
+      </ProjectEdit>
     </template>
   </AdminPanel>
 </template>
@@ -56,7 +59,7 @@
 import AdminPanel from '@/layouts/AdminPanel.vue';
 import OverviewCard from '@/components/common/data/OverviewCard.vue';
 import SearchInput from '@/components/common/data/SearchInput.vue';
-import ProjectConfirmDelete from './components/ProjectConfirmDelete.vue';
+import ProjectConfirm from './components/ProjectConfirm.vue';
 
 import { reactive, ref, onMounted } from 'vue';
 import DataTableColums from '@/components/common/data/DataTableColums.vue';
@@ -128,32 +131,67 @@ const getProjectsList = async (pageParams) => {
 const showDeleteProjectDialog = ref(false);
 const showAddProjectDialog = ref(false);
 const showEditProjectDialog = ref(false);
+const waitToDelete = ref({});
+const editingProject = ref({});
+const pagenationDisabled = ref(false);
 const handleSearch = (keywords) => {
-
+  // 搜索功能待实现
+  console.log('搜索:', keywords);
 }
 
 const handleAdd = () => {
-  showAddProjectDialog.value = !showAddProjectDialog.value;
+  showAddProjectDialog.value = true;
 }
 
 const handleEdit = (row) => {
-  showEditProjectDialog.value = !showEditProjectDialog.value;
+  editingProject.value = { ...row };
+  showEditProjectDialog.value = true;
 }
 
-const handleDelete = () => {
-  showDeleteProjectDialog.value = !showDeleteProjectDialog.value;
+const handleStartProject = async (index, row) => {
+  try {
+    // const response = await projectApi.updateProject(row.id, { isEnabled: true })
+    // ElMessage.success('项目已启用')
+    ElMessage.success('项目已启用');
+    row.isEnabled = true;
+    // 或者重新获取列表
+    // await getProjectsList(pageParams);
+  } catch (err) {
+    ElMessage.error(`启用项目失败: ${err}`);
+  }
 }
 
-const handleStartProject = (row) => {
-
+const handleStopProject = async (index, row) => {
+  try {
+    // const response = await projectApi.updateProject(row.id, { isEnabled: false })
+    // ElMessage.success('项目已停用')
+    ElMessage.success('项目已停用');
+    row.isEnabled = false;
+    // 或者重新获取列表
+    // await getProjectsList(pageParams);
+  } catch (err) {
+    ElMessage.error(`停用项目失败: ${err}`);
+  }
 }
 
-const handleStopProject = (row) => {
+const handleRefresh = async () => {
+  await getProjectsList(pageParams);
+  ElMessage.success('数据已刷新');
+}
 
+const handleCurrentChange = (page) => {
+  pageParams.page = page;
+  getProjectsList(pageParams);
+}
+
+const handleSizeChange = (size) => {
+  pageParams.size = size;
+  pageParams.page = 1;
+  getProjectsList(pageParams);
 }
 
 onMounted(() => {
-  getProjectsList()
+  getProjectsList(pageParams);
 })
 
 </script>

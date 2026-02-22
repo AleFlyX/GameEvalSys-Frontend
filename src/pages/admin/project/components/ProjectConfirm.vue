@@ -1,13 +1,13 @@
 <template>
   <BaseConfirmModal v-bind="$attrs" @update:visible="$emit('update:visible', $event)">
     <template #title>
-      确认删除?
+      删除项目
     </template>
     <template #content>
-      项目: {{ props.data.name }} id: {{ props.data.id }}
+      <p>确定要删除项目 <strong>{{ props.data.name }}</strong> 吗？此操作不可撤销。</p>
     </template>
     <template #operations>
-      <button class="primary-btn" @click="handleConfirm()" :disabled="disableBtn">确认</button>
+      <button class="primary-btn" @click="handleConfirm()" :disabled="disableBtn">删除</button>
       <button class="cancel-btn" @click="handleClose()">取消</button>
     </template>
   </BaseConfirmModal>
@@ -22,39 +22,23 @@ defineOptions({
   inheritAttrs: false
 })
 const props = defineProps({
-  // visible: {
-  //   type: Boolean,
-  //   require: true,
-  //   default: false
-  // },
   data: {
     type: Object,
     default: () => {
       return {
-        name: 'empty name',
-        id: 'empty id',
-        description: 'empty description'
+        name: '未命名项目',
+        id: '',
+        description: ''
       }
     }
   }
 })
 
 const emits = defineEmits([
-  'update:visible'
+  'update:visible',
+  'refresh'
 ])
-// 定义本地响应式变量，初始值同步 props.visible
-// const dialogVisible = ref(props.visible)
-// // 监听 props.visible 变化，同步到本地变量（父组件修改时，子组件跟着变）
-// watch(() => props.visible, (newVal) => {
-//   dialogVisible.value = newVal
-// })
-// // 监听本地变量变化，触发 update:visible 通知父组件（子组件修改时，同步给父组件）
-// watch(dialogVisible, (newVal) => {
-//   emits('update:visible', newVal)
-// })
 
-
-// console.log(props.data)
 const disableBtn = ref(false);
 const handleConfirm = async () => {
   ElMessage.info(`正在删除 ${props.data.name}`);
@@ -62,11 +46,10 @@ const handleConfirm = async () => {
 
   try {
     const response = await projectApi.deleteProject(props.data.id)
-    ElMessage.success(response.message)
-    // emits('close', true)
+    emits('refresh', true)
   }
   catch (err) {
-    ElMessage.error(err)
+    ElMessage.error(`删除项目出错: ${err}`)
     console.log(err)
   }
   finally {
@@ -76,8 +59,6 @@ const handleConfirm = async () => {
   }
 }
 const handleClose = () => {
-  // console.log('UserConfirmDelete Emit CLOSE')
-  // dialogVisible.value = false;
   emits('update:visible', false)
 }
 </script>
