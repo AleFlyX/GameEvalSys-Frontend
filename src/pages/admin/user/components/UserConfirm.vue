@@ -4,7 +4,7 @@
       {{ props.title }}
     </template>
     <template #content>
-      用户: {{ props.data.value.name }} (id: {{ props.data.value.id }})
+      用户: {{ props.data.name }} (id: {{ props.data.id }})
     </template>
     <template #operations>
       <button class="primary-btn" @click="handleConfirm()" :disabled="disableBtn">确认</button>
