@@ -96,19 +96,34 @@ const handleAdd = () => {
 }
 
 .search-input {
+  /* border: none;
+  padding: 1rem;
+  border-radius: 1rem;
+  background: #e8e8e8;
+  box-shadow: 20px 20px 60px #c5c5c5,
+    -20px -20px 60px #ffffff;
+  transition: 0.3s; */
   padding: 1px 10px;
   border: none;
   border-radius: 12px;
   box-shadow: 0px 0px 5px #80808082;
-  transition: all 0.2s;
-  outline: none;
+  transition: 0.3s;
+  outline-color: #ffffff;
+  /* outline: none; */
   /* 清除浏览器默认的焦点外框 */
 }
 
 .search-input:focus {
-  border-color: #409eff;
-  box-shadow: 0px 0px 5px rgba(55, 155, 255, 0.5);
-  background-color: var(--box-background);
+  /* outline-color: #409eff;
+  background: #e8e8e8;
+  box-shadow: inset 20px 20px 60px #c5c5c5,
+    inset -20px -20px 60px #ffffff; */
+  transition: 0.3s;
+  outline-color: #409eff;
+  /* box-shadow: 0px 0px 5px rgba(55, 155, 255, 0.5); */
+  box-shadow: inset 20px 20px 60px #c5c5c56f,
+    inset -20px -20px 60px #ffffff;
+  /* background-color: var(--box-background); */
 }
 
 /* .search-input.active {
