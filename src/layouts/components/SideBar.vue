@@ -3,10 +3,13 @@
     <span class="title">项目评分平台</span>
     <ul class="nav-items">
       <!-- 普通菜单 -->
-      <li class="menu-item" v-for="item in norm" :key="item.path" @click="gotoRoute(item.path)"
-        :class="{ active: isActive(item.path) && (!showSubMenu) }">
-        {{ item.name }}
-      </li>
+      <div v-for="item in norm" :key="item.path">
+        <li v-if="!item.meta.hidden" class="menu-item" @click="gotoRoute(item.path)"
+          :class="{ active: isActive(item.path) && (!showSubMenu) }">
+          {{ item.name }}
+        </li>
+      </div>
+
       <!-- 折叠菜单组 -->
       <li class="fold-menu-group" v-if="userStore.isAdmin">
         <!-- 折叠菜单头部 -->
@@ -44,13 +47,16 @@ const userStore = useUserStore();
 
 // 跳转路由方法
 const gotoRoute = (path) => {
-  router.push(path);
+  if (!path.startsWith('/')) {
+    path = '/' + path;
+  }
+  router.push(path);//跳转绝对路径
 };
 
 // 路由匹配方法
 const isActive = (path) => {
   // 精准匹配路由路径，避免/拼接的潜在问题（如path为home时，/home和$route.path直接对比）
-  return route.path === `/${path}`;
+  return route.path.startsWith(`/${path}`);
 };
 
 // 监听路由变化：跳转到admin子菜单时，自动展开折叠面板
