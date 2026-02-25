@@ -25,6 +25,7 @@
           </div>
           <div class="go-judge">
             <button class="go-judge-btn">开始评分</button>
+            <!-- <TestBtn>开始</TestBtn> -->
           </div>
         </div>
       </div>
@@ -32,76 +33,24 @@
 
     <!-- 数据卡片区：网格布局+磨砂质感+悬停交互 -->
     <div class="card-grid">
+      <!-- <TestBtn>开始</TestBtn> -->
       <!-- 项目进度卡片 -->
-      <div class="zen-card" @click="toggleCardFlip('project')">
-        <div class="card-inner" :class="{ flipped: cardFlipState.project }">
-          <!-- 卡片正面 -->
-          <div class="card-front">
-            <div class="card-header">
-              <span class="card-title">项目进度</span>
-              <el-icon class="card-icon"><Progress /></el-icon>
-            </div>
-            <div class="card-body">
-              <div class="ring-chart">
-                <div class="ring-progress"></div>
-                <div class="ring-progress" :style="{ '--progress': completeRate + '%' }"></div>
-                <div class="ring-text">{{ completeRate }}%</div>
-              </div>
-              <div class="chart-desc">
-                本周完成率较上周提升 <span class="positive">2.4%</span>
-              </div>
-            </div>
-            <div class="card-footer">点击查看详情</div>
-          </div>
-          <!-- 卡片背面 -->
-          <div class="card-back">
-            <div class="card-header">
-              <span class="card-title">项目详情</span>
-              <el-icon class="card-icon">
-                <List />
-              </el-icon>
-            </div>
-            <div class="card-body">
-              <ul class="detail-list">
-                <li v-for="item in projectDetail" :key="item.id">
-                  <span class="detail-name">{{ item.name }}</span>
-                  <span class="detail-rate">{{ item.rate }}%</span>
-                </li>
-              </ul>
-            </div>
-            <div class="card-footer">点击返回</div>
-          </div>
-        </div>
-      </div>
+      <ChartCard title="评分完成进度" ring-chart ring-progress="38"></ChartCard>
 
       <!-- 打分趋势卡片 -->
-      <div class="zen-card">
-        <div class="card-header">
-          <span class="card-title">打分趋势</span>
-          <el-icon class="card-icon">
-            <TrendCharts />
-          </el-icon>
-        </div>
-        <div class="card-body">
-          <div class="sparkline-chart">
-            <canvas ref="sparklineCanvas"></canvas>
-          </div>
-          <div class="chart-desc">
-            近7天打分数量 <span class="positive">{{ trendTotal }}</span> 条
-          </div>
-        </div>
-        <div class="card-footer">更新于 {{ updateTime }}</div>
-      </div>
+      <ChartCard title="打分趋势" icon="TrendCharts" line-chart>
+        <template #description>最近7日打分数量
+          <span class="positive">132</span>
+          条
+        </template>
+        <!-- <template #footer>
+          更新于 {{ updateTime }}
+        </template> -->
+      </ChartCard>
 
       <!-- 待处理任务卡片 -->
-      <div class="zen-card">
-        <div class="card-header">
-          <span class="card-title">待处理任务</span>
-          <el-icon class="card-icon">
-            <Clock />
-          </el-icon>
-        </div>
-        <div class="card-body">
+      <ChartCard title="待处理任务" icon="Clock">
+        <template #body>
           <div class="task-list">
             <div class="task-item" v-for="task in taskList" :key="task.id">
               <div class="task-dot" :style="{ backgroundColor: task.color }"></div>
@@ -111,38 +60,31 @@
               </div>
             </div>
           </div>
-        </div>
-        <div class="card-footer">
-          <el-button type="text" class="task-more">查看全部</el-button>
-        </div>
-      </div>
+        </template>
+      </ChartCard>
 
-      <!-- 快捷入口卡片 -->
-      <div class="zen-card">
-        <div class="card-header">
-          <span class="card-title">快捷操作</span>
-          <el-icon class="card-icon">
-            <Setting />
-          </el-icon>
-        </div>
-        <div class="card-body">
+      <ChartCard title="快捷操作" icon="Setting">
+        <template #body>
           <div class="shortcut-grid">
-            <div class="shortcut-item" v-for="item in shortcutList" :key="item.id">
-              <el-icon class="shortcut-icon" :style="{ color: item.color }">
-                <component :is="item.icon" />
-              </el-icon>
-              <span class="shortcut-name">{{ item.name }}</span>
+            <div v-for="item in shortcutList" :key="item.id">
+              <div class="shortcut-item" v-if="showShortcutIcon(item.admin)">
+                <el-icon class="shortcut-icon" :style="{ color: item.color }">
+                  <component :is="item.icon" />
+                </el-icon>
+                <span class="shortcut-name">{{ item.name }}</span>
+              </div>
             </div>
           </div>
-        </div>
-        <div class="card-footer">自定义入口</div>
-      </div>
+        </template>
+        <template #footer>自定义入口</template>
+      </ChartCard>
+      <!-- 快捷入口卡片 -->
     </div>
 
     <!-- 加载动画（初始入场） -->
-    <div class="loading-overlay" v-if="loading">
+    <!-- <div class="loading-overlay" v-if="loading">
       <div class="breathing-circle"></div>
-    </div>
+    </div> -->
   </div>
 </template>
 
@@ -153,6 +95,8 @@ import { ref, onMounted, onUnmounted, computed } from 'vue';
 //   Plus, User, FolderOpened, Document, Check
 // } from '@element-plus/icons-vue';
 import { useUserStore } from '@/stores/modules/userStore';
+import ChartCard from '@/components/common/data/ChartCard.vue';
+import TestBtn from '@/components/common/testBtn.vue';
 // import { formatRoleValue } from '@/utils/format.js';
 
 // 状态管理
@@ -163,7 +107,7 @@ const sparklineCanvas = ref(null);
 let sparklineChart = null;
 
 // 模拟数据
-const userName = computed(() => userStore.userInfo.realName || userStore.userInfo.username || '管理者');
+const userName = computed(() => userStore.userInfo.username || '管理者');
 const projectCount = ref(8);
 const scoreCount = ref(12);
 const completeRate = ref(78);
@@ -187,13 +131,21 @@ const taskList = ref([
 
 // 快捷入口数据
 const shortcutList = ref([
-  { id: 1, name: '新增项目', icon: 'Plus', color: '#FFB7C5' },
-  { id: 2, name: '用户管理', icon: 'User', color: '#88D18A' },
-  { id: 3, name: '项目管理', icon: 'FolderOpened', color: '#2D3142' },
-  { id: 4, name: '打分记录', icon: 'Document', color: '#9FA8A3' },
-  { id: 5, name: '已完成项', icon: 'Check', color: '#6B7280' }
+  { id: 1, name: '新增项目', path: '', icon: 'Plus', color: '#FFB7C5', admin: true },
+  { id: 2, name: '用户管理', path: '', icon: 'User', color: '#88D18A', admin: true },
+  { id: 3, name: '项目管理', path: '', icon: 'FolderOpened', color: '#2D3142', admin: true },
+  { id: 4, name: '打分记录', path: '', icon: 'Document', color: '#9FA8A3' },
+  { id: 5, name: '已完成项', path: '', icon: 'Check', color: '#6B7280' }
 ]);
+const showShortcutIcon = (needAdmin) => {
+  if (needAdmin && userStore.isAdmin) {
+    return true;
+  }
+  else if (!needAdmin) {
+    return true;
+  }
 
+}
 // 卡片翻转切换
 const toggleCardFlip = (cardType) => {
   cardFlipState.value[cardType] = !cardFlipState.value[cardType];
@@ -277,7 +229,7 @@ onUnmounted(() => {
 /* 全局容器：日式禅意主色调+留白 */
 .zen-home-container {
   width: 100%;
-  min-height: 100vh;
+  max-height: 100vh;
   /* background-color: #F8F6F1; */
   /* 米白色主调 */
   padding: 2rem;
@@ -296,6 +248,7 @@ onUnmounted(() => {
   display: flex;
   justify-content: center;
   align-items: center;
+  transition: all 0.3s;
   z-index: 9999;
 }
 
@@ -343,7 +296,9 @@ onUnmounted(() => {
   background-image: linear-gradient(154deg, #f4f6f8, #b6b9ba); */
   box-shadow: 8px 8px 16px #b6b9ba,
     -8px -8px 16px #fafafd;
-  background-image: linear-gradient(154deg, #b6b9ba, #8d8d93);
+  /* background: var(--gray-box-shadow); */
+  background: linear-gradient(to right, rgb(142, 158, 171), rgb(217, 221, 222));
+  /* background-image: linear-gradient(154deg, #b6b9ba, #8d8d93); */
   /* background: url('https://picsum.photos/id/1048/1920/1080') center/cover no-repeat; */
   /* filter: brightness(0.8) contrast(0.9); */
   /* 渐变遮罩：营造深度感 */
@@ -370,8 +325,8 @@ onUnmounted(() => {
 }
 
 .user-name {
-  color: #FFB7C5;
-  font-weight: 500;
+  color: #88D18A;
+  font-weight: 700;
 }
 
 .welcome-desc {
@@ -383,6 +338,9 @@ onUnmounted(() => {
 
 .stats-bar {
   display: flex;
+  flex-direction: row;
+  align-items: center;
+  width: 100%;
   gap: 3rem;
 }
 
@@ -392,7 +350,7 @@ onUnmounted(() => {
 }
 
 .go-judge {
-  justify-self: flex-end;
+  margin-left: auto;
   align-self: center;
 }
 
@@ -402,7 +360,7 @@ onUnmounted(() => {
   border: none;
   border-radius: 16px;
   box-shadow: 8px 8px 16px #b6b9ba,
-    -8px -8px 16px #8d8d93;
+    -8px -8px 16px #fafafd;
   background-image: linear-gradient(154deg, #f4f6f8, #b6b9ba);
   transition: all 0.3s ease-in-out;
 }
@@ -435,170 +393,10 @@ onUnmounted(() => {
   width: 100%;
 }
 
-/* 禅意卡片：磨砂质感+微妙阴影+悬停交互 */
-.zen-card {
-  background-color: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(10px);
-  /* 磨砂玻璃效果 */
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 6px 16px rgba(45, 49, 66, 0.08);
-  transition: all 0.4s ease;
-  cursor: pointer;
-  perspective: 1000px;
-  /* 3D翻转视角 */
-}
-
-.zen-card:hover {
-  transform: translateY(-5px) scale(1.02);
-  box-shadow: 0 10px 24px rgba(45, 49, 66, 0.12);
-  filter: brightness(1.02);
-}
-
-/* 卡片3D翻转效果 */
-.card-inner {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  transition: transform 0.6s;
-  transform-style: preserve-3d;
-}
-
-.zen-card .flipped .card-inner {
-  transform: rotateY(180deg);
-}
-
-.card-front,
-.card-back {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-  padding: 1.5rem;
-  box-sizing: border-box;
-}
-
-.card-back {
-  transform: rotateY(180deg);
-  background-color: rgba(45, 49, 66, 0.9);
-  color: #F8F6F1;
-}
-
-/* 卡片内部样式 */
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1.5rem;
-  padding-bottom: 0.8rem;
-  border-bottom: 1px solid rgba(45, 49, 66, 0.1);
-}
-
-.card-back .card-header {
-  border-bottom-color: rgba(248, 246, 241, 0.2);
-}
-
-.card-title {
-  font-size: 1.1rem;
-  font-weight: 500;
-  color: #2D3142;
-}
-
-.card-back .card-title {
-  color: #F8F6F1;
-}
-
-.card-icon {
-  font-size: 1.2rem;
-  color: #88D18A;
-}
-
-.card-back .card-icon {
-  color: #FFB7C5;
-}
-
-.card-body {
-  height: calc(100% - 6rem);
-  overflow-y: auto;
-}
-
-.card-footer {
-  position: absolute;
-  bottom: 1.5rem;
-  left: 1.5rem;
-  right: 1.5rem;
-  font-size: 0.8rem;
-  color: #9FA8A3;
-  opacity: 0.8;
-  text-align: right;
-}
-
-.card-back .card-footer {
-  color: #F8F6F1;
-  opacity: 0.7;
-}
-
-/* 环形进度图 */
-.ring-chart {
-  position: relative;
-  width: 160px;
-  height: 160px;
-  margin: 0 auto;
-}
-
-.ring-progress {
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  background: conic-gradient(#88D18A var(--progress), rgba(45, 49, 66, 0.1) 0);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  position: relative;
-}
-
-.ring-progress::after {
-  content: '';
-  position: absolute;
-  width: 85%;
-  height: 85%;
-  border-radius: 50%;
-  background-color: rgba(255, 255, 255, 0.9);
-}
-
-.card-back .ring-progress::after {
-  background-color: rgba(45, 49, 66, 0.8);
-}
-
-.ring-text {
-  position: relative;
-  z-index: 2;
-  font-size: 2rem;
-  font-weight: 500;
-  color: #2D3142;
-}
-
-.card-back .ring-text {
-  color: #F8F6F1;
-}
-
-.chart-desc {
-  text-align: center;
-  margin-top: 1rem;
-  font-size: 0.9rem;
-  color: #6B7280;
-}
-
-.card-back .chart-desc {
-  color: #F8F6F1;
-  opacity: 0.8;
-}
-
-.positive {
+/* .positive {
   color: #88D18A;
   font-weight: 500;
-}
+} */
 
 /* Sparkline趋势图容器 */
 .sparkline-chart {
@@ -616,8 +414,9 @@ onUnmounted(() => {
 
 .task-item {
   display: flex;
+  flex-direction: row;
   align-items: center;
-  gap: 1rem;
+  gap: 1.2rem;
 }
 
 .task-dot {
@@ -628,7 +427,9 @@ onUnmounted(() => {
 
 .task-content {
   display: flex;
+  /* flex-direction: column; */
   justify-content: space-between;
+  /* gap: 15px; */
   width: 100%;
 }
 
