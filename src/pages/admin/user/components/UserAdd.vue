@@ -69,6 +69,7 @@ const handleConfirm = async () => {
     disableBehavior.value = false;
   }
   else {
+    disableBehavior.value = false;
     ElMessage.error('请完善表单数据')
   }
 }
