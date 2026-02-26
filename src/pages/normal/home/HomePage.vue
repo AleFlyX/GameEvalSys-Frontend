@@ -67,7 +67,7 @@
         <template #body>
           <div class="shortcut-grid">
             <div v-for="item in shortcutList" :key="item.id">
-              <div class="shortcut-item" v-if="showShortcutIcon(item.admin)">
+              <div class="shortcut-item" v-if="showShortcutIcon(item.admin)" @click="jumpTo(item.path)">
                 <el-icon class="shortcut-icon" :style="{ color: item.color }">
                   <component :is="item.icon" />
                 </el-icon>
@@ -90,14 +90,18 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted, computed } from 'vue';
+import { useRouter } from 'vue-router';
 // import {
 //   Progress, List, TrendCharts, Clock, Setting,
 //   Plus, User, FolderOpened, Document, Check
 // } from '@element-plus/icons-vue';
 import { useUserStore } from '@/stores/modules/userStore';
 import ChartCard from '@/components/common/data/ChartCard.vue';
-import TestBtn from '@/components/common/testBtn.vue';
+// import TestBtn from '@/components/common/form/testBtn.vue';
+// import MyBtn from '@/components/common/form/MyBtn.vue';
 // import { formatRoleValue } from '@/utils/format.js';
+
+const router = useRouter();
 
 // 状态管理
 const userStore = useUserStore();
@@ -131,9 +135,9 @@ const taskList = ref([
 
 // 快捷入口数据
 const shortcutList = ref([
-  { id: 1, name: '新增项目', path: '', icon: 'Plus', color: '#FFB7C5', admin: true },
-  { id: 2, name: '用户管理', path: '', icon: 'User', color: '#88D18A', admin: true },
-  { id: 3, name: '项目管理', path: '', icon: 'FolderOpened', color: '#2D3142', admin: true },
+  { id: 1, name: '新增项目', path: '/project', icon: 'Plus', color: '#FFB7C5', admin: true },
+  { id: 2, name: '用户管理', path: '/user', icon: 'User', color: '#88D18A', admin: true },
+  { id: 3, name: '项目管理', path: '/project', icon: 'FolderOpened', color: '#2D3142', admin: true },
   { id: 4, name: '打分记录', path: '', icon: 'Document', color: '#9FA8A3' },
   { id: 5, name: '已完成项', path: '', icon: 'Check', color: '#6B7280' }
 ]);
@@ -144,7 +148,10 @@ const showShortcutIcon = (needAdmin) => {
   else if (!needAdmin) {
     return true;
   }
+}
 
+const jumpTo = (path) => {
+  router.push(path)
 }
 // 卡片翻转切换
 const toggleCardFlip = (cardType) => {
