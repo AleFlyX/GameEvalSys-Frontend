@@ -14,8 +14,7 @@
         icon-background="var(--danger-light)">
       </OverviewCard>
     </template>
-    <SearchInput size="large" placeholder="搜索项目名称..." @search="handleSearch" @add="handleAdd">
-    </SearchInput>
+    <SearchInput size="large" placeholder="搜索项目名称..." @search="handleSearch" customOpts></SearchInput>
     <template #dataTable>
       <el-table :data="scoringList" stripe style="width: 100%">
         <DataTableColums :col-rules="columnsRules"></DataTableColums>
@@ -42,7 +41,7 @@
         @size-change="handleSizeChange" layout="sizes, prev, pager, next" @current-change="handleCurrentChange" />
     </template>
     <template #modals>
-      <ProjectDetails></ProjectDetails>
+      <ProjectDetails v-model:visible="showProjectDetailDialog" :selectedProject="selectedProject"></ProjectDetails>
     </template>
   </PagePanel>
 </template>
@@ -57,45 +56,8 @@ import { projectApi } from '@/api/project';
 import { ElMessage } from 'element-plus';
 import PagePanel from '@/layouts/PagePanel.vue';
 import ProjectDetails from './components/ProjectDetails.vue';
-
-// 数据表格列定义
-const columnsRules = [
-  {
-    label: '项目名称',
-    width: '200',
-    colDataName: 'name',
-  },
-  {
-    label: '项目状态',
-    width: '120',
-    colDataName: 'status',
-    tagTypeMap: {
-      not_started: 'info',
-      ongoing: 'warning',
-      ended: 'danger'
-    },
-    tagNameMap: {
-      not_started: '未开始',
-      ongoing: '进行中',
-      ended: '已截止'
-    },
-  },
-  {
-    label: '开始日期',
-    width: '150',
-    colDataName: 'startDate',
-  },
-  {
-    label: '结束日期',
-    width: '150',
-    colDataName: 'endDate',
-  },
-  {
-    label: '完成度',
-    width: '100',
-    colDataName: 'completionRate',
-  }
-];
+import { columnsRules } from './utils/projectListColRules';//数据表格列定义
+import MyBtn from '@/components/common/form/MyBtn.vue';
 
 // 统计数据
 const overViewCardsMap = reactive({
@@ -214,6 +176,7 @@ const handleStartScoring = (row) => {
 // 查看项目详情
 const handleViewDetail = (row) => {
   selectedProject.value = row;
+  // console.log(row)
   showProjectDetailDialog.value = true;
 };
 

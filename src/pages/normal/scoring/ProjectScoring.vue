@@ -2,6 +2,12 @@
 
   <div class="group-scoring-container">
     <div class="modal-title">
+      <MyBtn type="primary" @click="$router.push('/scoring')">
+        <el-icon>
+          <Back />
+        </el-icon>
+        返回
+      </MyBtn>
       <h3>{{ projectName }} - 评分列表</h3>
     </div>
 
@@ -21,6 +27,7 @@
       <div class="group-list">
         <el-empty v-if="filteredGroups.length === 0" description="暂无小组数据"></el-empty>
         <el-table v-else :data="filteredGroups" stripe style="width: 100%; font-size: 12px">
+          <el-table-column prop="id" label="小组ID" min-width="100"></el-table-column>
           <el-table-column prop="name" label="小组名称" min-width="100"></el-table-column>
           <el-table-column prop="scoreStatus" label="打分状态" min-width="80">
             <template #default="{ row }">
@@ -29,19 +36,21 @@
               </el-tag>
             </template>
           </el-table-column>
-          <el-table-column prop="lastScore" label="最后打分时间" min-width="120">
+          <!-- <el-table-column prop="lastScore" label="最后打分时间" min-width="120">
             <template #default="{ row }">
               {{ row.lastScore || '-' }}
             </template>
-          </el-table-column>
-          <el-table-column label="操作" width="100" fixed="right">
+          </el-table-column> -->
+          <el-table-column label="操作" width="150" fixed="right">
             <template #default="{ row }">
-              <el-button size="small" type="primary" link @click="handleScoring(row)">
-                打分
-              </el-button>
-              <el-button v-if="row.scoreStatus === 'scored'" size="small" type="link" @click="handleViewScore(row)">
-                查看
-              </el-button>
+              <div style="display: flex;">
+                <el-button size="small" type="primary" link @click="handleScoring(row)">
+                  打分
+                </el-button>
+                <el-button v-if="row.scoreStatus === 'scored'" size="small" type="link" @click="handleViewScore(row)">
+                  查看
+                </el-button>
+              </div>
             </template>
           </el-table-column>
         </el-table>
@@ -51,24 +60,40 @@
   </div>
 
   <!-- 打分表单模态框 -->
-  <ScoringForm v-model:visible="showScoringFormDialog" :project-id="projectData?.id" :group-id="selectedGroup?.id"
-    :group-name="selectedGroup?.name" :project-name="projectData?.name" @refresh="handleRefresh"
-    @submit="handleScoringSubmit">
-  </ScoringForm>
-
+  <ScoreProject v-model:visible="showScoringFormDialog" :project-id="projectId" :project-name="projectName"
+    :group-data="selectedGroup" @refresh="handleRefresh">
+  </ScoreProject>
+  <ScoringDetails v-model:visible="showScoringDetailDialog" :selected-group="selectedGroup"
+    :scoring-details="scoringDetails" :total-score="totalScore">
+  </ScoringDetails>
 
 </template>
 
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
-import ScoringForm from '@/components/business/ScoringForm.vue';
+// import ScoringForm from './components/ScoringForm.vue';
+import ScoreProject from './components/ScoreProject.vue';
 import { projectApi } from '@/api/project';
 import { ElMessage } from 'element-plus';
 import { Search } from '@element-plus/icons-vue';
+import MyBtn from '@/components/common/form/MyBtn.vue';
+import ScoringDetails from './components/ScoringDetails.vue';
 
 const searchKeyword = ref('');
-const groupList = ref([]);
+const groupList = ref([{
+
+  id: 1,
+  name: '样例1',
+  scoreStatus: 'not_scored',
+  lastScore: '2026-2-22'
+},
+{
+  id: 1,
+  name: '样例2',
+  scoreStatus: 'scored',
+  lastScore: '2026-2-22'
+}]);
 const selectedGroup = ref(null);
 const showScoringFormDialog = ref(false);
 const showScoringDetailDialog = ref(false);
@@ -76,7 +101,9 @@ const scoringDetails = ref([]);
 const totalScore = ref(0);
 
 const route = useRoute();
+const projectId = computed(() => route.params.projectId || null);
 const projectName = computed(() => route.query.projectName || '项目');
+
 
 const filteredGroups = computed(() => {
   if (!searchKeyword.value) {
@@ -109,6 +136,7 @@ const fetchGroups = async () => {
 // 处理打分
 const handleScoring = (row) => {
   selectedGroup.value = row;
+  // console.log(row)
   showScoringFormDialog.value = true;
 };
 
