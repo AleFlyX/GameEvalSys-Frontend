@@ -90,6 +90,15 @@ export const getAuthorizedProjectList = (userId) => {
   return service.get(`/projects/${userId}`);
 };
 
+/**
+ * 获取项目关联的小组列表
+ * @param {number} projectId - 项目ID
+ * @returns {Promise} 响应数据（小组列表）
+ */
+export const getProjectGroups = (projectId) => {
+  return service.get(`/projects/${projectId}/groups`);
+};
+
 export const projectApi = {
   createProjet,
   getProjectList,
@@ -98,4 +107,5 @@ export const projectApi = {
   endProject,
   getProjectDetail,
   getAuthorizedProjectList,
+  getProjectGroups,
 };

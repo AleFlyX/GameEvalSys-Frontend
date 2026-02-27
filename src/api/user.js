@@ -41,9 +41,9 @@ export const userApi = {
 
   /**
    * @description 模糊搜索
-   * @param
+   * @param {String} keywords
    */
-  getRelateSearchUser: (params) => {
+  getRelateSearchUser: (keywords) => {
     return service.get("/users",)
   },
 
@@ -84,13 +84,21 @@ export const userApi = {
   },
 
   /**
+   * 禁用用户
+   */
+  deactiveUser: (userId) => {
+    return Promise.reject();
+    // return service.post(`/users/`)
+  }
+
+  /**
    * 获取当前登录用户信息
    * （扩展接口，如需实现可在后端添加 /users/current 接口）
    * @returns {Promise}
    */
-  getCurrentUser: () => {
-    return service.get("/users/current");
-  },
+  // getCurrentUser: () => {
+  //   return service.get("/users/current");
+  // },
 };
 
 // 导出默认值，支持两种导入方式：
