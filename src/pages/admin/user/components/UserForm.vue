@@ -7,13 +7,13 @@
     <el-form-item label="用户昵称" prop="name">
       <el-input v-model="formData.name" type="text" autocomplete="off" />
     </el-form-item>
-    <el-form-item label="小组(开发中)">
+    <el-form-item label="小组(开发中)" prop="group">
       <el-select v-model="formData.group" placeholder="搜索并选择所属组别" clearable>
         <el-option label="Zone one" value="shanghai" />
         <el-option label="Zone two" value="beijing" />
       </el-select>
     </el-form-item>
-    <el-form-item label="角色">
+    <el-form-item label="角色" prop="role">
       <el-select v-model="formData.role" placeholder="选择角色">
         <el-option label="超级管理员" value="super_admin" />
         <el-option label="管理员" value="admin" />

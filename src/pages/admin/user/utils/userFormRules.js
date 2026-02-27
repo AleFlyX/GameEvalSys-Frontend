@@ -9,8 +9,8 @@ export const userFormRules = {
   username: { required: true, message: '请输入用户登录账户', trigger: 'blur' },
   group: [
     { required: true, message: '请输入用户所属组别', trigger: 'blur' },
-    { validator: noWhiteSpace, trigger: 'blur' }
+    // { validator: noWhiteSpace, trigger: 'blur' }
   ],
-  role: { required: true, message: '请选中用户角色', trigger: 'blur' },
+  role: { required: true, message: '请选择用户角色', trigger: 'blur' },
 }
 
