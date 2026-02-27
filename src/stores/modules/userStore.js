@@ -6,12 +6,12 @@ export const useUserStore = defineStore("userStore", () => {
   const token = ref(localStorage.getItem("token") || "");
   const userInfo = ref(
     JSON.parse(localStorage.getItem("userInfo")) ||
-      {
-        // id: 1, //debug
-        // username: "admin",
-        // role: "super_admin",
-        // name: "超级管理员",
-      },
+    {
+      // id: 1, //debug
+      // username: "admin",
+      // role: "super_admin",
+      // name: "超级管理员",
+    },
   );
   const isLogin = ref(!!localStorage.getItem("token"));
 
