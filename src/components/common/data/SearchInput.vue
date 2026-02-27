@@ -3,7 +3,11 @@
     <input class="search-input" type="text" v-model="inputContent" @keyup.enter="handleInputSearch"
       :style="customSearchInputStyle" :placeholder="inputPlaceholder">
     <button class="btns search-btn" @click="handleInputSearch" :style="customBtnsStyle">查找</button>
-    <button class="btns add-btn" @click="handleAdd" :style="customBtnsStyle">添加</button>
+    <button v-if="!customOpts" class="btns add-btn" @click="handleAdd" :style="customBtnsStyle">添加</button>
+    <slot name="operations">
+
+    </slot>
+
   </div>
 </template>
 
@@ -28,6 +32,10 @@ const props = defineProps({
   width: {
     type: String,
     default: '300px'
+  },
+  customOpts: {
+    type: Boolean,
+    default: false
   }
 })
 
