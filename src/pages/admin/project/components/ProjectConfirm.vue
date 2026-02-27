@@ -1,13 +1,13 @@
 <template>
   <BaseConfirmModal v-bind="$attrs" @update:visible="$emit('update:visible', $event)">
     <template #title>
-      删除项目
+      {{ title }}
     </template>
     <template #content>
-      <p>确定要删除项目 <strong>{{ props.data.name }}</strong> 吗？此操作不可撤销。</p>
+      <p>确定要 {{ keywords }} 项目 <strong>{{ props.data.name }}</strong> 吗？此操作不可撤销。</p>
     </template>
     <template #operations>
-      <button class="primary-btn" @click="handleConfirm()" :disabled="disableBtn">删除</button>
+      <button class="primary-btn" @click="handleConfirm()" :disabled="disableBtn">确认</button>
       <button class="cancel-btn" @click="handleClose()">取消</button>
     </template>
   </BaseConfirmModal>
@@ -22,6 +22,14 @@ defineOptions({
   inheritAttrs: false
 })
 const props = defineProps({
+  title: {
+    type: String,
+    default: '空标题'
+  },
+  keywords: {
+    type: String,
+    default: '空内容'
+  },
   data: {
     type: Object,
     default: () => {

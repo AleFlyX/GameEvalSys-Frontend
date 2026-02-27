@@ -1,5 +1,5 @@
 <template>
-  <AdminPanel>
+  <PagePanel>
     <template #dataCards>
       <OverviewCard v-for="card in overViewCardsMap" :key="card.title" :title="card.title" :icon="card.icon"
         :data="card.data" :icon-background="card.iconBackground" :icon-color="card.iconColor">
@@ -23,11 +23,11 @@
               编辑
             </el-button>
             <el-button v-if="!scope.row.isEnabled" size="small" type="primary"
-              @click="handleStartProject(scope.$index, scope.row)">
+              @click="handleProjectStatus(true, scope.$index, scope.row)">
               启用
             </el-button>
             <el-button v-if="scope.row.isEnabled" size="small" type="danger"
-              @click="handleStopProject(scope.$index, scope.row)">
+              @click="handleProjectStatus(false, scope.$index, scope.row)">
               停用
             </el-button>
             <!-- <el-button size="small" type="danger" @click="handleDelete(scope.$index, scope.row)">
@@ -45,18 +45,19 @@
     </template>
 
     <template #modals>
-      <ProjectConfirm v-model:visible="showDeleteProjectDialog" :data="waitToDelete" @refresh="handleRefresh">
+      <ProjectConfirm v-model:visible="showDeleteProjectDialog" :title="modalContent.title"
+        :keywords="modalContent.keywords" :data="handlingProjectStatus" @refresh="handleRefresh">
       </ProjectConfirm>
       <ProjectAdd v-model:visible="showAddProjectDialog" @refresh="handleRefresh">
       </ProjectAdd>
       <ProjectEdit v-model:visible="showEditProjectDialog" :data="editingProject" @refresh="handleRefresh">
       </ProjectEdit>
     </template>
-  </AdminPanel>
+  </PagePanel>
 </template>
 
 <script setup>
-import AdminPanel from '@/layouts/AdminPanel.vue';
+import PagePanel from '@/layouts/PagePanel.vue';
 import OverviewCard from '@/components/common/data/OverviewCard.vue';
 import SearchInput from '@/components/common/data/SearchInput.vue';
 import ProjectConfirm from './components/ProjectConfirm.vue';
@@ -131,7 +132,7 @@ const getProjectsList = async (pageParams) => {
 const showDeleteProjectDialog = ref(false);
 const showAddProjectDialog = ref(false);
 const showEditProjectDialog = ref(false);
-const waitToDelete = ref({});
+const handlingProjectStatus = ref({});
 const editingProject = ref({});
 const pagenationDisabled = ref(false);
 const handleSearch = (keywords) => {
@@ -161,18 +162,35 @@ const handleStartProject = async (index, row) => {
   }
 }
 
-const handleStopProject = async (index, row) => {
-  try {
-    // const response = await projectApi.updateProject(row.id, { isEnabled: false })
-    // ElMessage.success('项目已停用')
-    ElMessage.success('项目已停用');
-    row.isEnabled = false;
-    // 或者重新获取列表
-    // await getProjectsList(pageParams);
-  } catch (err) {
-    ElMessage.error(`停用项目失败: ${err}`);
+const modalContent = ref({
+  title: '',
+  keywords: '',
+})
+const handleProjectStatus = (enable, index, row) => {
+  if (enable) {
+    modalContent.value.title = '确认启用';
+    modalContent.value.keywords = '启用';
   }
+  else {
+    modalContent.value.title = '确认停用';
+    modalContent.value.keywords = '停用';
+  }
+  showDeleteProjectDialog.value = true
+  handlingProjectStatus.value = row;
 }
+
+// const handleStopProject = async (index, row) => {
+//   try {
+//     // const response = await projectApi.updateProject(row.id, { isEnabled: false })
+//     // ElMessage.success('项目已停用')
+//     ElMessage.success('项目已停用');
+//     row.isEnabled = false;
+//     // 或者重新获取列表
+//     // await getProjectsList(pageParams);
+//   } catch (err) {
+//     ElMessage.error(`停用项目失败: ${err}`);
+//   }
+// }
 
 const handleRefresh = async () => {
   await getProjectsList(pageParams);
