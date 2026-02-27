@@ -38,10 +38,11 @@ export const useUserStore = defineStore("userStore", () => {
   async function login(loginForm) {
     try {
       const data = await userApi.login(loginForm);
-      token.value = data.token;
-      userInfo.value = data.userInfo;
+      console.log(data);
+      token.value = data.data.token;
+      userInfo.value = data.data.userInfo;
       localStorage.setItem("token", token.value);
-      localStorage.setItem("userInfo", JSON.parse(userInfo.value));
+      localStorage.setItem("userInfo", userInfo.value);
       return Promise.resolve();
     } catch (err) {
       return Promise.reject(err);
