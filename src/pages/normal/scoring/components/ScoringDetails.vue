@@ -27,5 +27,21 @@
   </BaseModal>
 </template>
 <script setup>
+import { ref } from 'vue';
 import BaseModal from '@/components/common/modal/BaseModal.vue';
+const props = defineProps({
+  selectedGroup: {
+    type: Object,
+    default: () => ({})
+  },
+  scoringDetails: {
+    type: Object,
+    default: () => ({})
+  },
+  totalScore: {
+    type: [Number, String],
+    default: 0
+  }
+})
+
 </script>
