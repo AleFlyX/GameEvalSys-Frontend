@@ -42,7 +42,7 @@ export const useUserStore = defineStore("userStore", () => {
       token.value = data.data.token;
       userInfo.value = data.data.userInfo;
       localStorage.setItem("token", token.value);
-      localStorage.setItem("userInfo", userInfo.value);
+      localStorage.setItem("userInfo", JSON.stringify(userInfo.value));
       return Promise.resolve();
     } catch (err) {
       return Promise.reject(err);
