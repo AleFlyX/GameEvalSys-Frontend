@@ -1,6 +1,6 @@
 import axios from "axios";
 import { ElMessage, ElMessageBox } from "element-plus";
-import { useRouter } from "vue-router";
+// import { useRouter } from "vue-router";
 
 // 创建axios实例
 const service = axios.create({
@@ -12,7 +12,10 @@ const service = axios.create({
 });
 
 // 路由实例（用于401跳转）
-const router = useRouter();
+let router = null;
+export function setRouter(r) {
+  router = r;
+}
 
 // -------------------------- 请求拦截器：添加token、处理请求前逻辑 --------------------------
 service.interceptors.request.use(
@@ -66,7 +69,11 @@ service.interceptors.response.use(
           // cancelButtonText: '取消',
           type: "warning",
         }).then(() => {
-          router.push("/login"); // 跳转到登录页（根据你的路由配置调整）
+          if (router && typeof router.push === "function") {
+            router.push("/login"); // 跳转到登录页
+          } else {
+            window.location.href = "/login";
+          }
         });
         break;
       case 403:
