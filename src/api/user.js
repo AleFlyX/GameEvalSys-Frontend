@@ -49,16 +49,17 @@ export const userApi = {
 
   /**
    * 创建新用户（批量创建或单个取决于实际业务）
-   * @param {Array} data - 批量用户信息
-   * @param {string} data[].username - 用户名（唯一）
-   * @param {string} data[].password - 密码
-   * @param {string} data[].name - 真实姓名
-   * @param {string} data[].role - 角色
-   * @param {boolean} [data[].isEnabled=true] - 是否启用
+   * @param {Object} requestObj - 请求体
+   * @param {Array} requestObj.users -批量注册用户信息
+   * @param {string} users[].username - 用户名（唯一）
+   * @param {string} users[].password - 密码
+   * @param {string} users[].name - 真实姓名
+   * @param {string} users[].role - 角色
+   * @param {boolean} [users[].isEnabled=true] - 是否启用
    * @returns {Promise}
    */
-  createUser: (data) => {
-    return service.post("/users", data);
+  createUser: (requestObj) => {
+    return service.post("/users", requestObj);
   },
 
   /**

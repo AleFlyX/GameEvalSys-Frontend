@@ -54,19 +54,28 @@ const handleConfirm = async () => {
   const { valid, data } = await formRef.value.validate();
   if (valid) {
     console.log('表单校验通过：', data);
+    const defaultPassword = '123456';
+    if (data.password == '') {
+      data.password = defaultPassword;
+      ElMessage.info('该用户使用默认密码注册')
+    }
+    const dataList = [];
+    dataList.push(data);
+    const requestObj = { users: dataList }
     // 后续调用接口等逻辑
-    // try {
-    //   const response = await userApi.editUser(data.id, data);
-    //   ElMessage.success(`${response.message}`)
-    //   emits('refresh', true)
-    // }
-    // catch (err) {
-    //   ElMessage.error(`保存用户编辑信息错误${err}`)
-    // }
-    // finally {
-    //   disableBehavior.value = false;
-    // }
-    disableBehavior.value = false;
+    try {
+      const response = await userApi.createUser(requestObj);
+      ElMessage.success(`${response.message}`);
+      handleClose();
+      emits('refresh', true);
+    }
+    catch (err) {
+      ElMessage.error(`保存用户编辑信息错误${err}`)
+    }
+    finally {
+      disableBehavior.value = false;
+    }
+    // disableBehavior.value = false;
   }
   else {
     disableBehavior.value = false;

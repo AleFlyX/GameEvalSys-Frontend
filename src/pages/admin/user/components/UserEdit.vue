@@ -48,6 +48,7 @@ const handleConfirm = async () => {
     try {
       const response = await userApi.editUser(data.id, data);
       ElMessage.success(`${response.message}`)
+      handleClose();
       emits('refresh', true)
     }
     catch (err) {
