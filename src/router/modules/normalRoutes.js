@@ -2,15 +2,15 @@
 const Home = () => import("@/pages/normal/home/HomePage.vue");
 const ScoringList = () => import("@/pages/normal/scoring/ScoringList.vue");
 const ProjectScoring = () => import("@/pages/normal/scoring/ProjectScoring.vue");
-const loginTest = () => import("@/pages/public/login/LoginTest.vue")
+// const loginTest = () => import("@/pages/public/login/LoginTest.vue")
 export const norm = [
   // normal子路由（打分用户/管理员均可访问）
-  {
-    path: "loginTest",
-    name: "loginTest",
-    component: loginTest,
-    meta: { title: "登陆测试", roles: ["super_admin", "admin", "scorer", "normal"] }, // 可访问角色
-  },
+  // {
+  //   path: "loginTest",
+  //   name: "loginTest",
+  //   component: loginTest,
+  //   meta: { title: "登陆测试", roles: ["super_admin", "admin", "scorer", "normal"] }, // 可访问角色
+  // },
   {
     path: "home",
     name: "home",

@@ -41,7 +41,7 @@ export const useUserStore = defineStore("userStore", () => {
       const data = response.data;
       token.value = data.token;
       userInfo.value = data.userInfo;
-      console.log(data, token, userInfo)
+      // console.log(data, token, userInfo)
       localStorage.setItem("token", token.value);
       localStorage.setItem("userInfo", JSON.stringify(userInfo.value));
       return Promise.resolve();
