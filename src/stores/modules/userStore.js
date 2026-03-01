@@ -13,7 +13,7 @@ export const useUserStore = defineStore("userStore", () => {
       // name: "超级管理员",
     },
   );
-  const isLogin = ref(!!localStorage.getItem("token"));
+  const isLogin = computed(() => !!token.value);
 
   const userRole = computed(() => userInfo.value.role || "");
   const isAdmin = computed(() => ["admin", "super_admin"].includes(userInfo.value.role));
@@ -37,11 +37,13 @@ export const useUserStore = defineStore("userStore", () => {
    */
   async function login(loginForm) {
     try {
-      const data = await userApi.login(loginForm);
+      const response = await userApi.login(loginForm);
+      const data = response.data;
       token.value = data.token;
       userInfo.value = data.userInfo;
+      console.log(data, token, userInfo)
       localStorage.setItem("token", token.value);
-      localStorage.setItem("userInfo", JSON.parse(userInfo.value));
+      localStorage.setItem("userInfo", JSON.stringify(userInfo.value));
       return Promise.resolve();
     } catch (err) {
       return Promise.reject(err);

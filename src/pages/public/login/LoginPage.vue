@@ -56,7 +56,8 @@ const handleLogin = async () => {
     await userStore.login(loginForm);
     ElMessage.success('登录成功');
     // 获取登录前的重定向地址，无则跳转到首页
-    const redirect = router.currentRoute.query.redirect || '/home';
+    const redirect = router.currentRoute.value.query.redirect || '/home';
+    // console.log('登录界面读取的redirect路径', redirect)
     router.push(redirect);
   } catch (err) {
     ElMessage.error(err.message || '登录失败，请检查用户名或密码');
