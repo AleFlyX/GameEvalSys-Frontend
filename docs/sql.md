@@ -171,6 +171,123 @@ CREATE TABLE `scoring_record_detail` (
 
 ---
 
+# 测试数据
+
+```sql
+-- ----------------------------
+-- 1. 插入系统用户表数据 (sys_user)
+-- ----------------------------
+INSERT INTO `sys_user` (`username`, `password`, `name`, `role`, `is_enabled`) VALUES
+('super_admin', '123456', '超级管理员', 'super_admin', 1),
+('admin_01', '$2a$10$7JB720yubVSZvUI0rEqK/.VqGOZTH.ulu33dHOiBE8ByOhJIrdAu2', '系统管理员', 'admin', 1),
+('scorer_01', '$2a$10$7JB720yubVSZvUI0rEqK/.VqGOZTH.ulu33dHOiBE8ByOhJIrdAu2', '打分员张三', 'scorer', 1),
+('scorer_02', '$2a$10$7JB720yubVSZvUI0rEqK/.VqGOZTH.ulu33dHOiBE8ByOhJIrdAu2', '打分员李四', 'scorer', 1),
+('normal_01', '$2a$10$7JB720yubVSZvUI0rEqK/.VqGOZTH.ulu33dHOiBE8ByOhJIrdAu2', '普通用户王五', 'normal', 1);
+
+-- ----------------------------
+-- 2. 插入打分标准表数据 (scoring_standard)
+-- ----------------------------
+INSERT INTO `scoring_standard` (`creator_id`) VALUES
+(1),  -- 超级管理员创建的打分标准1
+(2);  -- 系统管理员创建的打分标准2
+
+-- ----------------------------
+-- 3. 插入打分指标表数据 (scoring_indicator)
+-- ----------------------------
+-- 标准1的指标（项目评审通用指标）
+INSERT INTO `scoring_indicator` (`standard_id`, `name`, `description`, `min_score`, `max_score`, `sort`) VALUES
+(1, '创新性', '项目方案的创新程度和技术突破点', 0, 30, 1),
+(1, '可行性', '技术和落地执行的可行性分析', 0, 25, 2),
+(1, '实用性', '项目成果的实际应用价值', 0, 25, 3),
+(1, '完整性', '申报材料和方案的完整度', 0, 20, 4);
+
+-- 标准2的指标（简化版打分指标）
+INSERT INTO `scoring_indicator` (`standard_id`, `name`, `description`, `min_score`, `max_score`, `sort`) VALUES
+(2, '完成度', '项目任务的完成情况', 0, 50, 1),
+(2, '质量', '项目成果的质量水平', 0, 50, 2);
+
+-- ----------------------------
+-- 4. 插入项目表数据 (project)
+-- ----------------------------
+INSERT INTO `project` (`name`, `description`, `start_date`, `end_date`, `status`, `is_enabled`, `standard_id`, `creator_id`) VALUES
+('2026年度科技创新项目评审', '针对2026年申报的科技创新项目进行综合评审打分', '2026-01-01', '2026-06-30', 'ongoing', 1, 1, 1),
+('2026季度项目验收', '2026年第一季度项目完成情况验收', '2026-01-01', '2026-03-31', 'ended', 1, 2, 2);
+
+-- ----------------------------
+-- 5. 插入项目小组表数据 (project_group)
+-- ----------------------------
+-- 项目1的参与小组
+INSERT INTO `project_group` (`project_id`, `name`) VALUES
+(1, 'AI技术研发组'),
+(1, '大数据应用组'),
+(1, '物联网开发组');
+
+-- 项目2的参与小组
+INSERT INTO `project_group` (`project_id`, `name`) VALUES
+(2, '前端开发组'),
+(2, '后端研发组');
+
+-- ----------------------------
+-- 6. 插入项目打分用户关联表数据 (project_scorer)
+-- ----------------------------
+-- 项目1关联的打分用户
+INSERT INTO `project_scorer` (`project_id`, `user_id`) VALUES
+(1, 3),  -- 打分员张三
+(1, 4);  -- 打分员李四
+
+-- 项目2关联的打分用户
+INSERT INTO `project_scorer` (`project_id`, `user_id`) VALUES
+(2, 3);  -- 打分员张三
+
+-- ----------------------------
+-- 7. 插入打分记录表数据 (scoring_record)
+-- ----------------------------
+-- 项目1的打分记录
+INSERT INTO `scoring_record` (`project_id`, `group_id`, `user_id`, `total_score`) VALUES
+(1, 1, 3, 88.50),  -- 张三给AI技术研发组打分88.5
+(1, 2, 3, 92.00),  -- 张三给大数据应用组打分92
+(1, 1, 4, 85.00);  -- 李四给AI技术研发组打分85
+
+-- 项目2的打分记录
+INSERT INTO `scoring_record` (`project_id`, `group_id`, `user_id`, `total_score`) VALUES
+(2, 4, 3, 95.00),  -- 张三给前端开发组打分95
+(2, 5, 3, 88.00);  -- 张三给后端研发组打分88
+
+-- ----------------------------
+-- 8. 插入打分明细记录表数据 (scoring_record_detail)
+-- ----------------------------
+-- 张三给AI技术研发组（记录ID=1）的打分明细（对应标准1的4个指标）
+INSERT INTO `scoring_record_detail` (`record_id`, `indicator_id`, `score`) VALUES
+(1, 1, 28.00),  -- 创新性28分
+(1, 2, 22.00),  -- 可行性22分
+(1, 3, 20.00),  -- 实用性20分
+(1, 4, 18.50);  -- 完整性18.5分 (总分88.5)
+
+-- 张三给大数据应用组（记录ID=2）的打分明细
+INSERT INTO `scoring_record_detail` (`record_id`, `indicator_id`, `score`) VALUES
+(2, 1, 29.00),
+(2, 2, 23.00),
+(2, 3, 21.00),
+(2, 4, 19.00);  -- 总分92
+
+-- 李四给AI技术研发组（记录ID=3）的打分明细
+INSERT INTO `scoring_record_detail` (`record_id`, `indicator_id`, `score`) VALUES
+(3, 1, 25.00),
+(3, 2, 20.00),
+(3, 3, 20.00),
+(3, 4, 20.00);  -- 总分85
+
+-- 张三给前端开发组（记录ID=4）的打分明细（对应标准2的2个指标）
+INSERT INTO `scoring_record_detail` (`record_id`, `indicator_id`, `score`) VALUES
+(4, 5, 48.00),  -- 完成度48分
+(4, 6, 47.00);  -- 质量47分 (总分95)
+
+-- 张三给后端研发组（记录ID=5）的打分明细
+INSERT INTO `scoring_record_detail` (`record_id`, `indicator_id`, `score`) VALUES
+(5, 5, 45.00),
+(5, 6, 43.00);  -- 总分88
+```
+
 ### 总结
 
 1. **表结构设计**：采用分表设计，将打分标准拆分为主表+指标表，打分记录拆分为主表+明细表，符合数据库规范化设计原则。
