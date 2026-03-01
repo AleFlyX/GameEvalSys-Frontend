@@ -77,7 +77,30 @@
   | name | string | 是 | 真实姓名 |
   | role | string | 是 | 角色（super_admin/admin/scorer/normal） |
   | isEnabled | boolean | 否 | 是否启用（默认true） |
+  - **请求示例**
+
+  ```json
+  "users":
+  [
+    {
+      "username": "cxk233",
+      "name": "打分员01",
+      "role": "scorer",
+      "isEnabled": true,
+      "password":"qwert123"
+      },
+    {
+      "username": "xieefeilong",
+      "name": "打分员01",
+      "role": "scorer",
+      "isEnabled": true,
+      "password":"qwert123"
+    }
+  ]
+  ```
+
 - **响应示例**：
+
   ```json
   {
     "code": 200,
