@@ -66,6 +66,9 @@ service.interceptors.response.use(
         localStorage.removeItem("token");
         ElMessageBox.confirm("登录状态已过期，请重新登录", "提示", {
           confirmButtonText: "去登录",
+          showCancelButton: false,
+          showClose: false,
+          closeOnClickModal: false,
           // cancelButtonText: '取消',
           type: "warning",
         }).then(() => {
