@@ -532,6 +532,140 @@
   | format | string | 否 | 导出格式（excel/csv，默认excel） |
 - **响应**：文件流（直接下载）
 
+## 8. 评审组管理模块（管理员）
+
+### 8.1 创建评审组
+
+- **接口地址**：`/reviewer-groups`
+- **请求方式**：POST
+- **请求头**：`Authorization: Bearer {token}`
+- **请求参数**：
+  | 参数名 | 类型 | 必填 | 说明 |
+  |--------|------|------|------|
+  | name | string | 是 | 评审组名称 |
+  | description | string | 否 | 评审组描述 |
+  | isEnabled | boolean | 否 | 是否启用，默认true |
+  | memberIds | array | 是 | 评审组成员ID列表 |
+- **响应**：
+
+```json
+{
+  "code": 200,
+  "message": "创建成功",
+  "data": {
+    "id": 1,
+    "name": "中期答辩评审组",
+    "description": "负责2026年中期答辩评审",
+    "creatorId": 1,
+    "isEnabled": true,
+    "memberIds": [2, 3, 4, 5],
+    "createTime": "2026-02-24 21:30:00",
+    "updateTime": "2026-02-24 21:30:00"
+  }
+}
+```
+
+### 8.2 获取评审组列表
+
+- **接口地址**：`/reviewer-groups`
+- **请求方式**：GET
+- **请求头**：`Authorization: Bearer {token}`
+- **响应示例**：
+
+```json
+{
+  "code": 200,
+  "message": "查询成功",
+  "data": [
+    {
+      "id": 1,
+      "name": "中期答辩评审组",
+      "description": "负责2026年中期答辩评审",
+      "creatorId": 1,
+      "isEnabled": true,
+      "memberIds": [2, 3, 4, 5],
+      "createTime": "2026-02-24 21:30:00",
+      "updateTime": "2026-02-24 21:30:00"
+    },
+    {
+      "id": 2,
+      "name": "期末答辩评审组",
+      "description": "负责2026年期末答辩评审",
+      "creatorId": 1,
+      "isEnabled": true,
+      "memberIds": [3, 6, 7],
+      "createTime": "2026-02-24 21:35:00",
+      "updateTime": "2026-02-24 21:35:00"
+    }
+  ]
+}
+```
+
+### 8.3 获取评审组详情
+
+- **接口地址**：`/reviewer-groups/{groupId}`
+- **请求方式**：GET
+- **请求头**：`Authorization: Bearer {token}`
+- **路径参数**：`groupId` - 评审组ID
+- **响应示例**：
+
+```json
+{
+  "code": 200,
+  "message": "查询成功",
+  "data": {
+    "id": 1,
+    "name": "中期答辩评审组",
+    "description": "负责2026年中期答辩评审",
+    "creatorId": 1,
+    "isEnabled": true,
+    "memberIds": [2, 3, 4, 5],
+    "createTime": "2026-02-24 21:30:00",
+    "updateTime": "2026-02-24 21:30:00"
+  }
+}
+```
+
+## 9. 项目管理模块（管理员）(后来者)
+
+### 9.1 通过评审团创建项目
+
+- **接口地址**：`/projects/with-group`
+- **请求方式**：POST
+- **请求头**：`Authorization: Bearer {token}`
+- **请求参数**：
+  | 参数名 | 类型 | 必填 | 说明 |
+  |--------|------|------|------|
+  | name | string | 是 | 项目名称 |
+  | description | string | 否 | 项目描述 |
+  | startDate | string | 是 | 起始日期（YYYY-MM-DD） |
+  | endDate | string | 是 | 结束日期（YYYY-MM-DD） |
+  | isEnabled | boolean | 否 | 是否启用（默认true） |
+  | standardId | number | 是 | 关联打分标准ID |
+  | groupIds | array | 是 | 关联小组ID列表 |
+  | reviewerGroupIds | number | 是 | 关联评审组ID |
+- **响应示例**：
+  ```json
+  {
+    "code": 200,
+    "message": "创建成功",
+    "data": {
+      "id": 1,
+      "name": "2026中期答辩",
+      "description": "2026年度中期答辩打分",
+      "startDate": "2026-03-01",
+      "endDate": "2026-03-15",
+      "status": "not_started",
+      "isEnabled": true,
+      "standardId": 1,
+      "groupId": [1, 2],
+      "scorerIds": [2, 3],
+      "creatorId": 1,
+      "createTime": "2026-01-27 11:00:00"
+    }
+  }
+  ```
+
 ## 总结
 
 1. **权限控制**：接口权限严格区分超级管理员、管理员、打分用户、普通用户，核心操作需验证token和角色权限。
