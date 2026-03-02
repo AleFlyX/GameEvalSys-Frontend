@@ -32,10 +32,24 @@
       </el-select>
     </el-form-item>
 
-    <el-form-item label="打分用户" prop="scorerIds">
+    <el-form-item label="打分方式">
+      <el-radio-group v-model="scoringMode">
+        <el-radio label="individual">直接指定打分用户</el-radio>
+        <el-radio label="group">使用评审团</el-radio>
+      </el-radio-group>
+    </el-form-item>
+
+    <el-form-item v-if="scoringMode === 'individual'" label="打分用户" prop="scorerIds">
       <el-select v-model="formData.scorerIds" placeholder="选择可参与打分的用户" multiple clearable>
         <el-option label="用户1" :value="1" />
         <el-option label="用户2" :value="2" />
+      </el-select>
+    </el-form-item>
+
+    <el-form-item v-if="scoringMode === 'group'" label="评审团" prop="reviewerGroupId">
+      <el-select v-model="formData.reviewerGroupId" placeholder="选择评审团" clearable>
+        <el-option label="中期答辩评审组" :value="1" />
+        <el-option label="期末答辩评审组" :value="2" />
       </el-select>
     </el-form-item>
 
@@ -65,6 +79,7 @@ const props = defineProps({
       standardId: '',
       groupIds: [],
       scorerIds: [],
+      reviewerGroupId: '',
       isEnabled: true,
       status: 'not_started'
     })
@@ -78,6 +93,7 @@ const props = defineProps({
 const emits = defineEmits(['update:data'])
 
 const baseFormRef = ref(null)
+const scoringMode = ref('individual')
 
 // 通过 computed 获取 BaseForm 的 formData，避免创建重复的数据对象
 const formData = computed(() => {
@@ -87,6 +103,12 @@ const formData = computed(() => {
 defineExpose({
   validate: async () => {
     return await baseFormRef.value.validate();
+  },
+  getFormData: () => {
+    return formData.value;
+  },
+  getScoringMode: () => {
+    return scoringMode.value;
   }
 })
 

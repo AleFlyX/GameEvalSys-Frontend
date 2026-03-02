@@ -1,6 +1,6 @@
 <template>
   <PagePanel>
-    <template #dataCards>
+    <template #header>
       <OverviewCard v-for="card in overViewCardsMap" :key="card.title" :title="card.title" :icon="card.icon"
         :data="card.data" :icon-background="card.iconBackground" :icon-color="card.iconColor">
       </OverviewCard>
@@ -8,7 +8,7 @@
 
     <SearchInput size="middle" @search="handleSearch" @add="handleAdd"></SearchInput>
 
-    <template #dataTable>
+    <template #main-table>
       <el-table :data="projectList">
         <DataTableColums :col-rules="columnsRules"></DataTableColums>
         <el-table-column>
@@ -105,7 +105,7 @@ const projectList = ref([
   {
     id: 3,
     name: "2026后期答辩",
-    status: "started",
+    status: "ongoing",
     isEnabled: true,
     startDate: "2026-03-01",
     endDate: "2026-03-15"
@@ -123,6 +123,7 @@ const getProjectsList = async (pageParams) => {
   try {
     const response = await projectApi.getProjectList(pageParams);
     projectList.value = response.data.list;
+    console.log(projectList.value)
   } catch (err) {
     ElMessage.error('netWorkERROR', err)
     console.log('获取项目列表错误', err)

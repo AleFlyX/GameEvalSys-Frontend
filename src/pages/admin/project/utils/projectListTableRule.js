@@ -19,7 +19,7 @@ export const columnsRules = [
     label: '结束时间',
     width: '200',
     colDataName: 'endDate',
-    icon: 'WarningFilled'
+    icon: 'Warning'
   },
   {
     label: '项目状态',
@@ -27,12 +27,12 @@ export const columnsRules = [
     colDataName: 'status',
     tagTypeMap: {
       not_started: 'info',
-      started: 'success',
+      ongoing: 'success',
       ended: 'warning'
     },
     tagNameMap: {
       not_started: '尚未开始',
-      started: '进行中',
+      ongoing: '进行中',
       ended: '已结束'
     },
   },
