@@ -3,13 +3,21 @@ const UserList = () => import("@/pages/admin/user/UserList.vue");
 // const UserAdd = () => import("@/pages/admin/user/UserAdd.vue");
 // const UserEdit = () => import("@/pages/admin/user/UserEdit.vue");
 const ProjectList = () => import("@/pages/admin/project/ProjectList.vue");
+const reviewerGroups = () => import("@/pages/admin/group/ReviewerGroupList.vue")
 // const ProjectAdd = () => import("@/pages/admin/project/ProjectAdd.vue");
 // const ProjectEdit = () => import("@/pages/admin/project/ProjectEdit.vue");
 const Statistic = () => import("@/pages/admin/statistic/StatisticPannel.vue");
+
 export const admin = [
   {
+    path: "reviewerGroups",
+    name: "评审队伍(班级)",
+    component: reviewerGroups,
+    meta: { title: "评审队伍管理", roles: ["super_admin", "admin"] },
+  },
+  {
     path: "user",
-    name: "userList",
+    name: "用户管理",
     component: UserList,
     meta: { title: "用户管理", roles: ["super_admin", "admin"] },
   },
@@ -27,10 +35,11 @@ export const admin = [
   // },
   {
     path: "project",
-    name: "projectList",
+    name: "项目管理",
     component: ProjectList,
     meta: { title: "项目管理", roles: ["super_admin", "admin"] },
   },
+
   // {
   //   path: "project/add",
   //   name: "projectAdd",
@@ -46,7 +55,7 @@ export const admin = [
   {
     path: "statistic",
     // path: "statistic/:projectId",
-    name: "statistic",
+    name: "得分统计",
     component: Statistic,
     meta: { title: "打分统计", roles: ["super_admin", "admin"] },
   },

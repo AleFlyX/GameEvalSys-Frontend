@@ -13,13 +13,13 @@ export const norm = [
   // },
   {
     path: "home",
-    name: "home",
+    name: "首页",
     component: Home,
     meta: { title: "首页", roles: ["super_admin", "admin", "scorer", "normal"] }, // 可访问角色
   },
   {
     path: "scoring",
-    name: "scoringList",
+    name: "打分列表",
     component: ScoringList,
     meta: { title: "打分项目列表", roles: ["super_admin", "admin", "scorer"] },
   },
