@@ -2,7 +2,7 @@
   <div class="admin-panel">
     <!-- 避免各个管理面板组件的css部分冗余 -->
     <div style="display: flex; width: 100%; ">
-      <slot name="dataCards">
+      <slot name="header">
         <!-- 数据预览小卡片区域 -->
       </slot>
     </div>
@@ -12,7 +12,7 @@
     </slot>
 
     <div class="data-list">
-      <slot name="dataTable">
+      <slot name="main-table">
         <!-- el table组件 -->
       </slot>
       <div class="footer">

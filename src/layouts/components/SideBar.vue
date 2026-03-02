@@ -14,7 +14,7 @@
       <li class="fold-menu-group" v-if="userStore.isAdmin">
         <!-- 折叠菜单头部 -->
         <div class="fold-menu-header" @click="showSubMenu = !showSubMenu" :class="{ active: showSubMenu }">
-          admin
+          管理
           <span class="arrow" :class="{ active: showSubMenu }">
             <el-icon>
               <ArrowUpBold />
