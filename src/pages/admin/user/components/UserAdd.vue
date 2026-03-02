@@ -70,7 +70,7 @@ const handleConfirm = async () => {
       emits('refresh', true);
     }
     catch (err) {
-      ElMessage.error(`保存用户编辑信息错误${err}`)
+      ElMessage.error(`保存用户编辑信息错误${err.message}`)
     }
     finally {
       disableBehavior.value = false;

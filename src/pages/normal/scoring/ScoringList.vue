@@ -1,6 +1,6 @@
 <template>
   <PagePanel>
-    <template #dataCards>
+    <template #header>
       <OverviewCard icon="Document" title="总项目数" :data="overViewCardsMap.totalProjects" icon-color="var(--primary-havy)"
         icon-background="var(--primary-light)">
       </OverviewCard>
@@ -15,7 +15,7 @@
       </OverviewCard>
     </template>
     <SearchInput size="large" placeholder="搜索项目名称..." @search="handleSearch" customOpts></SearchInput>
-    <template #dataTable>
+    <template #main-table>
       <el-table :data="scoringList" stripe style="width: 100%">
         <DataTableColums :col-rules="columnsRules"></DataTableColums>
         <el-table-column>

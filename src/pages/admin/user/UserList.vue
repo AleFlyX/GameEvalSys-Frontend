@@ -1,18 +1,17 @@
 <template>
-  <div class="user-list">
-    <div style="display: flex; width: 100%; ">
+  <PagePanel>
+    <template #header>
       <OverviewCard icon="User" title="总用户数" data="235"></OverviewCard>
       <OverviewCard icon="Avatar" title="管理员" data="22"></OverviewCard>
       <OverviewCard icon="Edit" icon-color="#66cc66" icon-background="#e6ffe6" title="打分用户" data="13"></OverviewCard>
       <OverviewCard icon="Collection" icon-color="#ffaa00" icon-background="#ffeecc" title="普通用户" data="1">
       </OverviewCard>
-    </div>
-    <!-- <TestCard width="30%"></TestCard> -->
-    <div style="width: 100%; display: flex; justify-content: flex-start;">
-      <SearchInput size="middle" @search="handleSearch" @add="handleAdd"></SearchInput>
-    </div>
+    </template>
 
-    <div class="data-list">
+    <!-- <TestCard width="30%"></TestCard> -->
+    <SearchInput size="middle" @search="handleSearch" @add="handleAdd"></SearchInput>
+
+    <template #main-table>
       <el-table :data="tableData" style="width: 100%;" stripe>
         <DataTableColums :col-rules=columnsRules></DataTableColums>
         <el-table-column>
@@ -35,33 +34,34 @@
           </template>
         </el-table-column>
       </el-table>
-      <div class="pagination">
-        <el-pagination v-model:current-page="pageParams.page" v-model:page-size="pageParams.size"
-          :page-sizes="[10, 20, 30]" size="middle" :disabled="pagenationDisabled" :total="totalData"
-          @size-change="handleSizeChange" layout="sizes, prev, pager, next" @current-change="handleCurrentChange" />
-      </div>
-    </div>
+    </template>
 
-  </div>
-  <!-- <UserFormModal :visible="showUserAddDialog" @close="showUserAddDialog = false">parent
-    <template #test>aatest</template>
-  </UserFormModal> -->
+    <template #footer>
+      <el-pagination v-model:current-page="pageParams.page" v-model:page-size="pageParams.size"
+        :page-sizes="[10, 20, 30]" size="middle" :disabled="pagenationDisabled" :total="totalData"
+        @size-change="handleSizeChange" layout="sizes, prev, pager, next" @current-change="handleCurrentChange" />
+    </template>
 
-  <!-- 确认删除/停用 -->
-  <UserConfirm v-model:visible="showUserConfirmDialog" :data="handlingData" :disable-btn="disableConfirmBtn"
-    @confirm="handleConfirm" :title="confirmDialogTitle">
-  </UserConfirm>
+    <template #modals>
+      <!-- 确认删除/停用 -->
+      <UserConfirm v-model:visible="showUserConfirmDialog" :data="handlingData" :disable-btn="disableConfirmBtn"
+        @confirm="handleConfirm" :title="confirmDialogTitle">
+      </UserConfirm>
 
-  <UserEdit v-model:visible="showEditUserDialog" :initData="handlingData" @refresh="handleRefresh"></UserEdit>
+      <UserEdit v-model:visible="showEditUserDialog" :initData="handlingData" @refresh="handleRefresh"></UserEdit>
 
-  <UserAdd v-model:visible="showUserAddDialog" @refresh="handleRefresh"></UserAdd>
-  <button @click="showUserAddDialog = !showUserAddDialog">UserAdd</button>
+      <UserAdd v-model:visible="showUserAddDialog" @refresh="handleRefresh"></UserAdd>
+    </template>
+  </PagePanel>
+
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 
+// import TestCard from './components/testCard.vue'
+import PagePanel from '@/layouts/PagePanel.vue'
 import OverviewCard from '@/components/common/data/OverviewCard.vue'
 import DataTableColums from '@/components/common/data/DataTableColums.vue'
 import SearchInput from '@/components/common/data/SearchInput.vue'
@@ -223,7 +223,8 @@ const handleRefresh = () => {
 
 const getUserDataList = async (pageParams = { page: 1, size: 10 }) => {
   try {
-    tableData.value = await userApi.getUserList(pageParams)
+    const response = await userApi.getUserList(pageParams);
+    tableData.value = response.data.list;
     ElMessage.success('用户数据获取成功')
     return Promise.resolve();
   } catch (error) {
@@ -233,34 +234,6 @@ const getUserDataList = async (pageParams = { page: 1, size: 10 }) => {
 }
 
 onMounted(() => {
-  getUserDataList(pageParams.value);
+  getUserDataList();
 })
 </script>
-
-<style scoped>
-.user-list {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  gap: 15px
-}
-
-.data-list {
-  width: 99%;
-  padding: 20px 0;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  box-shadow: 0px 2px 8px gray;
-  border-radius: 15px;
-
-}
-
-.pagination {
-  width: 99%;
-  display: flex;
-
-  justify-content: center;
-}
-</style>
