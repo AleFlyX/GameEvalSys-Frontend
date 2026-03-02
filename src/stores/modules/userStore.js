@@ -61,6 +61,7 @@ export const useUserStore = defineStore("userStore", () => {
     } catch (err) {
       return Promise.reject(err);
     } finally {
+      window.location.href = "/home";
       //无论是否成功，都执行以下操作
       clearUserStore();
     }
