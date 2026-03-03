@@ -186,6 +186,42 @@
   }
   ```
 
+### 2.5 批量获取用户详情 (需求性调整，不完全符合restFul)
+
+- **接口地址**：`/users/batch-query`
+- **请求方式**：POST
+- **请求头**：`Authorization: Bearer {token}`
+  | 参数名 | 类型 | 必填 | 说明 |
+  |--------|------|------|------|
+  | ids | array | 是 | 用户ID列表 |
+  | includeDisabled | boolean | 否 | 是否包含被禁用用户（默认false） |
+- **响应示例**：
+
+```json
+{
+  "code": 200,
+  "message": "查询成功",
+  "data": [
+    {
+      "id": 2,
+      "username": "scorer01",
+      "name": "cxk001",
+      "role": "scorer",
+      "isEnabled": true,
+      "createTime": "2026-02-24 10:00:00"
+    },
+    {
+      "id": 3,
+      "username": "scorer02",
+      "name": "cxk002",
+      "role": "scorer",
+      "isEnabled": true,
+      "createTime": "2026-02-24 10:05:00"
+    }
+  ]
+}
+```
+
 ## 3. 打分标准管理模块（管理员）
 
 ### 3.1 创建打分标准
@@ -405,7 +441,7 @@
   }
   ```
 
-### 5.2 获取项目关联的小组列表
+### 5.2 获取项目受评分的小组列表
 
 - **接口地址**：`/projects/{projectId}/groups`
 - **请求方式**：GET

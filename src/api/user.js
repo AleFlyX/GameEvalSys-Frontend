@@ -40,6 +40,15 @@ export const userApi = {
   },
 
   /**
+   * 按照用户id数组批量获取用户信息
+   * @param {Object} params
+   * @returns
+   */
+  getUsersByIds: (params = { includeDisabled: false, ids: [] }) => {
+    return service.post("/users/batch-query", params)
+  },
+
+  /**
    * @description 模糊搜索
    * @param {String} keywords
    */
