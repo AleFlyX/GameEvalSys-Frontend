@@ -23,10 +23,12 @@
         </div>
         <!-- 折叠菜单子项 -->
         <ul class="fold-submenu">
-          <li class="menu-item sub-item" v-for="item in admin" :key="item.path" @click="gotoRoute(item.path)"
-            :class="{ active: isActive(item.path), show: showSubMenu }">
-            {{ item.name }}
-          </li>
+          <div v-for="item in admin" :key="item.path">
+            <li v-if="!item.meta.hidden" class="menu-item sub-item" @click="gotoRoute(item.path)"
+              :class="{ active: isActive(item.path), show: showSubMenu }">
+              {{ item.name }}
+            </li>
+          </div>
         </ul>
       </li>
     </ul>
