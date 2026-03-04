@@ -87,11 +87,11 @@ export const getProjectDetail = (projectId) => {
  * @returns {Promise} -response data
  */
 export const getAuthorizedProjectList = (userId) => {
-  return service.get(`/projects/${userId}`);
+  return service.get(`/projects/authorized`);
 };
 
 /**
- * 获取项目关联的小组列表
+ * 获取项目受评分的小组列表
  * @param {number} projectId - 项目ID
  * @returns {Promise} 响应数据（小组列表）
  */
