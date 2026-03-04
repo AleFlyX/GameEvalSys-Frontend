@@ -50,8 +50,6 @@
       </ProjectConfirm>
       <ProjectAdd v-model:visible="showAddProjectDialog" @refresh="handleRefresh">
       </ProjectAdd>
-      <ProjectEdit v-model:visible="showEditProjectDialog" :data="editingProject" @refresh="handleRefresh">
-      </ProjectEdit>
     </template>
   </PagePanel>
 </template>
@@ -63,6 +61,7 @@ import SearchInput from '@/components/common/data/SearchInput.vue';
 import ProjectConfirm from './components/ProjectConfirm.vue';
 
 import { reactive, ref, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 import DataTableColums from '@/components/common/data/DataTableColums.vue';
 
 import { projectApi } from '@/api/project';
@@ -70,7 +69,8 @@ import { columnsRules } from './utils/projectListTableRule';
 
 import { ElMessage } from 'element-plus';
 import ProjectAdd from './components/ProjectAdd.vue';
-import ProjectEdit from './components/ProjectEdit.vue';
+
+const router = useRouter();
 
 const overViewCardsMap = ref([
   { title: '总项目数', data: '23', icon: 'Document', iconBackground: '', iconColor: '' },
@@ -132,9 +132,7 @@ const getProjectsList = async (pageParams) => {
 
 const showDeleteProjectDialog = ref(false);
 const showAddProjectDialog = ref(false);
-const showEditProjectDialog = ref(false);
 const handlingProjectStatus = ref({});
-const editingProject = ref({});
 const pagenationDisabled = ref(false);
 const handleSearch = (keywords) => {
   // 搜索功能待实现
@@ -146,8 +144,10 @@ const handleAdd = () => {
 }
 
 const handleEdit = (row) => {
-  editingProject.value = { ...row };
-  showEditProjectDialog.value = true;
+  router.push({
+    name: 'projectEdit',
+    params: { id: row.id }
+  });
 }
 
 const handleStartProject = async (index, row) => {
