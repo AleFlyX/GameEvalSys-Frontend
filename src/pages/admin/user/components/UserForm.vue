@@ -1,5 +1,5 @@
 <template>
-  <base-form ref="baseFormRef" :form-rules="userFormRules" :data="props.initData" style="max-width: 800px" status-icon
+  <BaseForm ref="baseFormRef" :form-rules="userFormRules" :data="props.initData" style="max-width: 800px" status-icon
     label-width="auto" @update:data="handleChangedData">
     <el-form-item v-if="!editMode" label="登陆账号" prop="username">
       <el-input v-model="formData.username" type="text" autocomplete="off" />
@@ -34,7 +34,7 @@
         style="--el-switch-on-color: #13ce66; --el-switch-off-color: #ff4949" inline-prompt active-text="启用"
         inactive-text="停用" />
     </el-form-item>
-  </base-form>
+  </BaseForm>
 </template>
 
 <script setup>
