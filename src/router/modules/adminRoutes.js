@@ -5,7 +5,7 @@ const UserList = () => import("@/pages/admin/user/UserList.vue");
 const ProjectList = () => import("@/pages/admin/project/ProjectList.vue");
 const reviewerGroups = () => import("@/pages/admin/group/ReviewerGroupList.vue")
 // const ProjectAdd = () => import("@/pages/admin/project/ProjectAdd.vue");
-// const ProjectEdit = () => import("@/pages/admin/project/ProjectEdit.vue");
+const ProjectEdit = () => import("@/pages/admin/project/ProjectEdit.vue");
 const Statistic = () => import("@/pages/admin/statistic/StatisticPannel.vue");
 
 export const admin = [
@@ -46,12 +46,12 @@ export const admin = [
   //   component: ProjectAdd,
   //   meta: { title: "新增项目", roles: ["super_admin", "admin"] },
   // },
-  // {
-  //   path: "project/edit/:id",
-  //   name: "projectEdit",
-  //   component: ProjectEdit,
-  //   meta: { title: "编辑项目", roles: ["super_admin", "admin"] },
-  // },
+  {
+    path: "project/edit/:id",
+    name: "projectEdit",
+    component: ProjectEdit,
+    meta: { title: "编辑项目", roles: ["super_admin", "admin"], hidden: true },
+  },
   {
     path: "statistic",
     // path: "statistic/:projectId",
