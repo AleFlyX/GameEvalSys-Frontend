@@ -2,11 +2,26 @@
   <!-- 创建用户的同时也可以将其添加到组别中，用一个select标签远程搜索目前已有组别，密码不得在新建用户阶段自定义？ -->
   <BaseFormModal v-bind="$attrs" @update:visible="$emit('update:visible', $event)">
     <template #title>
-      创建用户
+      <el-switch v-model="multiAddMode" active-text="批量添加" inactive-text="单用户添加" size="large"></el-switch>
     </template>
     <template #form>
-      <div class="user-add-form">
-        <UserForm v-bind="$attrs" :editMode="false" ref="formRef" :disabled="disableBehavior"></UserForm>
+      <!-- <el-tabs v-model="activeTab">
+        <el-tab-pane label="1" name="singleAdd">
+          assa
+        </el-tab-pane>
+        <el-tab-pane label="2" name="multiAdd">
+          bbb
+        </el-tab-pane>
+      </el-tabs> -->
+      <div class="user-add-form" v-show="!multiAddMode">
+        <UserForm v-bind="$attrs" :editMode="false" :multiAdd="multiAddMode" ref="formRef" :disabled="disableBehavior">
+        </UserForm>
+      </div>
+      <div class="user-multi-add" v-show="multiAddMode">
+        userM
+        <UserMultiAddForm>
+
+        </UserMultiAddForm>
       </div>
     </template>
     <template #operations>
@@ -26,6 +41,7 @@ import BaseFormModal from '@/components/common/modal/BaseFormModal.vue';
 import UserForm from './UserForm.vue';
 
 import { userApi } from '@/api/user'
+import UserMultiAddForm from './UserMultiAddForm.vue';
 
 defineOptions({
   inheritAttrs: false
@@ -42,7 +58,7 @@ const handleClose = () => {
   emits('update:visible', false);
 }
 
-
+const multiAddMode = ref(false);
 const formRef = ref();
 const disableBehavior = ref(false)
 const handleConfirm = async () => {
