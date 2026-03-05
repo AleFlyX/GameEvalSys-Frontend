@@ -49,9 +49,12 @@
 <script setup>
 import { ref, onMounted, reactive } from 'vue';
 import { useRouter } from 'vue-router';
+
 import OverviewCard from '@/components/common/data/OverviewCard.vue';
 import SearchInput from '@/components/common/data/SearchInput.vue';
 import DataTableColums from '@/components/common/data/DataTableColums.vue';
+
+import { useUserStore } from '@/stores/modules/userStore';
 import { projectApi } from '@/api/project';
 import { ElMessage } from 'element-plus';
 import PagePanel from '@/layouts/PagePanel.vue';
@@ -59,6 +62,7 @@ import ProjectDetails from './components/ProjectDetails.vue';
 import { columnsRules } from './utils/projectListColRules';//数据表格列定义
 import MyBtn from '@/components/common/form/MyBtn.vue';
 
+const userStore = useUserStore()
 // 统计数据
 const overViewCardsMap = reactive({
   totalProjects: '0',
@@ -95,14 +99,16 @@ const searchKeyword = ref('');
 const fetchScoringProjects = async () => {
   try {
     paginationDisabled.value = true;
-    const response = await projectApi.getProjectList({
-      page: pageParams.page,
-      size: pageParams.size,
-      isEnabled: true
-    });
+    const response = await projectApi.getAuthorizedProjectList(userStore.userInfo.id)
+    // console.log(response.data)
+    // const response = await projectApi.getProjectList({
+    //   page: pageParams.page,
+    //   size: pageParams.size,
+    //   isEnabled: true
+    // });
 
     if (response.code === 200 && response.data) {
-      scoringList.value = response.data.list || [];
+      scoringList.value = response.data || [];
       totalData.value = response.data.total || 0;
 
       // 计算统计数据
