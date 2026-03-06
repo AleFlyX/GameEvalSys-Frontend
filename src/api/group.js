@@ -19,12 +19,12 @@ export const createReviewerGroup = (params) => {
 };
 
 /**
- * 获取评审组列表
+ * 获取评审组列表（分页/模糊搜索）
  * @param {Object} [params={}] - Query参数（可选）
  * @param {number} [params.page=1] - 页码（默认1）
  * @param {number} [params.size=10] - 每页条数（默认10）
- * @param {string} [params.name] - 评审组名称搜索
- * @param {boolean} [params.isEnabled] - 是否启用
+ * @param {string} [params.keywords] - 评审组名称搜索
+ * todo :@param {boolean} [params.isEnabled] - 是否启用
  * @returns {Promise} 响应数据（列表+总数）
  */
 export const getReviewerGroupList = (params = {}) => {

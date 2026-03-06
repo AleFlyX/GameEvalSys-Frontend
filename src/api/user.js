@@ -26,11 +26,12 @@ export const userApi = {
   },
 
   /**
-   * 获取用户列表（分页）
+   * 获取用户列表（分页/模糊搜索）
    * @param {Object} params - 分页/筛选参数
    * @param {number} [params.page=1] - 页码
    * @param {number} [params.size=10] - 每页条数
    * @param {string} [params.role] - 角色筛选（super_admin/admin/scorer/normal）
+   * @param {string} [params.keywords] - 模糊查询关键字
    * @returns {Promise} - 返回用户列表数据
    */
   getUserList: (params = {}) => {
@@ -42,6 +43,8 @@ export const userApi = {
   /**
    * 按照用户id数组批量获取用户信息
    * @param {Object} params
+   * @param {Boolean} params.includeDisabled -是否显示被禁用的用户
+   * @param {Array} params.ids -需要批量查询的用户id（上限100位）
    * @returns
    */
   getUsersByIds: (params = { includeDisabled: false, ids: [] }) => {
