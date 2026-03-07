@@ -64,7 +64,7 @@
 
 ## 2. 用户管理模块（超级管理员/管理员）
 
-### 2.1 创建用户(可批量注册)
+### 2.1 创建用户并分配评审组(可批量创建)
 
 - **接口地址**：`/users`
 - **请求方式**：POST
@@ -72,49 +72,48 @@
 - **请求参数**：
   | 参数名 | 类型 | 必填 | 说明 |
   |--------|------|------|------|
-  | username | string | 是 | 用户名（唯一） |
-  | password | string | 是 | 密码 |
-  | name | string | 是 | 真实姓名 |
-  | role | string | 是 | 角色（super_admin/admin/scorer/normal） |
-  | isEnabled | boolean | 否 | 是否启用（默认true） |
-  - **请求示例**
-
-  ```json
-  "users":
-  [
-    {
-      "username": "cxk233",
-      "name": "打分员01",
-      "role": "scorer",
-      "isEnabled": true,
-      "password":"qwert123"
-      },
-    {
-      "username": "xieefeilong",
-      "name": "打分员01",
-      "role": "scorer",
-      "isEnabled": true,
-      "password":"qwert123"
-    }
-  ]
-  ```
-
-- **响应示例**：
-
+  | users | array | 是 | 用户列表 |
+  | users[].username | string | 是 | 用户名（唯一） |
+  | users[].password | string | 是 | 密码 |
+  | users[].name | string | 是 | 真实姓名 |
+  | users[].role | string | 是 | 角色（super_admin/admin/scorer/normal） |
+  | users[].isEnabled | boolean | 否 | 是否启用（默认true） |
+  | users[].reviewerGroupId | number | 否 | 评审组ID（自动加入该评审组） |
+- **请求示例**：
   ```json
   {
-    "code": 200,
-    "message": "创建成功",
-    "data": {
-      "id": 2,
-      "username": "scorer01",
-      "name": "打分员01",
-      "role": "scorer",
-      "isEnabled": true,
-      "createTime": "2026-01-27 10:00:00"
-    }
+    "users": [
+      {
+        "username": "newuser01",
+        "name": "新用户01",
+        "role": "scorer",
+        "isEnabled": true,
+        "password": "qwert123",
+        "reviewerGroupId": 1
+      }
+    ]
   }
   ```
+- **响应示例**：
+
+```json
+{
+  "code": 200,
+  "message": "创建成功",
+  "data": [
+    {
+      "id": 15,
+      "username": "newuser01",
+      "name": "新用户01",
+      "role": "scorer",
+      "isEnabled": true,
+      "createTime": "2026-03-03 18:30:00",
+      "reviewerGroupId": 1,
+      "reviewerGroupName": "中期答辩评审组"
+    }
+  ]
+}
+```
 
 ### 2.2 编辑用户
 
