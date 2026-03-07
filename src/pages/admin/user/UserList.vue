@@ -225,6 +225,7 @@ const getUserDataList = async (pageParams = { page: 1, size: 10 }) => {
   try {
     const response = await userApi.getUserList(pageParams);
     tableData.value = response.data.list;
+    totalData.value = response.data.total;
     ElMessage.success('用户数据获取成功')
     return Promise.resolve();
   } catch (error) {
