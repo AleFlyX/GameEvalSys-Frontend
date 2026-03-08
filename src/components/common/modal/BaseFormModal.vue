@@ -91,6 +91,8 @@ const emits = defineEmits([
 
 .content {
   padding: 5px;
+  max-height: 60vh;
+  overflow-y: auto;
 }
 
 .operation {

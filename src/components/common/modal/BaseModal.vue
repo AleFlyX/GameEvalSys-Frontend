@@ -102,7 +102,9 @@ const handleMaskMouseup = (e) => {
 
 .base-modal {
   min-width: 400px;
-  /* min-height: 200px; */
+  max-width: 700px;
+  min-height: 100px;
+  max-height: 90vh;
   padding: 15px 20px;
   position: relative;
   display: flex;
