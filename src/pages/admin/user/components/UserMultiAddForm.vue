@@ -228,7 +228,6 @@ const clearResult = () => {
 defineExpose({
   validate: () => {
     try {
-
       const valid = ((resultList.value.length) && (revirewerGroup.value.groupMemberRole.trim() !== '') && (!!revirewerGroup.value.id))
       console.log(valid, resultList.value)
       const data = {
@@ -238,7 +237,6 @@ defineExpose({
     } catch (err) {
       console.log('批量创建用户验证失败', err)
       console.log('err DATA', resultList.value)
-
     }
   }
 })
@@ -256,12 +254,13 @@ defineExpose({
 .excel-parser-container {
   max-width: 800px;
   margin: 20px auto;
-
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
   font-family: Arial, sans-serif;
 }
 
 .upload-area {
-  margin: 20px 0;
   padding: 15px;
   display: flex;
   align-items: center;
@@ -274,17 +273,14 @@ defineExpose({
   padding: 10px;
   background: #ffebee;
   border-radius: 4px;
-  margin: 10px 0;
 }
 
 .result-area {
-  max-height: 400px;
-  overflow-y: scroll;
-  margin-top: 20px;
+  max-height: 200px;
+  overflow-y: auto;
   padding: 15px;
   background: #f5f5f5;
   border-radius: 4px;
-
 }
 
 pre {
