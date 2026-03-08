@@ -1,5 +1,5 @@
 <template>
-  <MyBtn type="primary">返回</MyBtn>
+  <MyBtn type="primary" @click="$router.push('/project')">返回</MyBtn>
   <PagePanel>
     <template #header>
       <div class="project-edit-header">
@@ -13,6 +13,9 @@
         <el-tabs v-model="activeTab">
           <!-- Tab 1: 基本信息 -->
           <el-tab-pane label="基本信息" name="basic">
+            <ProjectForm edit-mode :data="formData">
+
+            </ProjectForm>
             <div class="tab-content">
               <el-form ref="basicFormRef" :model="formData" :rules="basicFormRules" label-width="120px" status-icon>
                 <el-form-item label="项目名称" prop="name">
@@ -86,11 +89,10 @@
               <el-form ref="reviewerFormRef" :model="formData" :rules="reviewerFormRules" label-width="120px"
                 status-icon>
                 <el-form-item label="选择评审团" prop="reviewerGroupId">
-                  <el-select v-model="formData.reviewerGroupId" placeholder="选择负责此项目评分的评审团" clearable
+                  <el-select v-model="formData.reviewerGroupId" placeholder="更改负责此项目评分的评审团" clearable
                     @change="handleReviewerGroupChange">
-                    <el-option label="中期答辩评审组" :value="1" />
-                    <el-option label="期末答辩评审组" :value="2" />
-                    <el-option label="专项评审组" :value="3" />
+                    <el-option v-for="item in reviewerGroupOptions" :key="item.id" :label="item.name"
+                      :value="item.id" />
                   </el-select>
                 </el-form-item>
               </el-form>
@@ -157,6 +159,7 @@ import MyBtn from '@/components/common/form/MyBtn.vue';
 import { projectApi } from '@/api/project';
 import { groupApi } from '@/api/group';
 import { userApi } from '@/api/user'
+import ProjectForm from './components/ProjectForm.vue';
 
 
 const router = useRouter();
@@ -172,6 +175,7 @@ const reviewerFormRef = ref(null);
 
 const groupsList = ref([]);
 const reviewerGroupMembers = ref([]);
+const reviewerGroupOptions = ref([]);
 
 const formData = reactive({
   id: '',
@@ -182,7 +186,7 @@ const formData = reactive({
   standardId: '',
   groupIds: [],
   scorerIds: [],
-  reviewerGroupId: '',
+  reviewerGroupIds: [],
   isEnabled: true,
   status: 'not_started'
 });
@@ -214,6 +218,18 @@ const reviewerFormRules = {
   ]
 };
 
+
+// 获取评审团列表
+const fetchReviewerGroupOptions = async () => {
+  try {
+    const response = await groupApi.getReviewerGroupList({ size: 100, isEnabled: true });
+    reviewerGroupOptions.value = response.data?.records || response.data || [];
+    console.log('获取评审团列表', reviewerGroupOptions.value)
+  } catch (err) {
+    ElMessage.error(`加载评审团列表失败: ${err}`);
+    reviewerGroupOptions.value = [];
+  }
+};
 
 // 获取项目关联的小组列表
 const fetchProjectGroups = async () => {
@@ -309,6 +325,9 @@ const handleDeleteMember = (row) => {
 // 初始化表单数据
 const initFormData = async () => {
   try {
+    // 先加载评审团列表
+    await fetchReviewerGroupOptions();
+
     const projectId = route.params.id;
     if (projectId) {
       // 这里应该调用 API 获取项目详情

@@ -25,14 +25,11 @@
       </el-select>
     </el-form-item>
 
-    <el-form-item label="关联小组" prop="groupIds">
-      <el-select v-model="formData.groupIds" placeholder="选择关联的小组" multiple clearable>
-        <el-option label="第一组" :value="1" />
-        <el-option label="第二组" :value="2" />
-      </el-select>
+    <el-form-item label="项目内受评分的小组数" prop="groupIds">
+      <el-input-number v-model="formData.groupNums" :step="1" :min="0"></el-input-number>
     </el-form-item>
 
-    <el-form-item label="打分方式">
+    <!-- <el-form-item label="打分方式">
       <el-radio-group v-model="scoringMode">
         <el-radio label="individual">直接指定打分用户</el-radio>
         <el-radio label="group">使用评审团</el-radio>
@@ -44,9 +41,9 @@
         <el-option label="用户1" :value="1" />
         <el-option label="用户2" :value="2" />
       </el-select>
-    </el-form-item>
+    </el-form-item> -->
 
-    <el-form-item v-if="scoringMode === 'group'" label="评审团" prop="reviewerGroupId">
+    <el-form-item label="评审团" prop="reviewerGroupId">
       <el-select v-model="formData.reviewerGroupId" placeholder="选择评审团" clearable>
         <el-option label="中期答辩评审组" :value="1" />
         <el-option label="期末答辩评审组" :value="2" />
