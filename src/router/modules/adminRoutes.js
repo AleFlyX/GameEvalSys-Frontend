@@ -5,6 +5,7 @@ const UserList = () => import("@/pages/admin/user/UserList.vue");
 const ProjectList = () => import("@/pages/admin/project/ProjectList.vue");
 const reviewerGroups = () => import("@/pages/admin/group/ReviewerGroupList.vue")
 // const ProjectAdd = () => import("@/pages/admin/project/ProjectAdd.vue");
+const scoringStds = () => import("@/pages/admin/scoring-std/ScoringStandardsList.vue")
 const ProjectEdit = () => import("@/pages/admin/project/ProjectEdit.vue");
 const Statistic = () => import("@/pages/admin/statistic/StatisticPannel.vue");
 
@@ -33,6 +34,12 @@ export const admin = [
   //   component: UserEdit,
   //   meta: { title: "编辑用户", roles: ["super_admin", "admin"] },
   // },
+  {
+    path: "scoringStds",
+    name: "打分标准",
+    component: scoringStds,
+    meta: { title: "打分标准", roles: ["super_admin", "admin"] },
+  },
   {
     path: "project",
     name: "项目管理",
