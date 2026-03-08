@@ -68,9 +68,11 @@ export const userApi = {
    * @param {string} users[].name - 真实姓名
    * @param {string} users[].role - 角色
    * @param {boolean} [users[].isEnabled=true] - 是否启用
+   * @param {Array} users[].reviewerGroupIds - 将用户关联至评分组ID
    * @returns {Promise}
    */
   createUser: (requestObj) => {
+    // console.log(requestObj)
     return service.post("/users", requestObj);
   },
 

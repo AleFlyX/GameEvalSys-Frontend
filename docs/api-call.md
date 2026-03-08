@@ -176,7 +176,8 @@
           "name": "超级管理员",
           "role": "super_admin",
           "isEnabled": true,
-          "createTime": "2026-01-27 09:00:00"
+          "createTime": "2026-01-27 09:00:00",
+          "reviewerGroupIds": [1, 2]
         }
       ],
       "total": 1,
