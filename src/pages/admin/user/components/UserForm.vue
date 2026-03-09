@@ -4,8 +4,9 @@
     <el-form-item v-if="!editMode" label="登陆账号" prop="username">
       <el-input v-model="formData.username" type="text" autocomplete="off" />
     </el-form-item>
+
     <div v-if="!editMode">
-      <el-alert type="info" show-icon :closable="false" style="margin: 10px;">
+      <el-alert type="info" show-icon :closable="false" style="margin: 5px;">
         <p>若不设定密码,则默认为123456</p>
       </el-alert>
       <el-form-item label="密码" prop="password">
@@ -15,25 +16,28 @@
     <el-form-item label="用户昵称" prop="name">
       <el-input v-model="formData.name" type="text" autocomplete="off" />
     </el-form-item>
-    <el-form-item label="评审团" prop="reviewerGroup">
-      <!-- <el-select v-model="formData.group" placeholder="搜索并选择所属组别" clearable disabled>
-        <el-option label="Zone one" value="shanghai" />
-        <el-option label="Zone two" value="beijing" />
-      </el-select> -->
-      <el-select v-model="formData.reviewerGroupId" filterable placeholder="查找该用户要加入的评审团" :loading="loading" remote
-        :remote-method="getReviewerGroupList" debounce="300" style="width: 240px">
-        <el-option v-for="item in reviewerGroups" :key="item.id" :label="item.name" :value="item.id" />
-      </el-select>
-    </el-form-item>
+
+    <el-alert type="info" show-icon :closable="false" style="margin: 10px;">
+      只有 <Strong>非普通用户</Strong> 才可以被添加至<strong>评审团</strong>
+    </el-alert>
 
     <el-form-item label="角色" prop="role">
       <el-select v-model="formData.role" placeholder="选择角色">
         <el-option label="超级管理员" value="super_admin" />
         <el-option label="管理员" value="admin" />
         <el-option label="打分用户" value="scorer" />
-        <el-option label="普通用户" value="normal" />
+        <el-option v-if="!editMode" label="普通用户" value="normal" />
       </el-select>
     </el-form-item>
+
+    <el-form-item label="评审团" prop="reviewerGroup" v-show="showAddToReviewerGroups">
+      <el-select v-model="formData.reviewerGroupIds" @change="console.log(formData.reviewerGroupIds)" filterable
+        multiple placeholder="查找该用户要加入的评审团" :loading="loading" remote :remote-method="getReviewerGroupList"
+        debounce="300">
+        <el-option v-for="item in reviewerGroups" :key="item.id" :label="item.name" :value="item.id" />
+      </el-select>
+    </el-form-item>
+
     <el-form-item label="账户状态" v-if="editMode">
       <el-switch v-model="formData.isEnabled" size="large"
         style="--el-switch-on-color: #13ce66; --el-switch-off-color: #ff4949" inline-prompt active-text="启用"
@@ -43,7 +47,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, watch, onMounted } from 'vue';
 
 import BaseForm from '@/components/common/form/BaseForm.vue';
 
@@ -58,7 +62,7 @@ const props = defineProps({
       username: '',
       password: '',
       name: '',
-      reviewerGroupId: '',
+      reviewerGroupIds: [],
       isEnabled: true,
       role: 'normal'
     })
@@ -85,8 +89,47 @@ const formData = computed(() => {
   return baseFormRef.value?.formData || {};
 })
 
+const showAddToReviewerGroups = computed(() => {
+  // only show selector when role is not 'normal' (including empty or other roles)
+  return formData.value.role !== 'normal';
+});
+
 const loading = ref(false)
 const reviewerGroups = ref([])
+// 初始化加载用户已加入的评审团信息（编辑模式）
+const initializeUserReviewerGroups = async () => {
+  if (!props.editMode || !props.initData.reviewerGroupIds || props.initData.reviewerGroupIds.length === 0) {
+    return;
+  }
+
+  try {
+    const groupIds = props.initData.reviewerGroupIds;
+    const groups = [];
+
+    // 并行获取所有评审团详情
+    const promises = groupIds.map(id => groupApi.getReviewerGroupDetail(id));
+    const responses = await Promise.all(promises);
+
+    responses.forEach(response => {
+      if (response.data) {
+        groups.push(response.data);
+      }
+    });
+
+    // 合并已加入的评审团和搜索结果（避免重复）
+    const existingIds = new Set(reviewerGroups.value.map(g => g.id));
+    groups.forEach(group => {
+      if (!existingIds.has(group.id)) {
+        reviewerGroups.value.unshift(group);
+      }
+    });
+
+    console.log('已加入的评审团', groups);
+  } catch (err) {
+    console.log('加载用户评审团信息失败:', err);
+  }
+}
+
 const getReviewerGroupList = async (keywords) => {
   loading.value = true;
   console.log('searching reviewer group list', keywords)
@@ -101,6 +144,25 @@ const getReviewerGroupList = async (keywords) => {
 defineExpose({
   validate: async () => {
     return await baseFormRef.value.validate();
+  }
+})
+// watch(props.initData?.reviewerGroupIds, (newval) => {
+//   console.log(newval)
+// })
+// 监听editMode和initData变化，在编辑模式下初始化加载用户评审团
+watch(
+  () => [props.editMode, props.initData?.reviewerGroupIds],
+  async () => {
+    if (props.editMode) {
+      await initializeUserReviewerGroups();
+    }
+  },
+  { deep: true }
+)
+
+onMounted(() => {
+  if (props.editMode) {
+    initializeUserReviewerGroups();
   }
 })
 
