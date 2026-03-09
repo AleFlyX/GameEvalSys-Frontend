@@ -24,11 +24,12 @@ export const createReviewerGroup = (params) => {
  * @param {number} [params.page=1] - 页码（默认1）
  * @param {number} [params.size=10] - 每页条数（默认10）
  * @param {string} [params.keywords] - 评审组名称搜索
- * todo :@param {boolean} [params.isEnabled] - 是否启用
+ * @param {boolean} [params.isEnabled] - 是否启用
  * @returns {Promise} 响应数据（列表+总数）
  */
 export const getReviewerGroupList = (params = {}) => {
-  const defaultParams = { page: 1, size: 10, ...params };
+  const defaultParams = { page: 1, size: 10, isEnabled: true, ...params };
+  // console.log(defaultParams)
   return service.get("/reviewer-groups", { params: defaultParams });
 };
 
