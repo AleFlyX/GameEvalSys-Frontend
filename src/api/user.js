@@ -52,14 +52,6 @@ export const userApi = {
   },
 
   /**
-   * @description 模糊搜索
-   * @param {String} keywords
-   */
-  getRelateSearchUser: (keywords) => {
-    return service.get("/users",)
-  },
-
-  /**
    * 创建新用户（批量创建或单个取决于实际业务）
    * @param {Object} requestObj - 请求体
    * @param {Array} requestObj.users -批量注册用户信息
@@ -97,14 +89,6 @@ export const userApi = {
   deleteUser: (userId) => {
     return service.delete(`/users/${userId}`);
   },
-
-  /**
-   * 禁用用户
-   */
-  deactiveUser: (userId) => {
-    return Promise.reject();
-    // return service.post(`/users/`)
-  }
 
   /**
    * 获取当前登录用户信息
