@@ -78,7 +78,7 @@
   | users[].name | string | 是 | 真实姓名 |
   | users[].role | string | 是 | 角色（super_admin/admin/scorer/normal） |
   | users[].isEnabled | boolean | 否 | 是否启用（默认true） |
-  | users[].reviewerGroupId | number | 否 | 评审组ID（自动加入该评审组） |
+  | users[].reviewerGroupIds | array | 否 | 评审组ID（自动加入该评审组） |
 - **请求示例**：
   ```json
   {
@@ -89,7 +89,7 @@
         "role": "scorer",
         "isEnabled": true,
         "password": "qwert123",
-        "reviewerGroupId": 1
+        "reviewerGroupIds": [1, 2, 6]
       }
     ]
   }
@@ -108,7 +108,7 @@
       "role": "scorer",
       "isEnabled": true,
       "createTime": "2026-03-03 18:30:00",
-      "reviewerGroupId": 1,
+      "reviewerGroupIds": [1, 2, 6],
       "reviewerGroupName": "中期答辩评审组"
     }
   ]
@@ -668,6 +668,38 @@
     "memberIds": [2, 3, 4, 5],
     "createTime": "2026-02-24 21:30:00",
     "updateTime": "2026-02-24 21:30:00"
+  }
+}
+```
+
+### 8.4 编辑评审组
+
+- **接口地址**：`/reviewer-groups/{groupId}`
+- **请求方式**：PUT
+- **请求头**：`Authorization: Bearer {token}`
+- **路径参数**：`groupId` - 评审组ID
+- - **请求参数**：
+    | 参数名 | 类型 | 必填 | 说明 |
+    |--------|------|------|------|
+    | name | string | 是 | 评审组名称 |
+    | description | string | 否 | 评审组描述 |
+    | isEnabled | boolean | 否 | 是否启用，默认true |
+    | memberIds | array | 是 | 评审组成员ID列表 |
+- **响应示例**：
+
+```json
+{
+  "code": 200,
+  "message": "编辑成功",
+  "data": {
+    "id": 1,
+    "name": "2026中期答辩评审组",
+    "description": "负责2026年中期答辩评审",
+    "creatorId": 1,
+    "isEnabled": true,
+    "memberIds": [2, 3, 4, 5, 6],
+    "createTime": "2026-02-24 21:30:00",
+    "updateTime": "2026-03-03 19:45:00"
   }
 }
 ```
