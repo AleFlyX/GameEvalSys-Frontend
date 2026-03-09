@@ -233,6 +233,7 @@
 - **请求参数**：
   | 参数名 | 类型 | 必填 | 说明 |
   |--------|------|------|------|
+  | name | string | 是 | 打分标准名 |
   | indicators | array | 是 | 指标列表 |
   | indicators[].name | string | 是 | 指标名称 |
   | indicators[].description | string | 否 | 指标说明 |
@@ -245,6 +246,7 @@
     "message": "创建成功",
     "data": {
       "id": 1,
+      "name": "项目1的打分标准",
       "indicators": [
         {
           "id": 1,
@@ -272,6 +274,7 @@
     "data": [
       {
         "id": 1,
+        "name": "项目1的打分标准",
         "indicators": [
           {
             "id": 1,
