@@ -266,6 +266,12 @@
 - **接口地址**：`/scoring-standards`
 - **请求方式**：GET
 - **请求头**：`Authorization: Bearer {token}`
+- **请求参数**：
+  | 参数名 | 类型 | 必填 | 说明 |
+  |--------|------|------|------|
+  | keyWords | string | 否 | 模糊搜索关键词 |
+  | page | number | 否 | 页码（默认1） |
+  | size | number | 否 | 每页条数（默认10） |
 - **响应示例**：
   ```json
   {
@@ -724,7 +730,7 @@
   | isEnabled | boolean | 否 | 是否启用（默认true） |
   | standardId | number | 是 | 关联打分标准ID |
   | groupIds | array | 是 | 关联小组ID列表 |
-  | reviewerGroupIds | number | 是 | 关联评审组ID |
+  | reviewerGroupId | number | 是 | 关联评审组ID |
 - **响应示例**：
   ```json
   {
