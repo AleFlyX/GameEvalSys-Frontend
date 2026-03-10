@@ -17,7 +17,7 @@
       <el-input v-model="formData.name" type="text" autocomplete="off" />
     </el-form-item>
 
-    <el-alert type="info" show-icon :closable="false" style="margin: 10px;">
+    <el-alert type="info" show-icon :closable="false" style="margin: 5px;">
       只有 <Strong>非普通用户</Strong> 才可以被添加至<strong>评审团</strong>
     </el-alert>
 
@@ -30,10 +30,10 @@
       </el-select>
     </el-form-item>
 
-    <el-form-item label="评审团" prop="reviewerGroup" v-show="showAddToReviewerGroups">
-      <el-select v-model="formData.reviewerGroupIds" @change="console.log(formData.reviewerGroupIds)" filterable
-        multiple placeholder="查找该用户要加入的评审团" :loading="loading" remote :remote-method="getReviewerGroupList"
-        debounce="300">
+    <el-form-item label="评审团" prop="reviewerGroup" @click="showInfo">
+      <el-select :disabled="isNormal" v-model="formData.reviewerGroupIds"
+        @change="console.log(formData.reviewerGroupIds)" filterable multiple placeholder="查找该用户要加入的评审团"
+        :loading="loading" remote :remote-method="getReviewerGroupList" debounce="300">
         <el-option v-for="item in reviewerGroups" :key="item.id" :label="item.name" :value="item.id" />
       </el-select>
     </el-form-item>
@@ -51,9 +51,10 @@ import { ref, computed, watch, onMounted } from 'vue';
 
 import BaseForm from '@/components/common/form/BaseForm.vue';
 
-import { groupApi } from '@/api/group';
+import { groupApi } from '@/api/reviewer-group';
 
 import { userFormRules } from '../utils/userFormRules';
+import { ElMessage } from 'element-plus';
 const props = defineProps({
   initData: {
     type: Object,
@@ -89,10 +90,16 @@ const formData = computed(() => {
   return baseFormRef.value?.formData || {};
 })
 
-const showAddToReviewerGroups = computed(() => {
-  // only show selector when role is not 'normal' (including empty or other roles)
-  return formData.value.role !== 'normal';
+const isNormal = computed(() => {
+  return formData.value.role === 'normal';
 });
+
+const showInfo = () => {
+  if (isNormal.value) {
+    ElMessage.info('普通用户 无法修改评审团')
+  }
+
+}
 
 const loading = ref(false)
 const reviewerGroups = ref([])
@@ -110,6 +117,7 @@ const initializeUserReviewerGroups = async () => {
     const promises = groupIds.map(id => groupApi.getReviewerGroupDetail(id));
     const responses = await Promise.all(promises);
 
+    //将获取到的详细详细逐个推入groups
     responses.forEach(response => {
       if (response.data) {
         groups.push(response.data);
@@ -143,6 +151,9 @@ const getReviewerGroupList = async (keywords) => {
 }
 defineExpose({
   validate: async () => {
+    if (isNormal.value) {
+      formData.value.reviewerGroupIds = [];
+    }
     return await baseFormRef.value.validate();
   }
 })

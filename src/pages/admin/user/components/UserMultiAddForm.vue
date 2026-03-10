@@ -45,7 +45,7 @@ import MyBtn from '@/components/common/form/MyBtn.vue';
 import { ref, watch } from 'vue';
 import * as XLSX from 'xlsx'; // 引入 xlsx 库
 
-import { groupApi } from '@/api/group';
+import { groupApi } from '@/api/reviewer-group';
 const props = defineProps({
   // revirewerGroupList: { //接受父组件UserAdd传入的陪审团数据
   //   type: Array,
