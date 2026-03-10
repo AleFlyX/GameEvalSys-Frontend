@@ -30,8 +30,9 @@ export const createScoringStandards = (params) => {
  * admin 获取打分标准列表
  * @returns
  */
-export const getScoringStandardsList = () => {
-  return service.get("/scoring-standards");
+export const getScoringStandardsList = (params = {}) => {
+  const defaultParams = { page: 1, size: 10, isEnabled: true, ...params };
+  return service.get("/scoring-standards", { params: defaultParams });
 };
 
 /**

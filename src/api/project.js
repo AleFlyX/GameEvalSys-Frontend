@@ -83,21 +83,12 @@ export const getProjectDetail = (projectId) => {
 
 /**
  * 获取当前用户授权可访问的项目列表
- * @param {string} userId - userId
  * @returns {Promise} -response data
  */
-export const getAuthorizedProjectList = (userId) => {
+export const getAuthorizedProjectList = () => {
   return service.get(`/projects/authorized`);
 };
 
-/**
- * 获取项目受评分的小组列表
- * @param {number} projectId - 项目ID
- * @returns {Promise} 响应数据（小组列表）
- */
-export const getProjectGroups = (projectId) => {
-  return service.get(`/projects/${projectId}/groups`);
-};
 
 /**
  * 通过评审团创建项目
@@ -124,6 +115,5 @@ export const projectApi = {
   endProject,
   getProjectDetail,
   getAuthorizedProjectList,
-  getProjectGroups,
   createProjectWithReviewerGroup,
 };
