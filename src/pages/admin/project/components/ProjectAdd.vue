@@ -1,5 +1,5 @@
 <template>
-  <BaseFormModal v-bind="$attrs" @update:visible="$emit('update:visible', $event)">
+  <BaseFormModal v-bind="$attrs" @update:visible="$emit('update:visible', $event)" :allow-mask-close="false">
     <template #title>
       创建项目
     </template>
@@ -63,12 +63,12 @@ const handleConfirm = async () => {
   }
 
   const { valid, data } = await formRef.value.validate()
-
+  console.log('项目添加ADDDDing', data)
   if (valid) {
     try {
-      // const response = await projectApi.createProject(data)
-      // ElMessage.success(`${response.message}`)
-      ElMessage.success('项目创建成功')
+      const response = await projectApi.createProjectWithReviewerGroup(data)
+      ElMessage.success(`${response.message}`)
+      // ElMessage.success('项目创建成功')
       emits('refresh', true)
       handleClose()
     } catch (err) {
