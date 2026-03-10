@@ -1,12 +1,10 @@
 // admin页面（仅超级管理员/管理员）
 const UserList = () => import("@/pages/admin/user/UserList.vue");
-// const UserAdd = () => import("@/pages/admin/user/UserAdd.vue");
-// const UserEdit = () => import("@/pages/admin/user/UserEdit.vue");
 const ProjectList = () => import("@/pages/admin/project/ProjectList.vue");
-const reviewerGroups = () => import("@/pages/admin/group/ReviewerGroupList.vue")
-// const ProjectAdd = () => import("@/pages/admin/project/ProjectAdd.vue");
-const scoringStds = () => import("@/pages/admin/scoring-std/ScoringStandardsList.vue")
 const ProjectEdit = () => import("@/pages/admin/project/ProjectEdit.vue");
+const reviewerGroups = () => import("@/pages/admin/reviewer-group/ReviewerGroupList.vue")
+const projectGroupsList = () => import("@/pages/admin/project-group/ProjectGroupList.vue")
+const scoringStds = () => import("@/pages/admin/scoring-std/ScoringStandardsList.vue")
 const Statistic = () => import("@/pages/admin/statistic/StatisticPannel.vue");
 
 export const admin = [
@@ -39,6 +37,12 @@ export const admin = [
     name: "打分标准",
     component: scoringStds,
     meta: { title: "打分标准", roles: ["super_admin", "admin"] },
+  },
+  {
+    path: "projectGroups",
+    name: "受审队伍",
+    component: projectGroupsList,
+    meta: { title: "项目受审队伍管理", roles: ["super_admin", "admin"] },
   },
   {
     path: "project",
