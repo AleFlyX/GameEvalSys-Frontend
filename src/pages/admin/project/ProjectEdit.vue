@@ -13,74 +13,14 @@
         <el-tabs v-model="activeTab">
           <!-- Tab 1: 基本信息 -->
           <el-tab-pane label="基本信息" name="basic">
-            <ProjectForm edit-mode :data="formData">
-
+            <ProjectForm ref="projectFormRef" edit-mode :data="formData">
             </ProjectForm>
-            <div class="tab-content">
-              <el-form ref="basicFormRef" :model="formData" :rules="basicFormRules" label-width="120px" status-icon>
-                <el-form-item label="项目名称" prop="name">
-                  <el-input v-model="formData.name" placeholder="请输入项目名称" />
-                </el-form-item>
-
-                <el-form-item label="项目描述" prop="description">
-                  <el-input v-model="formData.description" type="textarea" :rows="4" placeholder="请输入项目描述" />
-                </el-form-item>
-
-                <el-form-item label="开始日期" prop="startDate">
-                  <el-date-picker v-model="formData.startDate" type="date" placeholder="选择项目开始日期"
-                    value-format="YYYY-MM-DD" />
-                </el-form-item>
-
-                <el-form-item label="结束日期" prop="endDate">
-                  <el-date-picker v-model="formData.endDate" type="date" placeholder="选择项目结束日期"
-                    value-format="YYYY-MM-DD" />
-                </el-form-item>
-
-                <el-form-item label="打分标准" prop="standardId">
-                  <el-select v-model="formData.standardId" placeholder="选择打分标准" clearable>
-                    <el-option label="标准一" :value="1" />
-                    <el-option label="标准二" :value="2" />
-                  </el-select>
-                </el-form-item>
-
-                <el-form-item label="启用状态" prop="isEnabled">
-                  <el-switch v-model="formData.isEnabled" size="large"
-                    style="--el-switch-on-color: #13ce66; --el-switch-off-color: #ff4949" inline-prompt active-text="启用"
-                    inactive-text="停用" />
-                </el-form-item>
-              </el-form>
-            </div>
           </el-tab-pane>
 
           <!-- Tab 2: 项目内受评分的小组 -->
           <el-tab-pane label="项目内受评分的小组" name="groups">
-            <div class="tab-content">
-              <div class="groups-tips">
-                <el-alert title="提示" type="info" description="本表格显示该项目关联的所有小组。可以编辑小组信息或删除不再需要的小组。" :closable="false" />
-              </div>
-
-              <el-table :data="groupsList" stripe style="margin-top: 20px; width: 100%">
-                <el-table-column prop="id" label="小组ID" width="80" />
-                <el-table-column prop="name" label="小组名称" width="150" />
-                <el-table-column prop="description" label="小组描述" show-overflow-tooltip />
-                <el-table-column prop="memberCount" label="成员数" width="100" />
-                <el-table-column prop="createTime" label="创建时间" width="150" />
-                <el-table-column label="操作" width="200" fixed="right">
-                  <template #default="scope">
-                    <el-button size="small" type="primary" @click="handleEditGroup(scope.row)">
-                      编辑
-                    </el-button>
-                    <el-button size="small" type="danger" @click="handleDeleteGroup(scope.row)">
-                      删除
-                    </el-button>
-                  </template>
-                </el-table-column>
-              </el-table>
-
-              <div v-if="groupsList.length === 0" class="empty-state">
-                <p>暂无关联小组</p>
-              </div>
-            </div>
+            <ProjectGroups ref="groupsFormRef" :groups-list="groupsList">
+            </ProjectGroups>
           </el-tab-pane>
 
           <!-- Tab 3: 评审团配置 -->
@@ -88,13 +28,13 @@
             <div class="tab-content">
               <el-form ref="reviewerFormRef" :model="formData" :rules="reviewerFormRules" label-width="120px"
                 status-icon>
-                <el-form-item label="选择评审团" prop="reviewerGroupId">
+                <!-- <el-form-item label="选择评审团" prop="reviewerGroupId">
                   <el-select v-model="formData.reviewerGroupId" placeholder="更改负责此项目评分的评审团" clearable
                     @change="handleReviewerGroupChange">
                     <el-option v-for="item in reviewerGroupOptions" :key="item.id" :label="item.name"
                       :value="item.id" />
                   </el-select>
-                </el-form-item>
+                </el-form-item> -->
               </el-form>
 
               <div class="reviewer-tips">
@@ -157,9 +97,11 @@ import PagePanel from '@/layouts/PagePanel.vue';
 import MyBtn from '@/components/common/form/MyBtn.vue';
 
 import { projectApi } from '@/api/project';
-import { groupApi } from '@/api/group';
+import { groupApi } from '@/api/reviewer-group';
+import { getProjectGroups } from '@/api/project-group';
 import { userApi } from '@/api/user'
 import ProjectForm from './components/ProjectForm.vue';
+import ProjectGroups from './components/ProjectGroups.vue';
 
 
 const router = useRouter();
@@ -169,7 +111,7 @@ const route = useRoute();
 const activeTab = ref('basic');
 const isSubmitting = ref(false);
 
-const basicFormRef = ref(null);
+const projectFormRef = ref(null);
 const groupsFormRef = ref(null);
 const reviewerFormRef = ref(null);
 
@@ -191,25 +133,6 @@ const formData = reactive({
   status: 'not_started'
 });
 
-// 基本信息表单规则
-const basicFormRules = {
-  name: [
-    { required: true, message: '项目名称不能为空', trigger: 'blur' },
-    { min: 3, max: 100, message: '项目名称长度应在3-100个字符', trigger: 'blur' }
-  ],
-  description: [
-    { max: 500, message: '项目描述长度不能超过500个字符', trigger: 'blur' }
-  ],
-  startDate: [
-    { required: true, message: '开始日期不能为空', trigger: 'change' }
-  ],
-  endDate: [
-    { required: true, message: '结束日期不能为空', trigger: 'change' }
-  ],
-  standardId: [
-    { required: true, message: '打分标准不能为空', trigger: 'change' }
-  ]
-};
 
 // 评审团表单规则
 const reviewerFormRules = {
@@ -236,7 +159,8 @@ const fetchProjectGroups = async () => {
   try {
     const projectId = route.params.id;
     if (projectId) {
-      const response = await projectApi.getProjectGroups(projectId);
+
+      const response = await getProjectGroups(projectId);
       console.log('获取项目关联的小组列表', response.data)
       groupsList.value = response.data || [];
     }
@@ -250,7 +174,7 @@ const fetchProjectGroups = async () => {
 const fetchReviewerGroupMembers = async () => {
   try {
     const params = { ids: formData.scorerIds, includeDisabled: true }
-    const response = await userApi.getUsersByIds(params);
+    const response = await userApi.getUsersByIds(params);//batch get users
 
     // reviewerGroupMembers.value = response.data?.list || [];
     reviewerGroupMembers.value = response.data || [];
@@ -335,7 +259,7 @@ const initFormData = async () => {
 
       //将一个或者多个源对象中所有可枚举的自有属性复制到目标对象，并返回修改后的目标对象。
       Object.assign(formData, response.data);
-      // console.log('初始化表单数据', response.data)
+      console.log('初始化表单数据', response.data)
       // 加载小组列表和评审团成员
       await fetchProjectGroups();
       await fetchReviewerGroupMembers();
@@ -350,7 +274,7 @@ const initFormData = async () => {
 const validateAllForms = async () => {
   try {
     // 验证基本信息
-    await basicFormRef.value?.validate();
+    await projectFormRef.value?.validate();
     // 验证评审团
     await reviewerFormRef.value?.validate();
     return true;

@@ -9,7 +9,7 @@
     <SearchInput size="middle" @search="handleSearch" @add="handleAdd"></SearchInput>
 
     <template #main-table>
-      <el-table :data="projectList">
+      <el-table :data="projectList" v-loading="loading">
         <DataTableColums :col-rules="columnsRules"></DataTableColums>
         <el-table-column>
           <template #header>
@@ -119,10 +119,13 @@ const projectList = ref([
     endDate: "2026-03-15"
   },
 ])
+
+const loading = ref(true)
 const getProjectsList = async (pageParams) => {
   try {
     const response = await projectApi.getProjectList(pageParams);
     projectList.value = response.data.list;
+    loading.value = false;
     console.log(projectList.value)
   } catch (err) {
     ElMessage.error('netWorkERROR', err)
