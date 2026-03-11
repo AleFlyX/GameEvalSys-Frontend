@@ -55,7 +55,8 @@ export const submitScoring = (params) => {
  * @returns
  */
 export const getScoringRecord = (groupId, projectId) => {
-  return service.get(`/scoring/records/${groupId}/${projectId}`);
+  // return service.get(`/scoring/records/${groupId}/${projectId}`);
+  return service.get(`/scoring/records`, { params: { projectId: projectId, groupId: groupId } });
 };
 
 export const ScoringApi = {
