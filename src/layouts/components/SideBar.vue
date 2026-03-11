@@ -58,7 +58,7 @@ const gotoRoute = (path) => {
 // 路由匹配方法
 const isActive = (path) => {
   // 精准匹配路由路径，避免/拼接的潜在问题（如path为home时，/home和$route.path直接对比）
-  return route.path.startsWith(`/${path}`);
+  return route.path === `/${path}`
 };
 
 // 监听路由变化：跳转到admin子菜单时，自动展开折叠面板
