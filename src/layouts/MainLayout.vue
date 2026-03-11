@@ -31,4 +31,9 @@ import { RouterView } from 'vue-router';
   /* border: 1px solid gold; */
   flex-direction: column;
 }
+
+main {
+  padding-bottom: 20px;
+  overflow-y: auto;
+}
 </style>
