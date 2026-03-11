@@ -171,6 +171,15 @@ watch(
   { deep: true }
 )
 
+/**
+ * 用户角色为普通用户时，重置评审团列表
+ */
+watch(isNormal, (newVal) => {
+  if (newVal) {//只有在用户角色为普通用户的情况下才会重置评审团列表
+    formData.value.reviewerGroupIds = [];
+  }
+})
+
 onMounted(() => {
   if (props.editMode) {
     initializeUserReviewerGroups();
