@@ -12,7 +12,7 @@
 
       <el-table :data="tableData" stripe style="width: 100%; margin-top: 16px;" v-loading="loading">
         <el-table-column prop="id" label="标准ID" width="80" />
-        <el-table-column prop="createdTime" label="创建时间" width="180" />
+        <el-table-column prop="name" label="创建时间" width="180" />
         <el-table-column label="指标数" width="100">
           <template #default="scope">
             {{ scope.row.indicators?.length || 0 }}
@@ -64,7 +64,7 @@ import PagePanel from '@/layouts/PagePanel.vue';
 import OverviewCard from '@/components/common/data/OverviewCard.vue';
 
 import ScoringStdAdd from './components/ScoringStdAdd.vue';
-import ScoringStdEdit from './components/ScoringStdEdit.vue';
+import ScoringStdEdit from './components/ScoringStdDetail.vue';
 
 import { ScoringApi } from '@/api/scoring';
 

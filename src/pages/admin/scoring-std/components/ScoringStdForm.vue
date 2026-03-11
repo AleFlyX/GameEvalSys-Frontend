@@ -1,9 +1,9 @@
 <template>
   <div class="scoring-std-form">
-    <el-form ref="formRef" :model="formData" label-width="140px" status-icon>
+    <el-form ref="formRef" :model="formData" label-width="140px" status-icon :disabled="!addMode">
       <!-- 指标列表 -->
       <div class="indicators-container">
-        <div class="indicators-header">
+        <div v-if="addMode" class="indicators-header">
           <h4>评分指标</h4>
           <el-button type="primary" size="small" @click="addIndicator">+ 添加指标</el-button>
         </div>
@@ -13,10 +13,10 @@
         </div>
 
         <div v-for="(indicator, index) in formData.indicators" :key="index" class="indicator-item">
-          <el-divider />
+          <!-- <el-divider /> -->
           <div class="indicator-title">
             <span>指标 {{ index + 1 }}</span>
-            <el-button type="danger" size="small" text @click="removeIndicator(index)">删除</el-button>
+            <el-button type="danger" size="small" text @click="removeIndicator(index)" v-if="addMode">删除</el-button>
           </div>
 
           <div class="indicator-form">
@@ -55,6 +55,10 @@ const props = defineProps({
     default: () => ({
       indicators: []
     })
+  },
+  addMode: {
+    type: Boolean,
+    default: false
   }
 });
 

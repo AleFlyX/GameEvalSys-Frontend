@@ -4,7 +4,7 @@
       <span>新增打分标准</span>
     </template>
     <template #form>
-      <ScoringStdForm ref="formRef" :initData="{}" />
+      <ScoringStdForm ref="formRef" :initData="{}" add-mode />
     </template>
     <template #operations>
       <button @click="handleConfirm()" class="primary-btn" :disabled="isSubmitting">确认</button>
