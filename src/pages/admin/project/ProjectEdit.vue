@@ -25,51 +25,7 @@
 
           <!-- Tab 3: 评审团配置 -->
           <el-tab-pane label="评审团配置" name="reviewer">
-            <div class="tab-content">
-              <el-form ref="reviewerFormRef" :model="formData" :rules="reviewerFormRules" label-width="120px"
-                status-icon>
-                <!-- <el-form-item label="选择评审团" prop="reviewerGroupId">
-                  <el-select v-model="formData.reviewerGroupId" placeholder="更改负责此项目评分的评审团" clearable
-                    @change="handleReviewerGroupChange">
-                    <el-option v-for="item in reviewerGroupOptions" :key="item.id" :label="item.name"
-                      :value="item.id" />
-                  </el-select>
-                </el-form-item> -->
-              </el-form>
-
-              <div class="reviewer-tips">
-                <el-alert title="提示" type="info" description="评审团是负责对项目内的小组进行评分的专业小组。下表显示该评审团的所有成员。"
-                  :closable="false" />
-              </div>
-              <div class="reviewer-members">
-                <!-- <div v-if="formData.reviewerGroupId" class="reviewer-members"> -->
-                <h4>评审团成员</h4>
-                <el-table :data="reviewerGroupMembers" stripe style="width: 100%">
-                  <el-table-column prop="id" label="成员ID" width="80" />
-                  <el-table-column prop="username" label="成员名称" width="150" />
-                  <el-table-column prop="name" label="成员名称" width="150" />
-
-                  <el-table-column prop="createTime" label="加入时间" width="150" />
-                  <el-table-column label="操作" width="200" fixed="right">
-                    <template #default="scope">
-                      <el-button size="small" type="primary" @click="handleEditMember(scope.row)">
-                        编辑
-                      </el-button>
-                      <el-button size="small" type="danger" @click="handleDeleteMember(scope.row)">
-                        删除
-                      </el-button>
-                    </template>
-                  </el-table-column>
-                </el-table>
-
-                <div v-if="reviewerGroupMembers.length === 0" class="empty-state">
-                  <p>暂无评审团成员</p>
-                </div>
-              </div>
-              <!-- <div v-else class="empty-state">
-                <p>请先选择评审团</p>
-              </div> -->
-            </div>
+            <ProjectReviewGroups :reviewer-group-members="reviewerGroupMembers"></ProjectReviewGroups>
           </el-tab-pane>
         </el-tabs>
       </div>
@@ -89,7 +45,7 @@
 <script setup>
 import { ref, reactive, onMounted, watch } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
-import { ElMessage } from 'element-plus';
+import { ElMessage, ElMessageBox } from 'element-plus';
 
 // import { useProjectStore } from '@/stores/modules/projectStore';
 
@@ -102,6 +58,7 @@ import { getProjectGroups } from '@/api/project-group';
 import { userApi } from '@/api/user'
 import ProjectForm from './components/ProjectForm.vue';
 import ProjectGroups from './components/ProjectGroups.vue';
+import ProjectReviewGroups from './components/ProjectReviewGroups.vue';
 
 
 const router = useRouter();
@@ -132,15 +89,6 @@ const formData = reactive({
   isEnabled: true,
   status: 'not_started'
 });
-
-
-// 评审团表单规则
-const reviewerFormRules = {
-  reviewerGroupId: [
-    { required: true, message: '评审团不能为空', trigger: 'change' }
-  ]
-};
-
 
 // 获取评审团列表
 const fetchReviewerGroupOptions = async () => {
@@ -183,11 +131,6 @@ const fetchReviewerGroupMembers = async () => {
     ElMessage.error(`加载评审团成员列表失败: ${err}`);
     reviewerGroupMembers.value = [];
   }
-};
-
-// 处理评审团选择变化
-const handleReviewerGroupChange = () => {
-  fetchReviewerGroupMembers();
 };
 
 // 编辑小组
@@ -279,7 +222,7 @@ const validateAllForms = async () => {
     await reviewerFormRef.value?.validate();
     return true;
   } catch (err) {
-    ElMessage.error('请完善表单中的所有数据');
+    ElMessage.error('请完善表单中的所有数据', err);
     return false;
   }
 };
@@ -292,8 +235,8 @@ const handleSave = async () => {
   isSubmitting.value = true;
 
   try {
-    const response = await projectApi.editProject(formData.id, formData);
-    ElMessage.success(`${response.message}`);
+    // const response = await projectApi.editProject(formData.id, formData);
+    // ElMessage.success(`${response.message}`);
     // ElMessage.success('项目已成功更新');
     router.back();
   } catch (err) {
@@ -305,7 +248,7 @@ const handleSave = async () => {
 
 // 取消编辑
 const handleCancel = () => {
-  ElMessage.confirm('确实要放弃编辑吗？', '提示', {
+  ElMessageBox.confirm('确实要放弃编辑吗？', '提示', {
     confirmButtonText: '确定',
     cancelButtonText: '取消',
     type: 'warning'

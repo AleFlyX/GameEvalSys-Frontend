@@ -1,14 +1,5 @@
 <template>
   <div class="tab-content">
-    <el-form ref="reviewerFormRef" :model="formData" :rules="reviewerFormRules" label-width="120px" status-icon>
-      <el-form-item label="选择评审团" prop="reviewerGroupId">
-        <el-select v-model="formData.reviewerGroupId" placeholder="更改负责此项目评分的评审团" clearable
-          @change="handleReviewerGroupChange">
-          <el-option v-for="item in reviewerGroupOptions" :key="item.id" :label="item.name" :value="item.id" />
-        </el-select>
-      </el-form-item>
-    </el-form>
-
     <div class="reviewer-tips">
       <el-alert title="提示" type="info" description="评审团是负责对项目内的小组进行评分的专业小组。下表显示该评审团的所有成员。" :closable="false" />
     </div>
@@ -37,12 +28,17 @@
         <p>暂无评审团成员</p>
       </div>
     </div>
-    <!-- <div v-else class="empty-state">
-                <p>请先选择评审团</p>
-              </div> -->
   </div>
 </template>
 <script setup>
+import { ref } from 'vue';
+
+const props = defineProps({
+  reviewerGroupMembers: {
+    type: Array,
+    default: () => []
+  }
+})
 
 </script>
 
