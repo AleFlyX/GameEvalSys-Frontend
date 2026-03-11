@@ -72,13 +72,15 @@
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
-// import ScoringForm from './components/ScoringForm.vue';
-import ScoreProject from './components/ScoreProject.vue';
-import { projectApi } from '@/api/project';
+
 import { ElMessage } from 'element-plus';
-import { Search } from '@element-plus/icons-vue';
+
+import ScoreProject from './components/ScoreProject.vue';
 import MyBtn from '@/components/common/form/MyBtn.vue';
 import ScoringDetails from './components/ScoringDetails.vue';
+
+import { getProjectGroups } from '@/api/project-group';
+import { ScoringApi } from '@/api/scoring';
 
 const searchKeyword = ref('');
 const groupList = ref([{
@@ -119,11 +121,13 @@ const fetchGroups = async () => {
   if (!route.params.projectId) return;
 
   try {
-    const response = await projectApi.getProjectGroups(route.params.projectId);
+    const response = await getProjectGroups(route.params.projectId);
     if (response.code === 200 && response.data) {
+      console.log('scoring PAGE DATA', response.data)
+      groupList.value = response.data;
       groupList.value = response.data.map(group => ({
         ...group,
-        scoreStatus: 'not_scored', // not_scored, scored
+        scoreStatus: 'scored', // not_scored, scored
         lastScore: null
       }));
     }
@@ -141,16 +145,27 @@ const handleScoring = (row) => {
 };
 
 // 查看打分详情
-const handleViewScore = (row) => {
+const handleViewScore = async (row) => {
   selectedGroup.value = row;
-  // 这里应该根据projectData.id和row.id获取具体的打分记录
-  const mockScores = [
-    { id: 1, name: '复杂程度', score: 4, minScore: 1, maxScore: 5 },
-    { id: 2, name: '创新性', score: 3, minScore: 1, maxScore: 5 },
-    { id: 3, name: '完成度', score: 5, minScore: 1, maxScore: 5 }
-  ];
-  scoringDetails.value = mockScores;
-  totalScore.value = mockScores.reduce((sum, item) => sum + item.score, 0);
+  console.log('SCoringGroups ROW', row)
+  try {
+    const response = await ScoringApi.getScoringRecord(row.id, row.projectId)
+    scoringDetails.value = response.data.scores;
+    totalScore.value = scoringDetails.value.reduce((sum, item) => sum + item.score, 0);
+    console.log(response.data.scores)
+  }
+  catch (err) {
+    console.log(err)
+  }
+  // test
+  // const mockScores = [
+  //   { id: 1, name: '复杂程度', score: 4, minScore: 1, maxScore: 5 },
+  //   { id: 2, name: '创新性', score: 3, minScore: 1, maxScore: 5 },
+  //   { id: 3, name: '完成度', score: 5, minScore: 1, maxScore: 5 }
+  // ];
+
+  // scoringDetails.value = mockScores;
+  // totalScore.value = mockScores.reduce((sum, item) => sum + item.score, 0);
   showScoringDetailDialog.value = true;
 };
 
@@ -200,11 +215,9 @@ const getScoreStatusTag = (status) => {
 //   emit('update:visible', newVal);
 // });
 
-// onMounted(() => {
-//   if (props.visible) {
-//     fetchGroups();
-//   }
-// });
+onMounted(() => {
+  fetchGroups();
+});
 </script>
 
 <style scoped>
