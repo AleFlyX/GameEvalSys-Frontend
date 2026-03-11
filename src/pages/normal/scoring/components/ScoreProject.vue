@@ -38,12 +38,18 @@ const handleClose = () => {
   emits('update:visible', false)
 }
 const scoringFormRef = ref(null)
+const disableBehavior = ref(false)
 const handleConfirm = async () => {
+  disableBehavior.value = true;
   try {
     // console.log(scoringFormRef.value)
     await scoringFormRef.value.submit();
+
+    handleClose();
   } catch (err) {
     console.log(err)
+  } finally {
+    disableBehavior.value = false;
   }
 
 }
