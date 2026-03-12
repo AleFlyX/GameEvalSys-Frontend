@@ -477,6 +477,50 @@
   }
   ```
 
+### 5.3 查询所有被打分组（小组）
+
+- **接口地址**：`/groups`
+- **请求方式**：GET
+- **请求头**：`Authorization: Bearer {token}`
+- **路径参数**：`projectId` - 项目ID
+- **请求参数**（Query）：
+  | 参数名 | 类型 | 必填 | 说明 |
+  |--------|------|------|------|
+  | page | number | 否 | 页码（默认1） |
+  | size | number | 否 | 每页条数（默认10） |
+  | keyWords | string | 否 | 关键词搜索 |
+- **响应示例**：
+
+```json
+{
+  "code": 200,
+  "message": "查询成功",
+  "data": {
+    "list": [
+      {
+        "id": 1,
+        "name": "第一小组",
+        "projectId": 1,
+        "projectName": "2026中期答辩",
+        "createTime": "2026-02-01 10:00:00",
+        "updateTime": "2026-02-01 10:00:00"
+      },
+      {
+        "id": 2,
+        "name": "第二小组",
+        "projectId": 1,
+        "projectName": "2026中期答辩",
+        "createTime": "2026-02-01 10:05:00",
+        "updateTime": "2026-02-01 10:05:00"
+      }
+    ],
+    "total": 2,
+    "page": 1,
+    "size": 10
+  }
+}
+```
+
 ## 6. 打分模块（打分用户）
 
 ### 6.1 提交/修改打分
