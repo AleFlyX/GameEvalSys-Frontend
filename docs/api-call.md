@@ -441,7 +441,8 @@
   | 参数名 | 类型 | 必填 | 说明 |
   |--------|------|------|------|
   | name | string | 是 | 小组名称 |
-  | projectId | number | 是 | 关联项目ID |
+  | description | string | 否 | 小组描述 |
+  | isEnabled | Boolean | 是 | 是否启用 |
 - **响应示例**：
   ```json
   {
@@ -450,7 +451,8 @@
     "data": {
       "id": 1,
       "name": "第一小组",
-      "projectId": 1,
+      "description": "班级第一小组",
+      "isEnabled": true,
       "createTime": "2026-01-27 11:30:00"
     }
   }
