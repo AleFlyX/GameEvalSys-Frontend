@@ -27,8 +27,6 @@ import { userApi } from '@/api/user'
 import { ref } from 'vue';
 import { ElMessage } from 'element-plus';
 
-const props = defineProps({})
-
 const emits = defineEmits(['update:visible', 'refresh'])
 const handleClose = () => {
   emits('update:visible', false)

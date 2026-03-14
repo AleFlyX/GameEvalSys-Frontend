@@ -45,18 +45,7 @@ import MyBtn from '@/components/common/form/MyBtn.vue';
 import { ref, watch } from 'vue';
 import * as XLSX from 'xlsx'; // 引入 xlsx 库
 
-import { groupApi } from '@/api/reviewer-group';
-const props = defineProps({
-  // revirewerGroupList: { //接受父组件UserAdd传入的陪审团数据
-  //   type: Array,
-  //   default: () => [
-  //     { id: 'error1', name: '网络错误' }, { id: 'error2', name: '网络错误' },
-  //   ]
-  // },
-  // remoteMethod: {
-  //   type: Function,
-  // }
-})
+import { reviewerGroupApi } from '@/api/reviewer-group';
 
 const loading = ref(false)
 const reviewerGroups = ref([])
@@ -65,7 +54,7 @@ const getReviewerGroupList = async (keywords) => {
   loading.value = true;
   console.log('searching reviewer group list', keywords)
   try {
-    const response = await groupApi.getReviewerGroupList({ keyWords: keywords })
+    const response = await reviewerGroupApi.getReviewerGroupList({ keyWords: keywords })
     reviewerGroups.value = response.data;
     loading.value = false;
   } catch (err) {

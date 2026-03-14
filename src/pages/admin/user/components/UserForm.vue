@@ -51,7 +51,7 @@ import { ref, computed, watch, onMounted } from 'vue';
 
 import BaseForm from '@/components/common/form/BaseForm.vue';
 
-import { groupApi } from '@/api/reviewer-group';
+import { reviewerGroupApi } from '@/api/reviewer-group';
 
 import { userFormRules } from '../utils/userFormRules';
 import { ElMessage } from 'element-plus';
@@ -68,13 +68,6 @@ const props = defineProps({
       role: 'normal'
     })
   },
-  // remoteMethod: {
-  //   type: Function
-  // },
-  // reviewerGroups: {
-  //   type: Array,
-  //   default: () => []
-  // },
   editMode: {
     type: Boolean,
     default: false
@@ -114,7 +107,7 @@ const initializeUserReviewerGroups = async () => {
     const groups = [];
 
     // 并行获取所有评审团详情
-    const promises = groupIds.map(id => groupApi.getReviewerGroupDetail(id));
+    const promises = groupIds.map(id => reviewerGroupApi.getReviewerGroupDetail(id));
     const responses = await Promise.all(promises);
 
     //将获取到的详细详细逐个推入groups
@@ -142,7 +135,7 @@ const getReviewerGroupList = async (keywords) => {
   loading.value = true;
   console.log('searching reviewer group list', keywords)
   try {
-    const response = await groupApi.getReviewerGroupList({ keyWords: keywords })
+    const response = await reviewerGroupApi.getReviewerGroupList({ keyWords: keywords })
     reviewerGroups.value = response.data;
     loading.value = false;
   } catch (err) {
