@@ -49,12 +49,14 @@
     </template>
 
     <template #modals>
-      <!-- 创建/编辑评审组 -->
-      <ReviewerGroupAdd v-model:visible="showAddDialog" :edit-data="editingData" @refresh="handleRefresh">
-      </ReviewerGroupAdd>
 
       <!-- 查看详情 -->
-      <BaseModal v-model:visible="showDetailDialog" :allow-mask-close="false">
+      <ProjectGroupDetails v-model:visible="showDetailDialog" @update:visible="handleClose"
+        :selected-group="selectedGroup">
+
+      </ProjectGroupDetails>
+
+      <!-- <BaseModal v-model:visible="showDetailDialog" :allow-mask-close="false">
         <template #layout>
           <div class="modal-container">
             <div class="modal-header">
@@ -103,7 +105,7 @@
             </div>
           </div>
         </template>
-      </BaseModal>
+</BaseModal> -->
 
       <!-- 删除确认 -->
       <BaseConfirmModal v-model:visible="showDeleteDialog" title="确认删除" :keywords="deleteKeywords"
@@ -127,6 +129,7 @@ import { projectGroupApi } from '@/api/project-group';
 import { COLUMN_RULES } from './utils/projectGroupColRule';
 
 import { ElMessage } from 'element-plus';
+import ProjectGroupDetails from './components/ProjectGroupDetails.vue';
 
 // 统计数据
 const overViewCardsMap = reactive({
@@ -226,10 +229,15 @@ const handleViewDetail = (row) => {
   showDetailDialog.value = true;
 };
 
+const handleClose = (val) => {
+  showAddDialog.value = val;
+  showDetailDialog.value = val;
+}
+
 // 修改状态
 const handleChangeStatus = async (newStatus, row) => {
   try {
-    await groupApi.editReviewerGroup(row.id, { isEnabled: newStatus });
+    await reviewerGroupApi.editReviewerGroup(row.id, { isEnabled: newStatus });
     ElMessage.success(newStatus ? '启用成功' : '禁用成功');
     handleRefresh();
   } catch (error) {
@@ -249,7 +257,7 @@ const confirmDelete = async () => {
   if (!deletingGroup.value) return;
 
   try {
-    await groupApi.deleteReviewerGroup(deletingGroup.value.id);
+    await reviewerGroupApi.deleteReviewerGroup(deletingGroup.value.id);
     ElMessage.success('删除成功');
     showDeleteDialog.value = false;
     handleRefresh();
@@ -300,75 +308,5 @@ onMounted(() => {
   display: flex;
   justify-content: flex-end;
   margin-top: 20px;
-}
-
-.modal-container {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  min-width: 500px;
-}
-
-.modal-header {
-  padding-bottom: 12px;
-  border-bottom: 1px solid #f0f0f0;
-}
-
-.modal-header h3 {
-  margin: 0;
-  font-size: 16px;
-  font-weight: 600;
-  color: #303133;
-}
-
-.modal-body {
-  max-height: 400px;
-  overflow-y: auto;
-  flex: 1;
-}
-
-.detail-section {
-  padding: 20px 0;
-}
-
-.detail-item {
-  display: flex;
-  margin-bottom: 16px;
-  align-items: flex-start;
-}
-
-.detail-item label {
-  font-weight: 600;
-  min-width: 100px;
-  margin-right: 20px;
-}
-
-.detail-item span {
-  flex: 1;
-  color: #606266;
-  word-break: break-all;
-}
-
-.detail-item.full-width {
-  flex-direction: column;
-}
-
-.detail-item.full-width label {
-  margin-bottom: 10px;
-  margin-right: 0;
-}
-
-.members-list {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.modal-footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-  padding-top: 12px;
-  border-top: 1px solid #f0f0f0;
 }
 </style>
