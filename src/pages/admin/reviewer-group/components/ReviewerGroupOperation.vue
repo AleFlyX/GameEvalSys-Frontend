@@ -48,7 +48,7 @@
 <script setup>
 import { ref, watch, onMounted, computed } from 'vue';
 import BaseModal from '@/components/common/modal/BaseModal.vue';
-import { groupApi } from '@/api/group';
+import { reviewerGroupApi } from '@/api/reviewer-group';
 import { userApi } from '@/api/user';
 import { ElMessage } from 'element-plus';
 
@@ -155,7 +155,7 @@ const handleSubmit = async () => {
   try {
     if (isEdit.value) {
       // 编辑
-      await groupApi.editReviewerGroup(props.editData.id, {
+      await reviewerGroupApi.editReviewerGroup(props.editData.id, {
         name: formData.value.name,
         description: formData.value.description,
         isEnabled: formData.value.isEnabled,
@@ -164,7 +164,7 @@ const handleSubmit = async () => {
       ElMessage.success('更新成功');
     } else {
       // 创建
-      await groupApi.createReviewerGroup({
+      await reviewerGroupApi.createReviewerGroup({
         name: formData.value.name,
         description: formData.value.description,
         isEnabled: formData.value.isEnabled,
