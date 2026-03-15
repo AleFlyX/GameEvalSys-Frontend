@@ -1,11 +1,11 @@
 <template>
-  <Transition name="modal">
+  <Transition name="modal" appear>
     <div class="modal-mask" @click="handleMaskClick" @mousedown="handleMaskMousedown" @mouseup="handleMaskMouseup"
       @mouseleave="resetMaskState" v-if="visible">
       <!-- 外层也用v-if控制，避免遮罩残留 -->
       <!-- 用v-if，且依赖props传入的visible -->
       <div class="base-modal" @click.stop v-if="visible" ref="modalContentRef">
-        <button class="default-close" @click="closeModal">x</button>
+        <button class="default-close" @click="closeModal" v-if="showDefaultClose">x</button>
         <slot name="layout"></slot>
       </div>
     </div>
@@ -25,6 +25,10 @@ const props = defineProps({
   visible: {
     type: Boolean,
     default: false
+  },
+  showDefaultClose: {
+    type: Boolean,
+    default: true
   },
   allowMaskClose: {
     type: Boolean,
