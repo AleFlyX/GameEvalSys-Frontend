@@ -65,7 +65,7 @@ export const deleteReviewerGroup = (groupId) => {
   return service.delete(`/reviewer-groups/${groupId}`);
 };
 
-export const groupApi = {
+export const reviewerGroupApi = {
   createReviewerGroup,
   getReviewerGroupList,
   getReviewerGroupDetail,
