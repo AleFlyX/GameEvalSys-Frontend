@@ -72,11 +72,12 @@ import OverviewCard from '@/components/common/data/OverviewCard.vue';
 import SearchInput from '@/components/common/data/SearchInput.vue';
 import DataTableColums from '@/components/common/data/DataTableColums.vue';
 import BaseConfirmModal from '@/components/common/modal/BaseConfirmModal.vue';
-import ReviewerGroupAdd from './components/ReviewerGroupOperations.vue';
+import ReviewerGroupAdd from './components/ReviewerGroupOperation.vue';
 import { COLUMN_RULES } from './utils/groupTableColRules';
 import { reviewerGroupApi } from '@/api/reviewer-group';
 import { ElMessage } from 'element-plus';
 import ReviererGroupDetails from './components/ReviererGroupDetails.vue';
+import { showMsgBox } from '@/utils/ConfirmBox';
 
 // 统计数据
 const overViewCardsMap = reactive({
@@ -179,10 +180,14 @@ const handleViewDetail = (row) => {
 // 修改状态
 const handleChangeStatus = async (newStatus, row) => {
   try {
+    await showMsgBox({ title: newStatus ? '确认启用' : '确认禁用' });
     await reviewerGroupApi.editReviewerGroup(row.id, { isEnabled: newStatus });
     ElMessage.success(newStatus ? '启用成功' : '禁用成功');
     handleRefresh();
   } catch (error) {
+    if (error === 'cancel') {
+      return
+    }
     ElMessage.error('操作失败: ' + error);
   }
 };
