@@ -40,9 +40,9 @@ export const showMsgBox = (options) => {
       setTimeout(() => {
         destroy()
         if (action === 'confirm') {
-          resolve()
+          resolve('confirm')
         } else {
-          reject()
+          reject('cancel')
         }
       }, ANIMATION_DURATION)
     }
