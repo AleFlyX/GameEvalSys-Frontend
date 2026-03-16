@@ -18,9 +18,10 @@
       <el-date-picker v-model="formData.endDate" type="date" placeholder="选择项目结束日期" value-format="YYYY-MM-DD" />
     </el-form-item>
 
-    <el-form-item label="打分标准" prop="standardId">
-      <el-select v-model="formData.standardId" filterable placeholder="选择打分标准" :clearable="!editMode"
-        :loading="loadingScoringStd" remote :remote-method="getScoringStdList" debounce="3000" remote-show-suffix>
+    <el-form-item label="打分标准" prop="standardId" @click="showInfo($refs)" ref="scoringStdRef">
+      <el-select v-model="formData.standardId" filterable placeholder="选择打分标准" :disabled="editMode"
+        :clearable="!editMode" :loading="loadingScoringStd" remote :remote-method="getScoringStdList" debounce="3000"
+        remote-show-suffix>
         <el-option v-for="item in scoringStdList" :key="item.id" :value="item.id" :label="item.name"></el-option>
       </el-select>
     </el-form-item>
@@ -41,7 +42,7 @@
       </el-select>
     </el-form-item> -->
 
-    <el-form-item v-if="!editMode" label="评审团" prop="reviewerGroupId" @click="showInfo">
+    <el-form-item v-if="!editMode" ref="reviewerGroupChoiceRef" label="评审团" prop="reviewerGroupId" @click="showInfo">
       <el-select v-model="formData.reviewerGroupId" placeholder="选择参与评分该项目的评审团" :loading="loadingReviewerGps" filterable
         remote :remote-method="getReviewerGroupList" debounce="300">
         <el-option v-for="item in reviewerGroups" :key="item.id" :label="item.name" :value="item.id" />
@@ -64,9 +65,10 @@ import BaseForm from '@/components/common/form/BaseForm.vue';
 
 import { ScoringApi } from '@/api/scoring';
 import { projectGroupApi } from '@/api/project-group';
-import { groupApi } from '@/api/reviewer-group';
+import { reviewerGroupApi } from '@/api/reviewer-group';
 
 import { projectFormRules } from '../utils/projectFormRules';
+import { ElMessage } from 'element-plus';
 
 const props = defineProps({
   data: {
@@ -91,6 +93,21 @@ const props = defineProps({
 })
 
 const emits = defineEmits(['update:data'])
+
+const scoringStdRef = ref(null)
+const reviewerGroupChoiceRef = ref(null)
+const showInfo = (ref) => {//ref比对
+  console.log(ref.scoringStdRef == scoringStdRef.value)
+  let msgInfo = '';
+  if (ref.scoringStdRef == scoringStdRef.value && props.editMode) {//点击的是scoringStdRef
+    msgInfo = '打分标准不可修改';
+
+  }
+  else if (ref.scoringStdRef == reviewerGroupChoiceRef.value && !props.editMode) {
+    msgInfo = '评审团不可修改';
+  }
+  ElMessage.info(msgInfo)
+}
 
 const baseFormRef = ref(null)
 const scoringMode = ref('individual')
@@ -149,7 +166,7 @@ const getReviewerGroupList = async (keywords) => {
   loadingReviewerGps.value = true;
   console.log('searching reviewer group list', keywords)
   try {
-    const response = await groupApi.getReviewerGroupList({ keyWords: keywords })
+    const response = await reviewerGroupApi.getReviewerGroupList({ keyWords: keywords })
     reviewerGroups.value = response.data;
     loadingReviewerGps.value = false;
   } catch (err) {
