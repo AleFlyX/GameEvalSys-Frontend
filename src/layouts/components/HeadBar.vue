@@ -38,7 +38,7 @@ const userStore = useUserStore();
 function getTitle(routePath) {
   console.log(pub)
   const result = pub.find(item => item.name === 'MainLayout').children.find(item => '/' + item.path === routePath)
-  return result ? result.name : "NULL"
+  return result ? result.name : ""
 }
 
 const title = computed(() => {

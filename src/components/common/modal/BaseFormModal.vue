@@ -94,13 +94,4 @@ const emits = defineEmits([
   max-height: 60vh;
   overflow-y: auto;
 }
-
-.operation {
-  padding: 10px 5px;
-  display: flex;
-  align-items: center;
-  justify-content: end;
-  gap: 15px;
-
-}
 </style>

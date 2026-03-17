@@ -21,8 +21,12 @@
         <div class="operation">
           <slot name="operations">
             <!-- 操作 -->
-            <button v-if="showConfirmButton" :class="buttonType" @click="handleConfirm">{{ confirmButtonText }}</button>
-            <button v-if="showCancelButton" class="cancel-btn" @click="handleCancel">{{ cancelButtonText }}</button>
+            <button v-if="showConfirmButton" :class="buttonType" @click="handleConfirm" :disabled="disabled">
+              {{ confirmButtonText }}
+            </button>
+            <button v-if="showCancelButton" class="cancel-btn" @click="handleCancel" :disabled="disabled">
+              {{ cancelButtonText }}
+            </button>
           </slot>
         </div>
       </template>
@@ -46,6 +50,7 @@ const props = defineProps({
   showCancelButton: { type: Boolean, default: true },
   confirmButtonText: { type: String, default: '确认' },
   cancelButtonText: { type: String, default: '取消' },
+  disabled: { type: Boolean, default: false } // 禁用按钮
 })
 
 const emits = defineEmits([
