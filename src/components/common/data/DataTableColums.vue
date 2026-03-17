@@ -1,6 +1,6 @@
 <template>
   <el-table-column v-for="rule in props.colRules" :key="rule.colDataName || rule.label || rule"
-    :width="(rule.width || '100')">
+    :width="(rule.width || 'auto')">
     <template #header>
       <div class="table-header-cell">
         {{ (rule.label || '空标题') }}
