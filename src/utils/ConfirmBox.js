@@ -9,11 +9,11 @@ let instance = null
 /**
  *
  * @param {Object} options -要渲染的弹窗的选项
- * @param {String} title
- * @param {String} content
+ * @param {String} title 弹窗标题
+ * @param {String} content  弹窗内容
  * @returns
  */
-export const showMsgBox = (options) => {
+export const showMsgBox = (title, content, options) => {
   if (instance) {
     instance.destroy()//调用上一个弹窗实例的摧毁方法
   }
@@ -51,8 +51,13 @@ export const showMsgBox = (options) => {
     // 不用 watch 了，需要手动触发重渲染
     const updateVNode = () => {
       const vnode = createVNode(BaseConfirmModal, {
-        title: options.title || '提示',
-        content: options.content || '确认执行此操作？',
+        type: 'primary',
+        title: title || '提示',
+        content: content || '确认执行此操作？',
+        showConfirmButton: true,
+        showCancelButton: true,
+        confirmButtonText: '确认',
+        cancelButtonText: '取消',
         visible: isVisible,
         'onUpdate:visible': (val) => {
           if (!val) doClose('cancel') // 点击遮罩层关闭

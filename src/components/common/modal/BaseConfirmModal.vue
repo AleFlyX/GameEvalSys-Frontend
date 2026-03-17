@@ -21,8 +21,8 @@
         <div class="operation">
           <slot name="operations">
             <!-- 操作 -->
-            <button v-if="showConfirmButton" class="primary-btn" @click="handleConfirm">确认</button>
-            <button v-if="showCancelButton" class="cancel-btn" @click="handleCancel">取消</button>
+            <button v-if="showConfirmButton" :class="buttonType" @click="handleConfirm">{{ confirmButtonText }}</button>
+            <button v-if="showCancelButton" class="cancel-btn" @click="handleCancel">{{ cancelButtonText }}</button>
           </slot>
         </div>
       </template>
@@ -31,18 +31,21 @@
 </template>
 
 <script setup>
+import { ref } from 'vue';
 import BaseModal from './BaseModal.vue'
 ////我自己控制 $attrs 传给谁，不要vue自动帮我绑到根 DOM。
 defineOptions({
   inheritAttrs: false
 })
 
-defineProps({
+const props = defineProps({
+  type: { type: String, default: 'primary' },
   title: { type: String, default: '' },
   content: { type: String, default: '' },
   showConfirmButton: { type: Boolean, default: true },
-  showCancelButton: { type: Boolean, default: true }
-
+  showCancelButton: { type: Boolean, default: true },
+  confirmButtonText: { type: String, default: '确认' },
+  cancelButtonText: { type: String, default: '取消' },
 })
 
 const emits = defineEmits([
@@ -50,6 +53,10 @@ const emits = defineEmits([
   'cancel',
   'confirm'
 ])
+
+const BTN_TYPE_MAP = { primary: 'primary-btn', warning: 'warning-btn', danger: 'danger-btn' };
+const buttonType = ref(BTN_TYPE_MAP[props.type]);
+
 // 事件处理
 const handleConfirm = () => {
   emits('confirm')

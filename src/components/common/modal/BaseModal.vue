@@ -187,6 +187,19 @@ const handleMaskMouseup = (e) => {
   background-color: #66b1ff;
 }
 
+/* 警告按钮 */
+:deep(.operation .warning-btn) {
+  /* background-color: var(--warning); */
+  background-color: #ea9c00;
+  color: #ffffff;
+}
+
+:deep(.operation .warning-btn:hover) {
+  /* background-color: var(--warning-light); */
+  background-color: #ffd788;
+
+}
+
 /* 危险按钮（删除，class="danger-btn"） */
 :deep(.operation .danger-btn) {
   background-color: #f56c6c;
