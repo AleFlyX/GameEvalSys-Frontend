@@ -1,6 +1,6 @@
 <template>
-  <base-form ref="baseFormRef" :form-rules="projectFormRules" :data="props.data" style="width: 600px" status-icon
-    label-width="auto" @update:data="handleChangedData">
+  <el-form ref="baseFormRef" :rules="projectFormRules" :model="formData" style="width: 600px" status-icon
+    label-width="auto">
 
     <el-form-item label="项目名称" prop="name">
       <el-input v-model="formData.name" type="text" placeholder="请输入项目名称" />
@@ -55,19 +55,19 @@
         inactive-text="停用" />
     </el-form-item>
 
-  </base-form>
+  </el-form>
 </template>
 
 <script setup>
 import { ref, onMounted, computed, watch } from 'vue';
 
-import BaseForm from '@/components/common/form/BaseForm.vue';
+// import BaseForm from '@/components/common/form/BaseForm.vue';
 
 import { ScoringApi } from '@/api/scoring';
 import { projectGroupApi } from '@/api/project-group';
 import { reviewerGroupApi } from '@/api/reviewer-group';
 
-import { projectFormRules } from '../utils/projectFormRules';
+import { projectFormRules } from '../config/formRules/projectForm';
 import { ElMessage } from 'element-plus';
 
 const props = defineProps({
@@ -110,12 +110,12 @@ const showInfo = (ref) => {//ref比对
 }
 
 const baseFormRef = ref(null)
-const scoringMode = ref('individual')
 
-// 通过 computed 获取 BaseForm 的 formData，避免创建重复的数据对象
-const formData = computed(() => {
-  return baseFormRef.value?.formData || {};
-})
+const formData = ref(props.data)
+
+// const formData = computed(() => {
+//   return baseFormRef.value?.formData || {};
+// })
 
 
 const scoringStdList = ref([]);
@@ -174,22 +174,21 @@ const getReviewerGroupList = async (keywords) => {
   }
 }
 
-defineExpose({
-  validate: async () => {
-    return await baseFormRef.value.validate();
-  },
-  getFormData: () => {
-    return formData.value;
-  },
-  getScoringMode: () => {
-    return scoringMode.value;
+// const formIsValid = ref(false)
+const validateFormAsync = async () => {
+  try {
+    // 等待验证结果，通过则返回成功对象
+    await baseFormRef.value.validate();
+    return { valid: true, data: formData.value };
+  } catch (error) {
+    // 验证失败时返回失败对象，error 包含验证字段信息（可选）
+    return { valid: false, data: formData.value, error };
   }
+}
+defineExpose({
+  validate: validateFormAsync
 })
 
-// 当 BaseForm 发出数据更新时转发给父组件
-const handleChangedData = (newVal) => {
-  emits('update:data', newVal);
-}
 watch(
   () => [props.editMode, props.data?.standardId],
   async () => {
