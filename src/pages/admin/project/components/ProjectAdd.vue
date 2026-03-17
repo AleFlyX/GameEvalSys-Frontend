@@ -5,8 +5,7 @@
     </template>
     <template #form>
       <div class="project-add-form">
-        <ProjectForm :data="initialFormData" :editMode="false" ref="formRef" @update:data="handleFormData"
-          :disabled="disableBehavior">
+        <ProjectForm :data="initialFormData" :editMode="false" ref="formRef" :disabled="disableBehavior">
         </ProjectForm>
       </div>
     </template>
@@ -43,14 +42,9 @@ const initialFormData = {
 
 const formRef = ref(null)
 const disableBehavior = ref(false)
-const formData = ref({ ...initialFormData })
 
 const handleClose = () => {
   emits('update:visible', false)
-}
-
-const handleFormData = (data) => {
-  formData.value = data
 }
 
 const handleConfirm = async () => {
