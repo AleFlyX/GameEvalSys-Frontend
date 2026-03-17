@@ -1,31 +1,32 @@
 <template>
-  <MyBtn type="primary" @click="$router.push('/project')">返回</MyBtn>
+  <MyBtn type="primary" @click="handleGoBack">返回</MyBtn>
   <PagePanel>
     <template #header>
       <div class="project-edit-header">
-        <h2>编辑项目: {{ formData.name }}</h2>
+        <h2>编辑项目: {{ projectName }}</h2>
         <p class="subtitle">填写项目基本信息、小组分配和评审团配置</p>
       </div>
     </template>
 
     <template #main-table>
       <div class="project-edit-container">
-        <el-tabs v-model="activeTab">
+        <el-tabs v-model="activeTab" @tab-click="onTabChange">
           <!-- Tab 1: 基本信息 -->
           <el-tab-pane label="基本信息" name="basic">
-            <ProjectForm ref="projectFormRef" edit-mode :data="formData">
-            </ProjectForm>
+            <ProjectForm v-if="activeTab === 'basic'" ref="projectFormRef" edit-mode :data="formData" />
           </el-tab-pane>
 
           <!-- Tab 2: 项目内受评分的小组 -->
           <el-tab-pane label="项目内受评分的小组" name="groups">
-            <ProjectGroups ref="groupsFormRef" :groups-list="groupsList">
-            </ProjectGroups>
+            <ProjectGroups v-if="activeTab === 'groups'" ref="groupsFormRef" :project-id="formData.id"
+              @update:group-ids="handleNewGroupIds" @error-notice="ElMessage.error($event)"
+              @success-notice="ElMessage.success($event)" />
           </el-tab-pane>
 
           <!-- Tab 3: 评审团配置 -->
           <el-tab-pane label="评审团配置" name="reviewer">
-            <ProjectReviewGroups :reviewer-group-members="reviewerGroupMembers"></ProjectReviewGroups>
+            <ProjectReviewGroups v-if="activeTab === 'reviewer'" :project-id="formData.id"
+              :scorer-ids="formData.scorerIds" />
           </el-tab-pane>
         </el-tabs>
       </div>
@@ -43,7 +44,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, watch } from 'vue';
+import { ref, reactive, onMounted, nextTick } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { ElMessage, ElMessageBox } from 'element-plus';
 
@@ -53,29 +54,29 @@ import PagePanel from '@/layouts/PagePanel.vue';
 import MyBtn from '@/components/common/form/MyBtn.vue';
 
 import { projectApi } from '@/api/project';
-import { groupApi } from '@/api/reviewer-group';
-import { getProjectGroups } from '@/api/project-group';
-import { userApi } from '@/api/user'
+
 import ProjectForm from './components/ProjectForm.vue';
 import ProjectGroups from './components/ProjectGroups.vue';
 import ProjectReviewGroups from './components/ProjectReviewGroups.vue';
+import { showMsgBox } from '@/utils/ConfirmBox';
 
 
 const router = useRouter();
 const route = useRoute();
 // const projectStore = useProjectStore();
 
-const activeTab = ref('basic');
+const projectName = ref('');
+const activeTab = ref('basic'); // 默认激活第一个tab
 const isSubmitting = ref(false);
+const isDataAdjusted = ref(false);//是否对当前页面产生改动
 
 const projectFormRef = ref(null);
-const groupsFormRef = ref(null);
-const reviewerFormRef = ref(null);
+// const basicFormValidator = ref(null);
 
-const groupsList = ref([]);
-const reviewerGroupMembers = ref([]);
-const reviewerGroupOptions = ref([]);
-
+/**
+ * groupIds,scorerIds若为空值则说明没有产生更改,对应后端按传过去的字段来修改内容
+ * 所以这俩数据只有被访问 且产生更改的时候才会让这俩值 有内容,从而被后端识别到并更改
+ */
 const formData = reactive({
   id: '',
   name: '',
@@ -90,122 +91,36 @@ const formData = reactive({
   status: 'not_started'
 });
 
-// 获取评审团列表
-const fetchReviewerGroupOptions = async () => {
-  try {
-    const response = await groupApi.getReviewerGroupList({ size: 100, isEnabled: true });
-    reviewerGroupOptions.value = response.data?.records || response.data || [];
-    console.log('获取评审团列表', reviewerGroupOptions.value)
-  } catch (err) {
-    ElMessage.error(`加载评审团列表失败: ${err}`);
-    reviewerGroupOptions.value = [];
+const handleGoBack = () => {
+  if (isDataAdjusted.value) {
+    showMsgBox('未保存', '检测到有做出更改,是否保存', { confirmButtonText: '立即保存' })
+      .then(async () => {
+        await handleSave()
+      })
+      .catch(() => {
+        ElMessage.info('取消保存')
+      }).finally(() => {
+        router.push('/project')
+      })
+    return;
   }
-};
-
-// 获取项目关联的小组列表
-const fetchProjectGroups = async () => {
-  try {
-    const projectId = route.params.id;
-    if (projectId) {
-
-      const response = await getProjectGroups(projectId);
-      console.log('获取项目关联的小组列表', response.data)
-      groupsList.value = response.data || [];
-    }
-  } catch (err) {
-    ElMessage.error(`加载项目小组列表失败: ${err}`);
-    groupsList.value = [];
-  }
-};
-
-// 获取评审团成员列表
-const fetchReviewerGroupMembers = async () => {
-  try {
-    const params = { ids: formData.scorerIds, includeDisabled: true }
-    const response = await userApi.getUsersByIds(params);//batch get users
-
-    // reviewerGroupMembers.value = response.data?.list || [];
-    reviewerGroupMembers.value = response.data || [];
-    console.log('获取评审团成员列表', response.data)
-  } catch (err) {
-    ElMessage.error(`加载评审团成员列表失败: ${err}`);
-    reviewerGroupMembers.value = [];
-  }
-};
-
-// 编辑小组
-const handleEditGroup = (row) => {
-  ElMessage.info(`编辑小组功能开发中: ${row.name}`);
-  // TODO: 实现小组编辑逻辑
-};
-
-// 删除小组
-const handleDeleteGroup = (row) => {
-  ElMessage.confirm(`确定要删除小组 "${row.name}" 吗？`, '提示', {
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
-    type: 'warning'
-  })
-    .then(async () => {
-      try {
-        // TODO: 调用删除 API
-        // await projectApi.removeGroupFromProject(formData.id, row.id);
-        ElMessage.success(`小组 "${row.name}" 已删除`);
-        await fetchProjectGroups();
-      } catch (err) {
-        ElMessage.error(`删除小组失败: ${err}`);
-      }
-    })
-    .catch(() => {
-      // 用户取消
-    });
-};
-
-// 编辑成员
-const handleEditMember = (row) => {
-  ElMessage.info(`编辑成员功能开发中: ${row.name}`);
-  // TODO: 实现成员编辑逻辑
-};
-
-// 删除成员
-const handleDeleteMember = (row) => {
-  ElMessage.confirm(`确定要从评审团中删除成员 "${row.name}" 吗？`, '提示', {
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
-    type: 'warning'
-  })
-    .then(async () => {
-      try {
-        // TODO: 调用删除成员 API
-        // await groupApi.removeMemberFromGroup(formData.reviewerGroupId, row.id);
-        ElMessage.success(`成员 "${row.name}" 已删除`);
-        await fetchReviewerGroupMembers();
-      } catch (err) {
-        ElMessage.error(`删除成员失败: ${err}`);
-      }
-    })
-    .catch(() => {
-      // 用户取消
-    });
-};
+  router.push('/project')
+}
 
 // 初始化表单数据
 const initFormData = async () => {
   try {
-    // 先加载评审团列表
-    await fetchReviewerGroupOptions();
+    // await fetchReviewerGroupOptions();
 
     const projectId = route.params.id;
     if (projectId) {
       // 这里应该调用 API 获取项目详情
       const response = await projectApi.getProjectDetail(projectId);
-
-      //将一个或者多个源对象中所有可枚举的自有属性复制到目标对象，并返回修改后的目标对象。
       Object.assign(formData, response.data);
       console.log('初始化表单数据', response.data)
-      // 加载小组列表和评审团成员
-      await fetchProjectGroups();
-      await fetchReviewerGroupMembers();
+      console.log('**********BASIC************', formData)
+      projectName.value = formData.name;
+      // basicFormValidator.value = projectFormRef.value;
     }
   } catch (err) {
     ElMessage.error(`加载项目信息失败: ${err}`);
@@ -213,31 +128,37 @@ const initFormData = async () => {
   }
 };
 
-// 验证所有 tab 的表单
-const validateAllForms = async () => {
-  try {
-    // 验证基本信息
-    await projectFormRef.value?.validate();
-    // 验证评审团
-    await reviewerFormRef.value?.validate();
-    return true;
-  } catch (err) {
-    ElMessage.error('请完善表单中的所有数据', err);
-    return false;
-  }
-};
+//更新项目表单的小组数据
+const handleNewGroupIds = (newArr) => {
+  console.log('RECV NEW GROUPS ARRAY------------', newArr);
+  isDataAdjusted.value = true;
+  formData.groupIds = newArr;
+}
 
 // 保存更改
 const handleSave = async () => {
-  const isValid = await validateAllForms();
-  if (!isValid) return;
+  // 如果当前不在 basic tab 或还没有获取过 basicFormValidator，则先切到 basic tab
+  if (activeTab.value !== 'basic' || !projectFormRef.value) {
+    activeTab.value = 'basic';
+    await nextTick(); // 等待 DOM 更新，确保组件被渲染
+  }
+
+  // 验证基本信息
+  try {
+    const { valid } = await projectFormRef.value.validate();
+    if (!valid) return;
+  } catch (err) {
+    ElMessage.error('表单验证失败: ' + err);
+    return;
+  }
 
   isSubmitting.value = true;
 
   try {
-    // const response = await projectApi.editProject(formData.id, formData);
-    // ElMessage.success(`${response.message}`);
-    // ElMessage.success('项目已成功更新');
+    const response = await projectApi.editProject(formData.id, formData);
+    console.log('项目编辑表单数据', formData)
+    ElMessage.success(`${response.message}`);
+    ElMessage.success('项目已成功更新');
     router.back();
   } catch (err) {
     ElMessage.error(`保存项目失败: ${err}`);
