@@ -10,7 +10,7 @@
 
     <template #main-table>
       <el-table :data="projectList" v-loading="loading">
-        <DataTableColums :col-rules="columnsRules"></DataTableColums>
+        <DataTableColums :col-rules="PROJECT_LIST_RULES"></DataTableColums>
         <el-table-column>
           <template #header>
             <div style="display: flex; justify-content: start;">
@@ -55,20 +55,21 @@
 </template>
 
 <script setup>
+import { reactive, ref, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
+
+import { ElMessage } from 'element-plus';
+
 import PagePanel from '@/layouts/PagePanel.vue';
 import OverviewCard from '@/components/common/data/OverviewCard.vue';
 import SearchInput from '@/components/common/data/SearchInput.vue';
 import ProjectConfirm from './components/ProjectConfirm.vue';
+import ProjectAdd from './components/ProjectAdd.vue';
 
-import { reactive, ref, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
 import DataTableColums from '@/components/common/data/DataTableColums.vue';
+import { PROJECT_LIST_RULES } from './config/dataTableRules/projectList';
 
 import { projectApi } from '@/api/project';
-import { columnsRules } from './utils/projectListTableRule';
-
-import { ElMessage } from 'element-plus';
-import ProjectAdd from './components/ProjectAdd.vue';
 
 const router = useRouter();
 
@@ -85,40 +86,7 @@ const pageParams = reactive({
   size: 10,
 })
 
-const projectList = ref([
-  {
-    id: 1,
-    name: "2026中期答辩",
-    status: "not_started",
-    isEnabled: true,
-    startDate: "2026-03-01",
-    endDate: "2026-03-15"
-  },
-  {
-    id: 2,
-    name: "2026期答辩",
-    status: "not_started",
-    isEnabled: false,
-    startDate: "2026-03-01",
-    endDate: "2026-03-15"
-  },
-  {
-    id: 3,
-    name: "2026后期答辩",
-    status: "ongoing",
-    isEnabled: true,
-    startDate: "2026-03-01",
-    endDate: "2026-03-15"
-  },
-  {
-    id: 3,
-    name: "2026后期答辩",
-    status: "ended",
-    isEnabled: true,
-    startDate: "2026-03-01",
-    endDate: "2026-03-15"
-  },
-])
+const projectList = ref([])
 
 const loading = ref(true)
 const getProjectsList = async (pageParams) => {
