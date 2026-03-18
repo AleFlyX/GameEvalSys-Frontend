@@ -31,7 +31,9 @@
           <!-- Tab 3: 评审团配置 -->
           <el-tab-pane label="评审团配置" name="reviewer">
             <ProjectReviewGroups v-if="activeTab === 'reviewer'" :project-id="formData.id"
-              :scorer-ids="formData.scorerIds" />
+              :scorer-ids="formData.scorerIds" @edited="projectScorerCache = $event"
+              :scorer-cache="projectScorerCache.cache" :edited-at-local="projectScorerCache.edited"
+              @update:scorer-ids="handleNewScorerIds" />
           </el-tab-pane>
         </el-tabs>
       </div>
@@ -162,6 +164,21 @@ const handleNewGroupIds = (newArr) => {
   formData.groupIds = newArr;
 }
 
+// 小组数据是否被编辑过
+const projectScorerCache = reactive({
+  edited: false,
+  cache: []
+});
+watch(() => projectScorerCache.cache, (newVals) => {
+  console.log('SCORER IDS CHANGED', newVals)
+})
+// 更新项目表单的打分者数据
+const handleNewScorerIds = (newArr) => {
+  console.log('RECV NEW scorer ARRAY------------', newArr);
+  console.log('SCORER IDS CHANGED', projectScorerCache)
+  isDataAdjusted.scorerIdsChanged = true;
+  formData.scorerIds = newArr;
+}
 const isDataChanged = (data) => {
   // 未做出任何改动直接退出
   if (!isDataAdjusted.basicInfoChanged && !isDataAdjusted.groupIdsChanged && !isDataAdjusted.scorerIdsChanged) {
