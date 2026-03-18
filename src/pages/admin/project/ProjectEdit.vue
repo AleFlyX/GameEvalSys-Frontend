@@ -1,5 +1,9 @@
 <template>
   <MyBtn type="primary" @click="handleGoBack">返回</MyBtn>
+  <!-- <p>test data:{{ formData }}</p>
+  <p>groupsChanged:: {{ isDataAdjusted.groupIdsChanged }}</p>
+  <p>scorerIdsChanged:: {{ isDataAdjusted.scorerIdsChanged }}</p>
+  <button @click="isDataChanged(formData)">isDataChanged??</button> -->
   <PagePanel>
     <template #header>
       <div class="project-edit-header">
@@ -19,8 +23,9 @@
           <!-- Tab 2: 项目内受评分的小组 -->
           <el-tab-pane label="项目内受评分的小组" name="groups">
             <ProjectGroups v-if="activeTab === 'groups'" ref="groupsFormRef" :project-id="formData.id"
-              @update:group-ids="handleNewGroupIds" @error-notice="ElMessage.error($event)"
-              @success-notice="ElMessage.success($event)" />
+              @edited="projectGroupCache = $event" :edited-at-local="projectGroupCache.edited"
+              :goroup-ids-cache="projectGroupCache.cache" @update:group-ids="handleNewGroupIds"
+              @error-notice="ElMessage.error($event)" @success-notice="ElMessage.success($event)" />
           </el-tab-pane>
 
           <!-- Tab 3: 评审团配置 -->
@@ -44,7 +49,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, nextTick } from 'vue';
+import { ref, reactive, watch, onMounted, onUnmounted, nextTick } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { ElMessage, ElMessageBox } from 'element-plus';
 
@@ -67,8 +72,14 @@ const route = useRoute();
 
 const projectName = ref('');
 const activeTab = ref('basic'); // 默认激活第一个tab
+
 const isSubmitting = ref(false);
-const isDataAdjusted = ref(false);//是否对当前页面产生改动
+
+const isDataAdjusted = reactive({ // 标记被改的数据
+  basicInfoChanged: false,
+  groupIdsChanged: false,
+  scorerIdsChanged: false
+});
 
 const projectFormRef = ref(null);
 // const basicFormValidator = ref(null);
@@ -77,6 +88,7 @@ const projectFormRef = ref(null);
  * groupIds,scorerIds若为空值则说明没有产生更改,对应后端按传过去的字段来修改内容
  * 所以这俩数据只有被访问 且产生更改的时候才会让这俩值 有内容,从而被后端识别到并更改
  */
+
 const formData = reactive({
   id: '',
   name: '',
@@ -86,13 +98,19 @@ const formData = reactive({
   standardId: '',
   groupIds: [],
   scorerIds: [],
-  reviewerGroupIds: [],
+  // reviewerGroupIds: [],
   isEnabled: true,
   status: 'not_started'
 });
 
+// const isSame = () => {
+//   const same = (originalFormData == toRaw(formData))
+//   console.log(originalFormData, toRaw(formData))
+//   ElMessage.info(same)
+// }
+
 const handleGoBack = () => {
-  if (isDataAdjusted.value) {
+  if (isDataAdjusted.groupIdsChanged || isDataAdjusted.scorerIdsChanged) {
     showMsgBox('未保存', '检测到有做出更改,是否保存', { confirmButtonText: '立即保存' })
       .then(async () => {
         await handleSave()
@@ -119,6 +137,7 @@ const initFormData = async () => {
       Object.assign(formData, response.data);
       console.log('初始化表单数据', response.data)
       console.log('**********BASIC************', formData)
+      // originalFormData = response.data;
       projectName.value = formData.name;
       // basicFormValidator.value = projectFormRef.value;
     }
@@ -128,35 +147,83 @@ const initFormData = async () => {
   }
 };
 
+// 小组数据是否被编辑过
+const projectGroupCache = reactive({
+  edited: false,
+  cache: []
+});
+watch(projectGroupCache, (new1) => {
+  console.log(new1)
+})
 //更新项目表单的小组数据
 const handleNewGroupIds = (newArr) => {
   console.log('RECV NEW GROUPS ARRAY------------', newArr);
-  isDataAdjusted.value = true;
+  isDataAdjusted.groupIdsChanged = true;
   formData.groupIds = newArr;
+}
+
+const isDataChanged = (data) => {
+  // 未做出任何改动直接退出
+  if (!isDataAdjusted.basicInfoChanged && !isDataAdjusted.groupIdsChanged && !isDataAdjusted.scorerIdsChanged) {
+    router.back();
+  }
+  // 未产生改变的数据都删去该项
+  // if (!isDataAdjusted.basicInfoChanged) {
+  //   const basicInfoTemplate = {
+  //     id: '1',
+  //     name: '1',
+  //     description: '1',
+  //     startDate: '1',
+  //     endDate: '1',
+  //     standardId: '1',
+  //     isEnabled: true,
+  //     status: 'not_started'
+  //   }
+  //   for (let item in formData) {
+  //     console.log(item)
+  //     if (basicInfoTemplate[item]) {
+  //       console.log('DELETE ITEM', item)
+  //       delete data.item
+  //     }
+  //   }
+  // }
+  if (!isDataAdjusted.groupIdsChanged) {
+    delete data.groupIds;
+  }
+  if (!isDataAdjusted.scorerIdsChanged) {
+    delete data.scorerIds;
+  }
+  console.log("DELETED DATA", data)
+  return data;
 }
 
 // 保存更改
 const handleSave = async () => {
+
   // 如果当前不在 basic tab 或还没有获取过 basicFormValidator，则先切到 basic tab
   if (activeTab.value !== 'basic' || !projectFormRef.value) {
     activeTab.value = 'basic';
     await nextTick(); // 等待 DOM 更新，确保组件被渲染
   }
 
+  let formValidatedData = {}
   // 验证基本信息
   try {
-    const { valid } = await projectFormRef.value.validate();
+    const { valid, data } = await projectFormRef.value.validate();
+    formValidatedData = data;
     if (!valid) return;
   } catch (err) {
     ElMessage.error('表单验证失败: ' + err);
     return;
   }
 
+  formValidatedData = isDataChanged(formValidatedData);
+
   isSubmitting.value = true;
 
   try {
-    const response = await projectApi.editProject(formData.id, formData);
-    console.log('项目编辑表单数据', formData)
+    const response = await projectApi.editProject(formData.id, formValidatedData);
+    console.log('项目编辑表单数据', formValidatedData)
     ElMessage.success(`${response.message}`);
     ElMessage.success('项目已成功更新');
     router.back();
@@ -181,10 +248,50 @@ const handleCancel = () => {
       // 用户取消
     });
 };
+// 浏览器刷新/关闭时的提醒逻辑
+const handleBeforeUnload = (e) => {
+  if (isDataAdjusted.basicInfoChanged || isDataAdjusted.groupIdsChanged || isDataAdjusted.scorerIdsChanged) {
+    // 标准写法：阻止默认行为 + 设置返回值（不同浏览器兼容）
+    e.preventDefault();
+    e.returnValue = '';
+    // 部分浏览器需要返回字符串（兼容处理）
+    return '';
+  }
+};
+let unWatch = null;
+onMounted(async () => {
+  window.addEventListener('beforeunload', handleBeforeUnload);
+  try {
+    await initFormData();
+    unWatch = watch(
+      // 第一个参数：返回需要监听的属性集合（函数形式）
+      () => [
+        formData.name,
+        formData.description,
+        formData.startDate,
+        formData.endDate,
+        formData.standardId,
+        formData.isEnabled
+      ],
+      // 第二个参数：变化后的回调
+      (newVals, oldVals) => {
+        // console.log('BASIC INFO CHANGED', newVals);
+        isDataAdjusted.basicInfoChanged = true;
+      })
+  } catch (err) {
+    console.log('初始化失败', err)
+  }
 
-onMounted(() => {
-  initFormData();
 });
+// 因为在onMounted 内创建的 watch 不会自动和组件生命周期绑定，所以需手动销毁
+onUnmounted(() => {
+  // 解绑事件
+  window.removeEventListener('beforeunload', handleBeforeUnload);
+  if (unWatch === null) {
+    return;
+  }
+  unWatch();
+})
 </script>
 
 <style scoped>
