@@ -1,7 +1,7 @@
 <template>
   <div class="tab-content">
     <div class="groups-tips">
-      edited: {{ editedAtLocal }}, cache: {{ goroupIdsCache }}
+      <!-- edited: {{ editedAtLocal }}, cache: {{ goroupIdsCache }} -->
       <el-alert title="提示" type="info" description="本表格显示该项目关联的所有小组。可以编辑小组信息或删除不再需要的小组。" :closable="false" />
     </div>
     <el-table :data="groupsList" stripe style="margin-top: 20px; width: 100%">
@@ -78,12 +78,12 @@ const handleDeleteGroup = (row) => {
     .then(() => {
       console.log(row)
       const goroupId = row.id;
-      const filteredGroupIds = groupsList.value.filter(item => item.id !== goroupId);
-      groupsList.value = filteredGroupIds;
-      // console.log('DELETING GROUP', filteredGroupIds)
-      emits('update:groupIds', filteredGroupIds.map(item => item.id))
+      const filteredGroupInfos = groupsList.value.filter(item => item.id !== goroupId);
+      groupsList.value = filteredGroupInfos;
+      // console.log('DELETING GROUP', filteredGroupInfos)
+      emits('update:groupIds', filteredGroupInfos.map(item => item.id))
       emits('successNotice', '删除 ' + row.name + ' 成功')
-      emits('edited', { edited: true, cache: filteredGroupIds })
+      emits('edited', { edited: true, cache: filteredGroupInfos })
     })
     .catch(() => {
       // 用户取消
