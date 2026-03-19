@@ -27,7 +27,7 @@ import { showMsgBox } from '@/utils/ConfirmBox';
 
 import { projectGroupApi } from '@/api/project-group';
 
-import { PROJECT_GROUP_LIST_RULES } from '../config/dataTableRules/projectGroupList';
+import { PROJECT_GROUP_LIST_RULES } from '../config/data-table-rules/projectGroupList';
 
 const props = defineProps({
   projectId: {

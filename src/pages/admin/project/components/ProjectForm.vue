@@ -67,7 +67,7 @@ import { ScoringApi } from '@/api/scoring';
 import { projectGroupApi } from '@/api/project-group';
 import { reviewerGroupApi } from '@/api/reviewer-group';
 
-import { projectFormRules } from '../config/formRules/projectForm';
+import { projectFormRules } from '../config/form-rules/projectForm';
 import { ElMessage } from 'element-plus';
 
 const props = defineProps({

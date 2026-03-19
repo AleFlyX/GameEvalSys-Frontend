@@ -31,7 +31,7 @@ import { showMsgBox } from '@/utils/ConfirmBox';
 
 import { userApi } from '@/api/user'
 
-import { REVIEWER_LIST_RULES } from '../config/dataTableRules/projectReviewerList';
+import { REVIEWER_LIST_RULES } from '../config/data-table-rules/projectReviewerList';
 
 
 const props = defineProps({

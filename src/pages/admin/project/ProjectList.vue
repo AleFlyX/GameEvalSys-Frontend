@@ -67,7 +67,7 @@ import ProjectConfirm from './components/ProjectConfirm.vue';
 import ProjectAdd from './components/ProjectAdd.vue';
 
 import DataTableColums from '@/components/common/data/DataTableColums.vue';
-import { PROJECT_LIST_RULES } from './config/dataTableRules/projectList';
+import { PROJECT_LIST_RULES } from './config/data-table-rules/projectList';
 
 import { projectApi } from '@/api/project';
 

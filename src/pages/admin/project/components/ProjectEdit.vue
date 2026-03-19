@@ -72,6 +72,7 @@ const handleConfirm = async () => {
 
   if (valid) {
     try {
+      console.log('编辑项目保存编辑的data', data)
       // const response = await projectApi.editProject(data.id, data)
       // ElMessage.success(`${response.message}`)
       ElMessage.success('项目已更新')
