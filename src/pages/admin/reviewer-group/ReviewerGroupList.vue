@@ -35,7 +35,7 @@
               <el-button v-else size="small" type="success" @click="handleChangeStatus(true, scope.row)">
                 启用
               </el-button>
-              <el-button size="small" type="danger" @click="handleDelete(scope.row)">删除</el-button>
+              <!-- <el-button size="small" type="danger" @click="handleDelete(scope.row)">删除</el-button> -->
             </template>
           </el-table-column>
         </el-table>
@@ -50,17 +50,12 @@
 
     <template #modals>
       <!-- 创建/编辑评审组 -->
-      <ReviewerGroupAdd v-model:visible="showAddDialog" :edit-data="editingData" @refresh="handleRefresh">
-      </ReviewerGroupAdd>
+      <ReviewerGroupOperation v-model:visible="showAddDialog" :edit-data="editingData" @refresh="handleRefresh">
+      </ReviewerGroupOperation>
 
       <!-- 查看详情 -->
       <ReviererGroupDetails v-model:visible="showDetailDialog" :selected-group="selectedGroup">
       </ReviererGroupDetails>
-
-      <!-- 删除确认 -->
-      <BaseConfirmModal v-model:visible="showDeleteDialog" title="确认删除" :keywords="deleteKeywords"
-        @confirm="confirmDelete">
-      </BaseConfirmModal>
     </template>
   </PagePanel>
 </template>
@@ -71,12 +66,12 @@ import PagePanel from '@/layouts/PagePanel.vue';
 import OverviewCard from '@/components/common/data/OverviewCard.vue';
 import SearchInput from '@/components/common/data/SearchInput.vue';
 import DataTableColums from '@/components/common/data/DataTableColums.vue';
-import BaseConfirmModal from '@/components/common/modal/BaseConfirmModal.vue';
-import ReviewerGroupAdd from './components/ReviewerGroupOperation.vue';
-import { COLUMN_RULES } from './utils/groupTableColRules';
+import ReviererGroupDetails from './components/ReviererGroupDetails.vue';
+import ReviewerGroupOperation from './components/ReviewerGroupOperation.vue';
+
+import { COLUMN_RULES } from './config/data-table-rules/reviewerGroupList';
 import { reviewerGroupApi } from '@/api/reviewer-group';
 import { ElMessage } from 'element-plus';
-import ReviererGroupDetails from './components/ReviererGroupDetails.vue';
 import { showMsgBox } from '@/utils/ConfirmBox';
 
 // 统计数据
@@ -101,11 +96,9 @@ const searchKeyword = ref('');
 // 模态框相关
 const showAddDialog = ref(false);
 const showDetailDialog = ref(false);
-const showDeleteDialog = ref(false);
+
 const editingData = ref(null);
 const selectedGroup = ref(null);
-const deletingGroup = ref(null);
-const deleteKeywords = ref('');
 
 // 获取评审组列表
 const fetchGroupList = async () => {
@@ -180,7 +173,7 @@ const handleViewDetail = (row) => {
 // 修改状态
 const handleChangeStatus = async (newStatus, row) => {
   try {
-    await showMsgBox({ title: newStatus ? '确认启用' : '确认禁用' });
+    await showMsgBox('提示', (newStatus ? '确认启用 ' : '确认禁用 ') + '评审团' + row.name, { type: 'warning' });
     await reviewerGroupApi.editReviewerGroup(row.id, { isEnabled: newStatus });
     ElMessage.success(newStatus ? '启用成功' : '禁用成功');
     handleRefresh();
@@ -189,27 +182,6 @@ const handleChangeStatus = async (newStatus, row) => {
       return
     }
     ElMessage.error('操作失败: ' + error);
-  }
-};
-
-// 删除评审组
-const handleDelete = (row) => {
-  deletingGroup.value = row;
-  deleteKeywords.value = row.name;
-  showDeleteDialog.value = true;
-};
-
-// 确认删除
-const confirmDelete = async () => {
-  if (!deletingGroup.value) return;
-
-  try {
-    await reviewerGroupApi.deleteReviewerGroup(deletingGroup.value.id);
-    ElMessage.success('删除成功');
-    showDeleteDialog.value = false;
-    handleRefresh();
-  } catch (error) {
-    ElMessage.error('删除失败: ' + error);
   }
 };
 
