@@ -2,22 +2,22 @@
   <PagePanel>
     <template #header>
       <div class="stats-header">
-        <OverviewCard icon="User" title="总评审组数" :data="overViewCardsMap.totalGroups" icon-color="var(--primary-havy)"
+        <OverviewCard icon="User" title="总项目组数" :data="overViewCardsMap.totalGroups" icon-color="var(--primary-havy)"
           icon-background="var(--primary-light)" width="23%">
         </OverviewCard>
-        <OverviewCard icon="UserFilled" title="活跃评审组" :data="overViewCardsMap.activeGroups" icon-color="var(--success)"
+        <OverviewCard icon="UserFilled" title="活跃小组" :data="overViewCardsMap.activeGroups" icon-color="var(--success)"
           icon-background="var(--success-light)" width="23%">
         </OverviewCard>
-        <OverviewCard icon="Users" title="总成员数" :data="overViewCardsMap.totalMembers" icon-color="var(--warning)"
+        <OverviewCard icon="Users" title="总小组数" :data="overViewCardsMap.totalMembers" icon-color="var(--warning)"
           icon-background="var(--warning-light)" width="23%">
         </OverviewCard>
-        <OverviewCard icon="Management" title="平均组规模" :data="overViewCardsMap.avgGroupSize" icon-color="var(--info)"
+        <OverviewCard icon="Management" title="平均小组大小" :data="overViewCardsMap.avgGroupSize" icon-color="var(--info)"
           icon-background="var(--info-light)" width="23%">
         </OverviewCard>
       </div>
     </template>
 
-    <SearchInput size="middle" placeholder="搜索评审组名称..." @search="handleSearch" @add="handleAdd">
+    <SearchInput size="middle" placeholder="搜索项目小组名称..." @search="handleSearch" @add="handleAdd">
     </SearchInput>
 
     <template #main-table>
@@ -35,7 +35,7 @@
               <el-button v-else size="small" type="success" @click="handleChangeStatus(true, scope.row)">
                 启用
               </el-button>
-              <el-button size="small" type="danger" @click="handleDelete(scope.row)">删除</el-button>
+              <!-- <el-button size="small" type="danger" @click="handleDelete(scope.row)">删除</el-button> -->
             </template>
           </el-table-column>
         </el-table>
@@ -49,68 +49,14 @@
     </template>
 
     <template #modals>
+      <ProjectGroupOperation v-model:visible="showOperationDialog" :editMode="isEdit" :data="editingData"
+        @refresh="handleRefresh">
+      </ProjectGroupOperation>
 
       <!-- 查看详情 -->
       <ProjectGroupDetails v-model:visible="showDetailDialog" @update:visible="handleClose"
         :selected-group="selectedGroup">
-
       </ProjectGroupDetails>
-
-      <!-- <BaseModal v-model:visible="showDetailDialog" :allow-mask-close="false">
-        <template #layout>
-          <div class="modal-container">
-            <div class="modal-header">
-              <h3>{{ selectedGroup?.name }} - 详情</h3>
-            </div>
-            <div class="modal-body">
-              <div class="detail-section">
-                <div class="detail-item">
-                  <label>评审组ID:</label>
-                  <span>{{ selectedGroup?.id }}</span>
-                </div>
-                <div class="detail-item">
-                  <label>评审组名称:</label>
-                  <span>{{ selectedGroup?.name }}</span>
-                </div>
-                <div class="detail-item">
-                  <label>描述:</label>
-                  <span>{{ selectedGroup?.description || '无' }}</span>
-                </div>
-                <div class="detail-item">
-                  <label>成员数:</label>
-                  <span>{{ selectedGroup?.memberIds?.length || 0 }}</span>
-                </div>
-                <div class="detail-item">
-                  <label>创建时间:</label>
-                  <span>{{ selectedGroup?.createTime }}</span>
-                </div>
-                <div class="detail-item">
-                  <label>状态:</label>
-                  <el-tag :type="selectedGroup?.isEnabled ? 'success' : 'danger'">
-                    {{ selectedGroup?.isEnabled ? '启用' : '禁用' }}
-                  </el-tag>
-                </div>
-                <div class="detail-item full-width">
-                  <label>成员列表:</label>
-                  <div class="members-list">
-                    <el-tag v-for="id in selectedGroup?.memberIds" :key="id" closable="false">
-                      成员ID: {{ id }}
-                    </el-tag>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="modal-footer">
-              <el-button @click="showDetailDialog = false">关闭</el-button>
-            </div>
-          </div>
-        </template>
-</BaseModal> -->
-
-      <!-- 删除确认 -->
-      <BaseConfirmModal v-model:visible="showDeleteDialog" title="确认删除" :keywords="deleteKeywords"
-        @confirm="confirmDelete">
-      </BaseConfirmModal>
     </template>
   </PagePanel>
 </template>
@@ -121,15 +67,17 @@ import PagePanel from '@/layouts/PagePanel.vue';
 import OverviewCard from '@/components/common/data/OverviewCard.vue';
 import SearchInput from '@/components/common/data/SearchInput.vue';
 import DataTableColums from '@/components/common/data/DataTableColums.vue';
-import BaseModal from '@/components/common/modal/BaseModal.vue';
-import BaseConfirmModal from '@/components/common/modal/BaseConfirmModal.vue';
 
 import { projectGroupApi } from '@/api/project-group';
 
-import { COLUMN_RULES } from './utils/projectGroupColRule';
+import { COLUMN_RULES } from './config/data-table/projectGroupColRule';
 
 import { ElMessage } from 'element-plus';
 import ProjectGroupDetails from './components/ProjectGroupDetails.vue';
+import ProjectGroupOperation from './components/ProjectGroupOperation.vue';
+import { showMsgBox } from '@/utils/ConfirmBox';
+
+// const showDeleteDialog = ref(false);
 
 // 统计数据
 const overViewCardsMap = reactive({
@@ -151,13 +99,15 @@ const tableData = ref([]);
 const searchKeyword = ref('');
 
 // 模态框相关
-const showAddDialog = ref(false);
+const showOperationDialog = ref(false);
 const showDetailDialog = ref(false);
-const showDeleteDialog = ref(false);
+const isEdit = ref(false);
+
 const editingData = ref(null);
+
 const selectedGroup = ref(null);
-const deletingGroup = ref(null);
-const deleteKeywords = ref('');
+// const deletingGroup = ref(null);
+// const deleteKeywords = ref('');
 
 // 获取评审组列表
 const fetchGroupList = async () => {
@@ -170,11 +120,10 @@ const fetchGroupList = async () => {
     });
 
     if (response.code === 200 && response.data) {
-      console.log(response.data)
       tableData.value = response.data?.list || [];
-      // console.log(tableData.value)
-      // totalData.value = response.data.total || 0;
-      // calculateStats();
+      console.log(response.data)
+      totalData.value = response.data.total || 0;
+      calculateStats();
     }
   } catch (error) {
     // ElMessage.error('获取评审组列表失败: ' + error);
@@ -211,16 +160,18 @@ const handleSearch = (keyword) => {
   fetchGroupList();
 };
 
-// 添加评审组
+// 添加项目小组
 const handleAdd = () => {
+  isEdit.value = false;
   editingData.value = null;
-  showAddDialog.value = true;
+  showOperationDialog.value = true;
 };
 
-// 编辑评审组
+// 编辑项目小组
 const handleEdit = (row) => {
   editingData.value = row;
-  showAddDialog.value = true;
+  isEdit.value = true;
+  showOperationDialog.value = true;
 };
 
 // 查看详情
@@ -230,41 +181,42 @@ const handleViewDetail = (row) => {
 };
 
 const handleClose = (val) => {
-  showAddDialog.value = val;
+  showOperationDialog.value = val;
   showDetailDialog.value = val;
 }
 
 // 修改状态
 const handleChangeStatus = async (newStatus, row) => {
   try {
-    await reviewerGroupApi.editReviewerGroup(row.id, { isEnabled: newStatus });
+    await showMsgBox('确认' + (newStatus ? '启用' : '禁用'))
+    await projectGroupApi.editGroup(row.id, { isEnabled: newStatus });
     ElMessage.success(newStatus ? '启用成功' : '禁用成功');
     handleRefresh();
-  } catch (error) {
-    ElMessage.error('操作失败: ' + error);
+  } catch {
+    ElMessage.error('操作失败: ');
   }
 };
 
-// 删除评审组
-const handleDelete = (row) => {
-  deletingGroup.value = row;
-  deleteKeywords.value = row.name;
-  showDeleteDialog.value = true;
-};
+// // 删除评审组
+// const handleDelete = (row) => {
+//   deletingGroup.value = row;
+//   deleteKeywords.value = row.name;
+//   showDeleteDialog.value = true;
+// };
 
-// 确认删除
-const confirmDelete = async () => {
-  if (!deletingGroup.value) return;
+// // 确认删除
+// const confirmDelete = async () => {
+//   if (!deletingGroup.value) return;
 
-  try {
-    await reviewerGroupApi.deleteReviewerGroup(deletingGroup.value.id);
-    ElMessage.success('删除成功');
-    showDeleteDialog.value = false;
-    handleRefresh();
-  } catch (error) {
-    ElMessage.error('删除失败: ' + error);
-  }
-};
+//   try {
+//     await projectGroupApi.deleteGroup(deletingGroup.value.id);
+//     ElMessage.success('删除成功');
+//     showDeleteDialog.value = false;
+//     handleRefresh();
+//   } catch (error) {
+//     ElMessage.error('删除失败: ' + error);
+//   }
+// };
 
 // 分页处理
 const handleSizeChange = (newSize) => {

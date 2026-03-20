@@ -30,8 +30,7 @@
       </div>
     </template>
     <template #footer>
-      <button @click="handleClose()">关闭</button>
-      <!-- <button @click="console.log(selectedGroup)">dataIN</button> -->
+      <button class="cancel-btn" @click="handleClose()">关闭</button>
     </template>
 
   </BaseDialogModal>
