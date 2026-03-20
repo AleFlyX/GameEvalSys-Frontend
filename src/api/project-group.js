@@ -16,9 +16,9 @@ export const getGroupList = (params = {}) => {
 /**
  * 创建项目小组
  * @param {Object} params
- * @param {String} name
- * @param {String} description
- * @param {String} isEnabled
+ * @param {String} params.name
+ * @param {String} params.description
+ * @param {String} params.isEnabled
  */
 export const createGroups = (params) => {
   return service.post('/groups', params)
@@ -33,9 +33,37 @@ export const getProjectGroups = (projectId) => {
   return service.get(`/projects/${projectId}/groups`);
 };
 
+/**
+ * 获取小组详情
+ * @param {number} groupId - 小组ID
+ * @returns {Promise} 响应数据
+ */
+export const getGroupDetail = (groupId) => {
+  return service.get(`/groups/${groupId}`);
+};
+
+/**
+ * 编辑小组
+ * @param {number} groupId - 小组ID
+ * @param {Object} params - 请求参数
+ * @returns {Promise} 响应数据
+ */
+export const editGroup = (groupId, params) => {
+  return service.put(`/groups/${groupId}`, params);
+};
+
+/**
+ * 将小组与项目关联
+ * @param {Object}
+ */
+export const groupAddToProject = () => {
+  return service.post()
+}
+
 export const projectGroupApi = {
   getGroupList,
   createGroups,
   getProjectGroups,
-
+  getGroupDetail,
+  editGroup,
 }
