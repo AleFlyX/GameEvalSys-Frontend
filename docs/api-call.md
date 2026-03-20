@@ -438,11 +438,11 @@
 - **请求方式**：POST
 - **请求头**：`Authorization: Bearer {token}`
 - **请求参数**：
-  | 参数名 | 类型 | 必填 | 说明 |
-  |--------|------|------|------|
-  | name | string | 是 | 小组名称 |
-  | description | string | 否 | 小组描述 |
-  | isEnabled | Boolean | 是 | 是否启用 |
+  | 参数名 | 类型 | 必需 | 说明 |
+  |------|------|------|------|
+  | name | String | 是 | 小组名称，不能为空 |
+  | description | String | 否 | 小组描述 |
+  | isEnabled | Integer | 否 | 是否启用，默认为 1（启用）。0=禁用，1=启用 |
 - **响应示例**：
   ```json
   {
@@ -450,15 +450,105 @@
     "message": "创建成功",
     "data": {
       "id": 1,
-      "name": "第一小组",
-      "description": "班级第一小组",
-      "isEnabled": true,
-      "createTime": "2026-01-27 11:30:00"
+      "name": "小组名称",
+      "description": "小组描述",
+      "isEnabled": 1,
+      "createTime": "2026-03-20 10:30:00",
+      "updateTime": "2026-03-20 10:30:00"
     }
   }
   ```
+- **注意**
+- 只有管理员（super_admin、admin）可以创建小组
+- 创建小组时不关联任何项目
+- 返回的响应中不包含 projectId 和 relationId
 
-### 5.2 获取项目受评分的小组列表
+### 5.2 将小组关联到项目
+
+- **接口地址**：`/groups/{groupId}/add-to-project`
+- **请求方式**：POST
+- **请求头**：`Authorization: Bearer {token}`
+  **请求参数**
+  | 字段 | 类型 | 必需 | 说明 |
+  |------|------|------|------|
+  | groupId | Long | 是 | 小组 ID |
+  | projectId | Long | 是 | 项目 ID |
+
+**响应示例（成功）**
+
+```json
+{
+  "code": 200,
+  "message": "关联成功",
+  "data": {
+    "id": 1,
+    "name": "小组名称",
+    "description": "小组描述",
+    "projectId": 100,
+    "relationId": 50,
+    "isEnabled": 1,
+    "createTime": "2026-03-20 10:30:00",
+    "updateTime": "2026-03-20 10:30:00"
+  }
+}
+```
+
+**可能的错误响应**
+
+```json
+{
+  "code": 400,
+  "message": "小组已经关联到该项目"
+}
+```
+
+**业务规则**
+
+- 只有管理员可以关联小组到项目
+- 小组必须存在
+- 项目必须存在且未结束
+- 同一小组和项目的组合只能关联一次
+- 关联后会清除相关缓存
+
+### 5.3 编辑小组
+
+- **接口地址**：`/groups/{groupId}`
+- **请求方式**：PUT
+- **请求头**：`Authorization: Bearer {token}`
+- **请求参数**：
+  | 字段 | 类型 | 必需 | 说明 |
+  |------|------|------|------|
+  | name | String | 是 | 小组名称，不能为空 |
+  | description | String | 否 | 小组描述 |
+  | isEnabled | Integer | 否 | 是否启用。0=禁用，1=启用 |
+
+**响应示例（成功）**
+
+```json
+{
+  "code": 200,
+  "message": "编辑成功",
+  "data": {
+    "id": 1,
+    "name": "更新后的小组名称",
+    "description": "更新后的小组描述",
+    "isEnabled": 1,
+    "createTime": "2026-03-20 10:30:00",
+    "updateTime": "2026-03-20 10:35:00"
+  }
+}
+```
+
+**业务规则**
+
+- 只有管理员可以编辑小组
+- 小组必须存在
+- 编辑后会清除该小组关联的所有项目的缓存
+- 编辑后会清除相关打分人员的授权项目缓存
+
+---
+
+### 5.4 获取项目受评分的小组列表
 
 - **接口地址**：`/projects/{projectId}/groups`
 - **请求方式**：GET
@@ -479,7 +569,7 @@
   }
   ```
 
-### 5.3 查询所有被打分组（小组）
+### 5.5 查询所有被打分组（小组）
 
 - **接口地址**：`/groups`
 - **请求方式**：GET
