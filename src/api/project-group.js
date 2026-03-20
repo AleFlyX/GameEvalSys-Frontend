@@ -54,10 +54,12 @@ export const editGroup = (groupId, params) => {
 
 /**
  * 将小组与项目关联
- * @param {Object}
+ * @param {number} groupId - 小组ID
+ * @param {number} projectId - 项目ID
+ * @returns {Promise} 响应数据
  */
-export const groupAddToProject = () => {
-  return service.post()
+export const groupAddToProject = (groupId, projectId) => {
+  return service.post(`/groups/${groupId}/add-to-project`, { projectId })
 }
 
 export const projectGroupApi = {
@@ -66,4 +68,5 @@ export const projectGroupApi = {
   getProjectGroups,
   getGroupDetail,
   editGroup,
+  groupAddToProject,
 }
