@@ -8,9 +8,6 @@
       </ProjectGroupForm>
     </template>
     <template #operations>
-      <button class="primary-btn" @click="val">
-        data
-      </button>
       <button class="primary-btn" @click="handleSubmit" :disabled="isSubmitting">
         {{ isSubmitting ? '提交中...' : '确认' }}
       </button>
@@ -60,11 +57,6 @@ watch(() => props.data, (newData) => {
   }
 }, { immediate: true, deep: true });
 
-
-const val = async () => {
-  const { valid, data } = await projectGroupFormRef.value.validate();
-  console.log(valid, data)
-}
 const handleSubmit = async () => {
   if (!projectGroupFormRef.value) {
     ElMessage.error('表单加载失败');
@@ -80,7 +72,7 @@ const handleSubmit = async () => {
       ElMessage.error('表单验证失败');
       return;
     }
-
+    console.log(valid, data)
     if (props.editMode && data.id) {
       // 编辑模式
       await projectGroupApi.editGroup(data.id, data);
