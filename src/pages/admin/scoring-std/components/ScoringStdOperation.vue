@@ -1,7 +1,7 @@
 <template>
   <BaseFormModal v-bind="$attrs" @update:visible="$emit('update:visible', $event)">
     <template #title>
-      <span>查看打分标准详情</span>
+      <span>{{ addMode ? '新增打分标准' : '查看打分标准' }}</span>
     </template>
     <template #form>
       <div v-if="loading" style="text-align: center; padding: 40px;">
@@ -13,18 +13,17 @@
         </el-icon>
         <p>加载中...</p>
       </div>
-      <ScoringStdForm v-else ref="formRef" :initData="standardData" />
+      <ScoringStdForm v-else ref="formRef" :initData="standardData" :add-mode="addMode" />
     </template>
     <template #operations>
-      <!-- 目前仅支持查看，如后期API支持编辑可取消注释 -->
-      <!-- <button @click="handleConfirm()" class="primary-btn" :disabled="isSubmitting">保存</button> -->
-      <button @click="handleClose()">关闭</button>
+      <button @click="handleConfirm()" class="primary-btn" :disabled="isSubmitting">确认</button>
+      <button @click="handleClose()">取消</button>
     </template>
   </BaseFormModal>
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue';
+import { ref, watch } from 'vue';
 import { ElMessage } from 'element-plus';
 
 import BaseFormModal from '@/components/common/modal/BaseFormModal.vue';
@@ -32,34 +31,42 @@ import ScoringStdForm from './ScoringStdForm.vue';
 
 import { ScoringApi } from '@/api/scoring';
 
-defineOptions({
-  inheritAttrs: false
-});
-
 const props = defineProps({
+  addMode: {
+    type: Boolean,
+    default: false
+  },
   standardId: {
     type: Number,
     default: null
   }
+})
+
+defineOptions({
+  inheritAttrs: false
 });
 
 const emits = defineEmits(['update:visible', 'refresh']);
 
 const formRef = ref(null);
-const loading = ref(false);
 const isSubmitting = ref(false);
-const standardData = ref({
-  indicators: []
-});
 
-// 加载打分标准详情
-const loadStandardDetail = async () => {
-  if (!props.standardId) return;
+const handleClose = () => {
+  emits('update:visible', false);
+};
 
+const loading = ref(false);
+const standardData = ref({ name: '', indicators: [] })
+const loadStandardDetail = async (stdId) => {
+  if (!stdId) {
+    return;
+  }
   loading.value = true;
   try {
-    const response = await ScoringApi.getScoringStandardsDetails(props.standardId);
-    standardData.value = response.data || { indicators: [] };
+    const response = await ScoringApi.getScoringStandardsDetails(stdId);
+    standardData.value = response.data || {};
+    console.log(response.data)
+
   } catch (err) {
     ElMessage.error(`加载打分标准失败: ${err.message || err}`);
   } finally {
@@ -67,25 +74,32 @@ const loadStandardDetail = async () => {
   }
 };
 
-// 监听standardId变化
-watch(() => props.standardId, () => {
-  if (props.standardId) {
-    loadStandardDetail();
-  }
-});
-
-const handleClose = () => {
-  emits('update:visible', false);
-};
-
-// 保存编辑（目前不实现，等API支持）
 const handleConfirm = async () => {
-  ElMessage.info('编辑功能开发中');
-};
+  try {
+    // 校验表单
+    const isValid = await formRef.value.validate();
+    if (!isValid) return;
 
-onMounted(() => {
-  if (props.standardId) {
-    loadStandardDetail();
+    isSubmitting.value = true;
+
+    // 获取表单数据
+    const formData = formRef.value.getFormData();
+    console.log(formData)
+    // 调用API创建打分标准
+    const response = await ScoringApi.createScoringStandards(formData);
+
+    ElMessage.success('打分标准创建成功');
+    handleClose();
+    emits('refresh', true);
+  } catch (err) {
+    ElMessage.error(`创建失败: ${err.message || err}`);
+  } finally {
+    isSubmitting.value = false;
   }
-});
+};
+watch(() => props.standardId, async (newId) => {
+  console.log(newId)
+  await loadStandardDetail(newId)
+})
+
 </script>

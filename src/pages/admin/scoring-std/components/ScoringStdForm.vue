@@ -1,6 +1,6 @@
 <template>
   <div class="scoring-std-form">
-    <el-form ref="formRef" :model="formData" label-width="140px" status-icon :disabled="!addMode">
+    <el-form ref="formRef" :model="formData" :disabled="!addMode" status-icon label-width="140px">
       <!-- 指标列表 -->
       <div class="indicators-container">
         <div v-if="addMode" class="indicators-header">
@@ -9,8 +9,12 @@
         </div>
 
         <div v-if="formData.indicators.length === 0" class="empty-state">
-          <p>暂无指标，请点击"添加指标"创建</p>
+          <p>暂无指标</p>
         </div>
+
+        <el-form-item v-show="addMode && formData.indicators.length !== 0" prop="name" label="打分标准名">
+          <el-input v-model="formData.name" placeholder="打分标准名称"></el-input>
+        </el-form-item>
 
         <div v-for="(indicator, index) in formData.indicators" :key="index" class="indicator-item">
           <!-- <el-divider /> -->
@@ -47,8 +51,8 @@
 
 <script setup>
 
-import { ref, reactive } from 'vue';
-
+import { ref, reactive, computed } from 'vue';
+import { safeDeepClone } from '@/utils/proxyDataClone';
 const props = defineProps({
   initData: {
     type: Object,
@@ -64,15 +68,18 @@ const props = defineProps({
 
 const formRef = ref(null);
 
-const formData = reactive({
-  indicators: props.initData.indicators && props.initData.indicators.length > 0
-    ? JSON.parse(JSON.stringify(props.initData.indicators))
-    : []
+// const formData = reactive({
+//   indicators: props.initData.indicators && props.initData.indicators.length > 0
+//     // ? JSON.parse(JSON.stringify(props.initData.indicators))
+//     ? safeDeepClone(props.initData.indicators)
+//     : []
+// });
+const formData = computed(() => {
+  return { name: props.initData, indicators: safeDeepClone(props.initData.indicators) }
 });
-
 // 添加指标
 const addIndicator = () => {
-  formData.indicators.push({
+  formData.value.indicators.push({
     name: '',
     description: '',
     minScore: 0,
@@ -82,45 +89,44 @@ const addIndicator = () => {
 
 // 删除指标
 const removeIndicator = (index) => {
-  formData.indicators.splice(index, 1);
+  formData.value.indicators.splice(index, 1);
 };
 
 // 校验方法
 const validate = async () => {
-  try {
-    // 校验指标是否为空
-    if (formData.indicators.length === 0) {
-      throw new Error('至少需要添加一个指标');
-    }
-
-    // 校验每个指标的必填项
-    for (let i = 0; i < formData.indicators.length; i++) {
-      const indicator = formData.indicators[i];
-      if (!indicator.name) {
-        throw new Error(`指标 ${i + 1} 的名称不能为空`);
-      }
-      if (indicator.minScore >= indicator.maxScore) {
-        throw new Error(`指标 ${i + 1} 的最小分值不能大于等于最大分值`);
-      }
-    }
-
-    return true;
-  } catch (err) {
-    throw err;
+  console.log('VALIDATIING FORM NAME', formData.value.name)
+  if (!formData.value.name || !formData.value.name.trim()) {
+    throw new Error('请输入有效内容');
   }
+  else if (formData.value.name.length > 30) {
+    throw new Error('评分标准名超出长度限制');
+  }
+  // 校验指标是否为空
+  if (formData.value.indicators.length === 0) {
+    throw new Error('至少需要添加一个指标');
+  }
+  // 校验每个指标的必填项
+  for (let i = 0; i < formData.value.indicators.length; i++) {
+    const indicator = formData.value.indicators[i];
+    if (!indicator.name) {
+      throw new Error(`指标 ${i + 1} 的名称不能为空`);
+    }
+    if (indicator.minScore >= indicator.maxScore) {
+      throw new Error(`指标 ${i + 1} 的最小分值不能大于等于最大分值`);
+    }
+  }
+  return true;
+
 };
 
 // 获取表单数据
 const getFormData = () => {
-  return {
-    indicators: formData.indicators
-  };
+  return formData;
 };
 
 defineExpose({
   validate,
   getFormData,
-  formData
 });
 </script>
 
