@@ -1,5 +1,5 @@
 <template>
-  <Transition name="modal" appear>
+  <Transition name="modal">
     <div class="modal-mask" @click="handleMaskClick" @mousedown="handleMaskMousedown" @mouseup="handleMaskMouseup"
       @mouseleave="resetMaskState" v-if="visible">
       <!-- 外层也用v-if控制，避免遮罩残留 -->
