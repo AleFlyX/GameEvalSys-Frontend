@@ -196,7 +196,7 @@ const parseExcelData = (excelData) => {
       name: name,          // 姓名
       role: revirewerGroup.value.groupMemberRole,//每个用户的身份
       isEnabled: true,
-      reviewerGroupId: revirewerGroup.value.id //选择绑定的评审组
+      reviewerGroupIds: [Number(revirewerGroup.value.id)] //选择绑定的评审组
     };
 
     resultList.value.push(userObj);
