@@ -1,3 +1,10 @@
+const checkLength = (rule, value, callback) => {
+  console.log("VALIDATING", value)
+  if (value.length == 0) {
+    callback(new Error('请输入有效值'));
+  }
+  callback();
+}
 /**
  * 项目表单验证规则
  */
@@ -19,9 +26,12 @@ export const projectFormRules = {
     { required: true, message: '请选择打分标准', trigger: 'change' }
   ],
   groupIds: [
-    { required: true, message: '请选择至少一个小组', trigger: 'change' }
+    { required: true, message: '请选择至少一个小组', trigger: 'change' },
+    { validator: checkLength, trigger: 'blur' }
   ],
   scorerIds: [
-    { required: true, message: '请选择至少一个打分用户', trigger: 'change' }
+    { required: true, message: '请选择至少一个打分用户', trigger: 'change' },
+    { validator: checkLength, trigger: 'blur' }
   ]
 }
+

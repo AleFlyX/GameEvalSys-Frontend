@@ -67,7 +67,7 @@ import ProjectConfirm from './components/ProjectConfirm.vue';
 import ProjectAdd from './components/ProjectAdd.vue';
 
 import DataTableColums from '@/components/common/data/DataTableColums.vue';
-import { PROJECT_LIST_RULES } from './config/data-table-rules/projectList';
+import { PROJECT_LIST_RULES } from './config/data-table/projectList';
 
 import { projectApi } from '@/api/project';
 
@@ -80,7 +80,7 @@ const overViewCardsMap = ref([
   { title: '已截止的项目', data: '3', icon: 'Failed', iconBackground: 'var(--danger-light)', iconColor: 'var(--danger)' },
 ])
 
-const totalData = ref(100)
+const totalData = ref(0)
 const pageParams = reactive({
   page: 1,
   size: 10,
@@ -94,6 +94,7 @@ const getProjectsList = async (pageParams) => {
     const response = await projectApi.getProjectList(pageParams);
     projectList.value = response.data.list;
     loading.value = false;
+    totalData.value = response.data.total
     console.log(projectList.value)
   } catch (err) {
     ElMessage.error('netWorkERROR', err)

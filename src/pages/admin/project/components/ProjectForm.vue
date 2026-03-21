@@ -28,7 +28,7 @@
 
     <el-form-item v-if="!editMode" label="项目内受评分的小组" prop="groups">
       <el-select v-model="formData.groupIds" placeholder="选择被打分小组" :loading="loadingCommonGroups" multiple filterable
-        clearable remote :remote-method="getCommonGroups" debounce="3000" remote-show-suffix>
+        clearable remote :remote-method="getCommonGroups" debounce="500" remote-show-suffix>
         <el-option v-for="item in commonGroups" :key="item.id" :value="item.id" :label="item.name">
         </el-option>
       </el-select>
@@ -44,7 +44,7 @@
 
     <el-form-item v-if="!editMode" ref="reviewerGroupChoiceRef" label="评审团" prop="reviewerGroupId" @click="showInfo">
       <el-select v-model="formData.reviewerGroupId" placeholder="选择参与评分该项目的评审团" :loading="loadingReviewerGps" filterable
-        remote :remote-method="getReviewerGroupList" debounce="300">
+        remote :remote-method="getReviewerGroupList" debounce="500">
         <el-option v-for="item in reviewerGroups" :key="item.id" :label="item.name" :value="item.id" />
       </el-select>
     </el-form-item>

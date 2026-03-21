@@ -7,7 +7,7 @@
 
     <div class="add-group-section">
       <el-select v-model="selectedGroupId" filterable remote reserve-keyword placeholder="搜索并选择小组"
-        :remote-method="remoteSearchGroups" :loading="groupsLoading" clearable style="width: 300px;">
+        :remote-method="remoteSearchGroups" debounce="500" :loading="groupsLoading" clearable style="width: 300px;">
         <el-option v-for="group in groupsOptions" :key="group.id" :label="group.name" :value="group.id"
           :disabled="groupsList.some(g => g.id === group.id)">
           <span style="float: left">{{ group.name }}</span>
