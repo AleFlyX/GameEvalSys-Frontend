@@ -13,7 +13,8 @@
         </el-icon>
         <p>加载中...</p>
       </div>
-      <ScoringStdForm v-else ref="formRef" :initData="standardData" :add-mode="addMode" />
+      <ScoringStdForm v-else ref="formRef" :initData="addMode ? { name: '', indicators: [] } : standardData"
+        :add-mode="addMode" />
     </template>
     <template #operations>
       <button @click="handleConfirm()" class="primary-btn" :disabled="isSubmitting">确认</button>
@@ -58,7 +59,7 @@ const handleClose = () => {
 const loading = ref(false);
 const standardData = ref({ name: '', indicators: [] })
 const loadStandardDetail = async (stdId) => {
-  if (!stdId) {
+  if (!stdId || props.addMode) {
     return;
   }
   loading.value = true;

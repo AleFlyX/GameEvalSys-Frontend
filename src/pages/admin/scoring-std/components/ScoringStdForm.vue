@@ -68,18 +68,19 @@ const props = defineProps({
 
 const formRef = ref(null);
 
-// const formData = reactive({
-//   indicators: props.initData.indicators && props.initData.indicators.length > 0
-//     // ? JSON.parse(JSON.stringify(props.initData.indicators))
-//     ? safeDeepClone(props.initData.indicators)
-//     : []
-// });
-const formData = computed(() => {
-  return { name: props.initData, indicators: safeDeepClone(props.initData.indicators) }
+const formData = reactive({
+  name: props.initData.name,
+  indicators: props.initData.indicators && props.initData.indicators.length > 0
+    // ? JSON.parse(JSON.stringify(props.initData.indicators))
+    ? safeDeepClone(props.initData.indicators)
+    : []
 });
+// const formData = computed(() => {
+//   return { name: props.initData, indicators: safeDeepClone(props.initData.indicators) }
+// });
 // 添加指标
 const addIndicator = () => {
-  formData.value.indicators.push({
+  formData.indicators.push({
     name: '',
     description: '',
     minScore: 0,
@@ -89,25 +90,25 @@ const addIndicator = () => {
 
 // 删除指标
 const removeIndicator = (index) => {
-  formData.value.indicators.splice(index, 1);
+  formData.indicators.splice(index, 1);
 };
 
 // 校验方法
 const validate = async () => {
-  console.log('VALIDATIING FORM NAME', formData.value.name)
-  if (!formData.value.name || !formData.value.name.trim()) {
+  console.log('VALIDATIING FORM NAME', formData.name)
+  if (!formData.name || !formData.name.trim()) {
     throw new Error('请输入有效内容');
   }
-  else if (formData.value.name.length > 30) {
+  else if (formData.name.length > 30) {
     throw new Error('评分标准名超出长度限制');
   }
   // 校验指标是否为空
-  if (formData.value.indicators.length === 0) {
+  if (formData.indicators.length === 0) {
     throw new Error('至少需要添加一个指标');
   }
   // 校验每个指标的必填项
-  for (let i = 0; i < formData.value.indicators.length; i++) {
-    const indicator = formData.value.indicators[i];
+  for (let i = 0; i < formData.indicators.length; i++) {
+    const indicator = formData.indicators[i];
     if (!indicator.name) {
       throw new Error(`指标 ${i + 1} 的名称不能为空`);
     }
