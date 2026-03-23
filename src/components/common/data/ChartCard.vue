@@ -5,7 +5,7 @@
       <slot name="header">
         <span class="card-title">{{ title }}</span>
         <el-icon class="card-icon">
-          <component :is="icon"></component>
+          <component :is="resolvedIcon"></component>
         </el-icon>
       </slot>
     </div>
@@ -38,7 +38,9 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { computed, ref, onMounted } from 'vue';
+
+import { getElementIcon } from '@/utils/elementIcons';
 // 建议添加 props 来接收进度值，例如：
 const props = defineProps({
   icon: { type: String, default: "Management" },
@@ -47,6 +49,8 @@ const props = defineProps({
   lineChart: { type: Boolean, default: false },
   ringProgress: { type: Number, default: 66 }
 })
+
+const resolvedIcon = computed(() => getElementIcon(props.icon))
 
 // const option = ref({
 //   xAxis: {

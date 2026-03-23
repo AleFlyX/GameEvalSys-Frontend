@@ -4,7 +4,7 @@
     <div class="card-top">
       <div class="card-icon" :style="customIconStyle">
         <el-icon :size=iconSize>
-          <component :is="`${icon}`" :color=validateIconColor></component>
+          <component :is="resolvedIcon" :color=validateIconColor></component>
         </el-icon>
       </div>
       <p class="card-title">{{ title }}</p>
@@ -16,6 +16,8 @@
 </template>
 <script setup>
 import { ref, computed } from 'vue';
+
+import { getElementIcon } from '@/utils/elementIcons';
 
 const props = defineProps({
   width: {
@@ -70,6 +72,8 @@ const validateIconColor = computed(() => {
 const validateIconBackground = computed(() => {
   return props.iconBackground?.trim() === '' ? '#ecf5ff' : props.iconBackground
 })
+
+const resolvedIcon = computed(() => getElementIcon(props.icon))
 
 const customCardsStyle = ref({
   'width': props.width,
