@@ -85,9 +85,7 @@ const inputContent = ref('');
 const handleInputSearch = () => {
   console.log('handleInputSearch', inputContent.value)
   const value = inputContent.value.trim();
-  if (value) {
-    emits('search', value);
-  }
+  emits('search', value);
 }
 
 const handleAdd = () => {
@@ -100,6 +98,7 @@ const handleAdd = () => {
 .search-bar {
   padding: 1px 10px;
   display: flex;
+  flex-direction: row;
   gap: 15px;
 }
 
