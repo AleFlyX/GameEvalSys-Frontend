@@ -31,7 +31,8 @@ export const userApi = {
    * @param {number} [params.page=1] - 页码
    * @param {number} [params.size=10] - 每页条数
    * @param {string} [params.role] - 角色筛选（super_admin/admin/scorer/normal）
-   * @param {string} [params.keywords] - 模糊查询关键字
+   * @param {Boolean} [params.isEnabled] -状态筛选（true/false）
+   * @param {string} [params.keyWords] - 模糊查询关键字
    * @returns {Promise} - 返回用户列表数据
    */
   getUserList: (params = {}) => {

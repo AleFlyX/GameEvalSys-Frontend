@@ -163,6 +163,7 @@
   | size | number | 否 | 每页条数（默认10） |
   | role | string | 否 | 角色筛选 |
   | keyWords | string | 否 | 关键词搜索 |
+  | isEnabled | Boolean | 否 | 按启用状态筛选；不传时仅返回启用用户，`true` 返回启用用户，`false` 返回禁用用户 |
 - **响应示例**：
   ```json
   {
