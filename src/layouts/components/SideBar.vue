@@ -38,6 +38,7 @@
 <script setup>
 import { ref, watch } from "vue";
 import { useRouter, useRoute } from "vue-router";
+import { ArrowUpBold } from "@element-plus/icons-vue";
 import { norm } from "@/router/modules/normalRoutes";
 import { admin } from "@/router/modules/adminRoutes";
 import { useUserStore } from "@/stores/modules/userStore";
