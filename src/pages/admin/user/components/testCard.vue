@@ -1,0 +1,165 @@
+<template>
+
+  <div class="overview-card" :style="customCardsStyle">
+    <!-- 传入title ，date，icon -->
+    <div class="card-top">
+      <div class="card-icon" :style="customIconStyle">
+        <el-icon :size=iconSize>
+          <component :is="`${icon}`" :color=iconColor></component>
+        </el-icon>
+      </div>
+      <p class="card-title">{{ title }}</p>
+    </div>
+    <div class="card-data">
+      <!-- <h2 class="card-content">{{ data }}</h2> -->
+      <button class="btn">TEST</button>
+      <button class="btn-out">TEST</button>
+    </div>
+  </div>
+
+
+</template>
+<script setup>
+import { ref } from 'vue';
+
+const props = defineProps({
+  width: {
+    type: [String, Number],
+    default: '100%'
+  },
+  height: {
+    type: [String, Number],
+    default: '120px'
+  },
+  icon: {
+    type: String,
+    required: false,
+    default: 'User'
+  },
+  iconColor: {
+    type: String,
+    required: false,
+    default: '#409EFF'
+  },
+  iconBackground: {
+    type: String,
+    required: false,
+    default: '#ecf5ff'
+  },
+  iconSize: {
+    type: [String, Number],
+    default: 30
+  },
+  iconBackgroundSize: {
+    type: [String, Number],
+    default: 40
+  },
+  title: {
+    type: String,
+    required: false,
+    default: 'none'
+  },
+  data: {
+    type: String,
+    required: false,
+    default: 'none'
+  }
+})
+const customCardsStyle = ref({
+  'width': props.width,
+  'height': props.height,
+})
+const customIconStyle = ref({
+  'width': props.iconBackgroundSize + 'px',
+  'height': props.iconBackgroundSize + 'px',
+  'background-color': props.iconBackground
+})
+// console.log(customIconStyle.value)
+
+</script>
+<style scoped>
+* {
+  margin: 0;
+  padding: 0;
+}
+
+.overview-card {
+  height: 120px;
+  /* width: 300px; */
+  width: 100%;
+  /* max-width: 400px; */
+  /* background: var(--light-gray-background); */
+  box-shadow: 8px 8px 16px #b6b9ba,
+    -8px -8px 16px #fafafd;
+  background-image: linear-gradient(154deg, #b6b9ba, #fafafd);
+  display: flex;
+  flex-direction: column;
+
+  padding: 10px 20px;
+  margin: 10px 10px;
+  border: 1px solid var(--gray-border);
+  border-radius: 10px;
+  box-shadow: 1px 1px 7px var(--gray-box-shadow);
+
+  transition: all 0.2s ease-in-out;
+}
+
+.btn {
+  margin: 5px;
+  width: 100px;
+  height: 50px;
+  border: none;
+  border-radius: 16px;
+  box-shadow: 8px 8px 16px #b6b9ba,
+    -8px -8px 16px #fafafd;
+  background-image: linear-gradient(154deg, #b6b9ba, #f4f6f8);
+}
+
+.btn-out {
+  width: 100px;
+  height: 50px;
+  border: none;
+  border-radius: 16px;
+  box-shadow: 8px 8px 16px #b6b9ba,
+    -8px -8px 16px #fafafd;
+  background-image: linear-gradient(154deg, #f4f6f8, #b6b9ba);
+  transition: all 0.3s ease-in-out;
+}
+
+.btn-out:active {
+  box-shadow: 8px 8px 16px #b6b9ba,
+    -8px -8px 16px #fafafd;
+  background-image: linear-gradient(154deg, #b6b9ba, #f4f6f8);
+}
+
+.overview-card:hover {
+  box-shadow: 2px 3px 7px var(--gray-box-shadow);
+  transform: translateY(-5px);
+}
+
+.card-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  border-radius: 10px;
+}
+
+.card-top {
+  width: 100%;
+  height: 50%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.card-data {
+  /* margin-top: ; */
+  width: 100%;
+  height: 50%;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  align-items: center;
+}
+</style>

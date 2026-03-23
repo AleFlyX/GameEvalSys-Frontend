@@ -43,7 +43,6 @@
 <script setup>
 import MyBtn from '@/components/common/form/MyBtn.vue';
 import { ref, watch } from 'vue';
-import * as XLSX from 'xlsx'; // 引入 xlsx 库
 
 import { reviewerGroupApi } from '@/api/reviewer-group';
 
@@ -74,6 +73,15 @@ const resultList = ref([]);
 const errorMsg = ref('请先选择评审团以及用户角色');
 const fileInput = ref(null);
 const disableUpload = ref(true)
+let xlsxModulePromise = null
+
+const getXlsx = async () => {
+  if (!xlsxModulePromise) {
+    xlsxModulePromise = import('xlsx')
+  }
+
+  return xlsxModulePromise
+}
 
 watch(revirewerGroup.value, (newv) => {
   console.log(newv)
@@ -91,8 +99,9 @@ watch(revirewerGroup.value, (newv) => {
 /**
  * 下载 Excel 模板（前端直接生成，无后端依赖）
  */
-const downloadExcelTemplate = () => {
+const downloadExcelTemplate = async () => {
   try {
+    const XLSX = await getXlsx()
     // 1. 创建模板数据（表头 + 空行示例）
     const templateData = [
       ['姓名', '学号'], // 表头行
@@ -124,7 +133,7 @@ const downloadExcelTemplate = () => {
  * 处理 Excel 文件上传
  * @param {Event} e - 文件选择事件
  */
-const handleFileUpload = (e) => {
+const handleFileUpload = async (e) => {
   const file = e.target.files[0];
   if (!file) return;
 
@@ -142,8 +151,9 @@ const handleFileUpload = (e) => {
 
   // 读取 Excel 文件
   const reader = new FileReader();
-  reader.onload = (event) => {
+  reader.onload = async (event) => {
     try {
+      const XLSX = await getXlsx()
       // 解析 Excel 文件
       const data = new Uint8Array(event.target.result);
       const workbook = XLSX.read(data, { type: 'array' });
