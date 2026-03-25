@@ -2,7 +2,6 @@
 export const columnsRules = [
   {
     label: '项目名称',
-    width: '200',
     colDataName: 'name',
   },
   {
@@ -22,17 +21,14 @@ export const columnsRules = [
   },
   {
     label: '开始日期',
-    width: '150',
     colDataName: 'startDate',
   },
   {
     label: '结束日期',
-    width: '150',
     colDataName: 'endDate',
   },
   {
     label: '完成度',
-    width: '100',
     colDataName: 'completionRate',
   }
 ];

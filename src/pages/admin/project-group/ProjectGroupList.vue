@@ -73,7 +73,7 @@ import { projectGroupApi } from '@/api/project-group';
 import { COLUMN_RULES } from './config/data-table/projectGroupColRule';
 
 import { ElMessage } from 'element-plus';
-import ProjectGroupDetails from './components/ProjectGroupDetails.vue';
+import ProjectGroupDetails from '../../../components/business/project-group/ProjectGroupDetails.vue';
 import ProjectGroupOperation from './components/ProjectGroupOperation.vue';
 import { showMsgBox } from '@/utils/ConfirmBox';
 

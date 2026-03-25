@@ -1,9 +1,0 @@
-<template>
-  <div class="base-add-modal-form">
-
-  </div>
-</template>
-<script setup>
-
-</script>
-<style scoped></style>

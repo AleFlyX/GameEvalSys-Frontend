@@ -14,8 +14,12 @@
         icon-background="var(--danger-light)">
       </OverviewCard>
     </template>
-    <SearchInput size="large" placeholder="搜索项目名称..." @search="handleSearch" customOpts></SearchInput>
+
     <template #main-table>
+      <div class="search-bar" style="width: 100%; display: flex;align-items: center;justify-content: center;">
+        <SearchInput size="middle" placeholder="搜索项目名称..." @search="handleSearch" :show-add-btn="false"></SearchInput>
+      </div>
+
       <el-table :data="scoringList" stripe style="width: 100%">
         <DataTableColums :col-rules="columnsRules"></DataTableColums>
         <el-table-column>
@@ -41,7 +45,8 @@
         @size-change="handleSizeChange" layout="sizes, prev, pager, next" @current-change="handleCurrentChange" />
     </template>
     <template #modals>
-      <ProjectDetails v-model:visible="showProjectDetailDialog" :selectedProject="selectedProject"></ProjectDetails>
+      <ProjectGroupDetails v-model:visible="showProjectDetailDialog" :selected-group="selectedProject">
+      </ProjectGroupDetails>
     </template>
   </PagePanel>
 </template>
@@ -58,7 +63,6 @@ import { useUserStore } from '@/stores/modules/userStore';
 import { projectApi } from '@/api/project';
 import { ElMessage } from 'element-plus';
 import PagePanel from '@/layouts/PagePanel.vue';
-import ProjectDetails from './components/ProjectDetails.vue';
 import { columnsRules } from './utils/projectListColRules';//数据表格列定义
 import MyBtn from '@/components/common/form/MyBtn.vue';
 
@@ -79,19 +83,8 @@ const pageParams = reactive({
 
 const totalData = ref(0);
 const paginationDisabled = ref(false);
-const scoringList = ref([{
-  id: 1,
-  name: "2026中期答辩",
-  status: "not_started",
-  isEnabled: true,
-  startDate: "2026-03-01",
-  endDate: "2026-03-15"
-}, {
-
-}
-]);
+const scoringList = ref([]); //table 数据
 const selectedProject = ref(null);
-const showGroupScoringDialog = ref(false);
 const showProjectDetailDialog = ref(false);
 const searchKeyword = ref('');
 
@@ -182,7 +175,7 @@ const handleStartScoring = (row) => {
 // 查看项目详情
 const handleViewDetail = (row) => {
   selectedProject.value = row;
-  // console.log(row)
+  console.log(row)
   showProjectDetailDialog.value = true;
 };
 

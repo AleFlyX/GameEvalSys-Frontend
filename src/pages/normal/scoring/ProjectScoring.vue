@@ -14,13 +14,14 @@
     <div class="modal-body">
       <!-- 搜索框 -->
       <div class="search-section">
-        <el-input v-model="searchKeyword" placeholder="搜索小组名称..." style="width: 100%">
+        <SearchInput></SearchInput>
+        <!-- <el-input v-model="searchKeyword" placeholder="搜索小组名称..." style="width: 100%">
           <template #prefix>
             <el-icon>
               <Search />
             </el-icon>
           </template>
-        </el-input>
+</el-input> -->
       </div>
 
       <!-- 小组列表 -->
@@ -70,8 +71,9 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
+import { Back, Search } from '@element-plus/icons-vue';
 
 import { ElMessage } from 'element-plus';
 
@@ -144,6 +146,11 @@ const handleScoring = (row) => {
   showScoringFormDialog.value = true;
 };
 
+const resetScoreDetails = () => {
+  scoringDetails.value = [];
+  totalScore.value = 0
+}
+
 // 查看打分详情
 const handleViewScore = async (row) => {
   selectedGroup.value = row;
@@ -152,10 +159,10 @@ const handleViewScore = async (row) => {
     const response = await ScoringApi.getScoringRecord(row.id, row.projectId)
     scoringDetails.value = response.data.scores;
     totalScore.value = scoringDetails.value.reduce((sum, item) => sum + item.score, 0);
-    console.log(response.data.scores)
   }
   catch (err) {
     console.log(err)
+    resetScoreDetails()
   }
   // test
   // const mockScores = [

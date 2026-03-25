@@ -69,7 +69,7 @@
             <div v-for="item in shortcutList" :key="item.id">
               <div class="shortcut-item" v-if="showShortcutIcon(item.admin)" @click="jumpTo(item.path)">
                 <el-icon class="shortcut-icon" :style="{ color: item.color }">
-                  <component :is="item.icon" />
+                  <component :is="resolveShortcutIcon(item.icon)" />
                 </el-icon>
                 <span class="shortcut-name">{{ item.name }}</span>
               </div>
@@ -97,6 +97,7 @@ import { useRouter } from 'vue-router';
 // } from '@element-plus/icons-vue';
 import { useUserStore } from '@/stores/modules/userStore';
 import ChartCard from '@/components/common/data/ChartCard.vue';
+import { getElementIcon } from '@/utils/elementIcons';
 // import TestBtn from '@/components/common/form/testBtn.vue';
 // import MyBtn from '@/components/common/form/MyBtn.vue';
 // import { formatRoleValue } from '@/utils/format.js';
@@ -148,6 +149,10 @@ const showShortcutIcon = (needAdmin) => {
   else if (!needAdmin) {
     return true;
   }
+}
+
+const resolveShortcutIcon = (iconName) => {
+  return getElementIcon(iconName)
 }
 
 const jumpTo = (path) => {

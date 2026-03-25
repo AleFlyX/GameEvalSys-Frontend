@@ -37,10 +37,10 @@ const props = defineProps({
   }
 })
 
-// watch(props.selectedProject,
-//   (newVal) => {
-//     console.log(newVal)
-//   }
-// )
+watch(() => props.selectedProject,
+  (newVal) => {
+    console.log(newVal)
+  }
+)
 
 </script>

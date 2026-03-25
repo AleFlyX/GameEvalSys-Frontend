@@ -26,9 +26,9 @@
     </el-form-item>
 
     <!-- 备注 -->
-    <el-form-item label="备注" prop="remark">
+    <!-- <el-form-item label="备注" prop="remark">
       <el-input v-model="formData.remark" type="textarea" :rows="3" placeholder="可选：添加打分备注..."></el-input>
-    </el-form-item>
+    </el-form-item> -->
   </el-form>
   <!-- <div class="form-footer">
     <el-button @click="handleCancel">取消</el-button>

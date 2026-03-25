@@ -27,7 +27,7 @@
   </BaseModal>
 </template>
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import BaseModal from '@/components/common/modal/BaseModal.vue';
 const props = defineProps({
   selectedGroup: {
@@ -42,6 +42,11 @@ const props = defineProps({
     type: [Number, String],
     default: 0
   }
+})
+
+// todo:将评分标准做个缓存机制？？ 然后按照 kv结构：id-indicatorName 读取
+onMounted(() => {
+  console.log("6465465465456", props.selectedGroup, props.scoringDetails)
 })
 
 </script>

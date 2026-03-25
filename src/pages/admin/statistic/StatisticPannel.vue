@@ -126,8 +126,8 @@
 
 <script setup>
 import { ref, computed, onMounted, watch, nextTick } from 'vue'
-import * as echarts from 'echarts'
 import { ElButton, ElButtonGroup } from 'element-plus'
+import { ElMessage } from 'element-plus'
 
 // -------------------------- 1. 响应式数据定义 --------------------------
 // 图表 DOM 引用
@@ -143,6 +143,7 @@ let miniChart1 = null
 let miniChart2 = null
 let miniChart3 = null
 let miniChart4 = null
+let echartsLib = null
 
 // 迷你图表数据
 const miniChartData = {
@@ -248,9 +249,30 @@ const trendChartOption = computed(() => {
   }
 })
 
+const ensureEcharts = async () => {
+  if (echartsLib) {
+    return echartsLib
+  }
+
+  try {
+    const module = await import('echarts')
+    echartsLib = module
+    return echartsLib
+  } catch (error) {
+    ElMessage.error('统计图表依赖 echarts，当前项目尚未安装该依赖')
+    console.error('加载 echarts 失败:', error)
+    return null
+  }
+}
+
 // -------------------------- 3. 初始化与销毁 --------------------------
 // 初始化所有图表
-const initCharts = () => {
+const initCharts = async () => {
+  const echarts = await ensureEcharts()
+  if (!echarts) {
+    return
+  }
+
   // 1. 初始化趋势图
   if (trendChartRef.value) {
     trendChart = echarts.init(trendChartRef.value)

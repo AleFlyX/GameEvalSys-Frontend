@@ -69,7 +69,7 @@ import DataTableColums from '@/components/common/data/DataTableColums.vue';
 import ReviererGroupDetails from './components/ReviererGroupDetails.vue';
 import ReviewerGroupOperation from './components/ReviewerGroupOperation.vue';
 
-import { COLUMN_RULES } from './config/data-table-rules/reviewerGroupList';
+import { COLUMN_RULES } from './config/data-table/reviewerGroupList';
 import { reviewerGroupApi } from '@/api/reviewer-group';
 import { ElMessage } from 'element-plus';
 import { showMsgBox } from '@/utils/ConfirmBox';

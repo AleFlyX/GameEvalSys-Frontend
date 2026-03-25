@@ -42,11 +42,10 @@ export function useElPagination(options = {}) {
   let timer = null
 
   const debounce = (fn, delay) => {
-    return function (...args) {
-      let context = this;//保存上下文this指向
+    return (...args) => {
       if (timer) clearTimeout(timer)
       timer = setTimeout(() => {
-        fn.apply(context, ...args)// 绑定this到原函数，还原指向
+        fn(...args)
       }, delay)
     }
   }

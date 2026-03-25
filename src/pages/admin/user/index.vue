@@ -14,6 +14,7 @@
           <div class="select-filter">
             <el-select v-model="filterParams.role" class="role-filter" clearable placeholder="筛选角色"
               @change="handleFilterChange">
+              <el-option value="" label="全部"></el-option>
               <el-option value="normal" label="普通用户"></el-option>
               <el-option value="scorer" label="打分用户"></el-option>
               <el-option value="admin" label="管理员"></el-option>

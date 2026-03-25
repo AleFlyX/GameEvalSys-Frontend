@@ -1,10 +1,10 @@
 // admin页面（仅超级管理员/管理员）
-const UserList = () => import("@/pages/admin/user/UserList.vue");
+const UserList = () => import("@/pages/admin/user/index.vue");
 const ProjectList = () => import("@/pages/admin/project/ProjectList.vue");
 const ProjectEdit = () => import("@/pages/admin/project/ProjectEdit.vue");
 const reviewerGroups = () => import("@/pages/admin/reviewer-group/ReviewerGroupList.vue")
 const projectGroupsList = () => import("@/pages/admin/project-group/ProjectGroupList.vue")
-const scoringStds = () => import("@/pages/admin/scoring-std/ScoringStandardsList.vue")
+const scoringStds = () => import("@/pages/admin/scoring-std/index.vue")
 const Statistic = () => import("@/pages/admin/statistic/StatisticPannel.vue");
 
 export const admin = [
