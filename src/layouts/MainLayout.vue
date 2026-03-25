@@ -14,7 +14,7 @@
 
 <script setup>
 import HeadBar from '@/layouts/components/HeadBar.vue';
-import SideBar from '@/layouts/components/SideBar.vue';
+import SideBar from '@/layouts/components/side-bar/index.vue';
 import { RouterView } from 'vue-router';
 </script>
 <style scoped>
