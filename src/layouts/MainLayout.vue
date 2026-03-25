@@ -13,7 +13,7 @@
 </template>
 
 <script setup>
-import HeadBar from '@/layouts/components/HeadBar.vue';
+import HeadBar from '@/layouts/components/head-bar/index.vue';
 import SideBar from '@/layouts/components/side-bar/index.vue';
 import { RouterView } from 'vue-router';
 </script>
