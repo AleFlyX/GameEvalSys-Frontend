@@ -2,11 +2,16 @@
   <div class="search-bar">
     <input class="search-input" type="text" v-model="inputContent" @keyup.enter="handleInputSearch"
       :style="customSearchInputStyle" :placeholder="inputPlaceholder">
-    <button class="btns search-btn" @click="handleInputSearch" :style="customBtnsStyle">查找</button>
-    <button v-if="!customOpts" class="btns add-btn" @click="handleAdd" :style="customBtnsStyle">添加</button>
-    <slot name="operations">
+    <button v-if="showSearchBtn" class="btns search-btn" @click="handleInputSearch" :style="customBtnsStyle">
+      {{ searchBtnText || '查找' }}
+    </button>
 
-    </slot>
+    <button v-if="showAddBtn" class="btns add-btn" @click="handleAdd" :style="customBtnsStyle">
+      {{ addBtnText || '添加' }}
+    </button>
+
+    <!-- 自定义按钮区域 -->
+    <slot name="operations"></slot>
 
   </div>
 </template>
@@ -33,9 +38,21 @@ const props = defineProps({
     type: String,
     default: '300px'
   },
-  customOpts: {
+  showSearchBtn: {
     type: Boolean,
-    default: false
+    default: true
+  },
+  showAddBtn: {
+    type: Boolean,
+    default: true
+  },
+  searchBtnText: {
+    type: String,
+    default: '搜索'
+  },
+  addBtnText: {
+    type: String,
+    default: '添加'
   }
 })
 
