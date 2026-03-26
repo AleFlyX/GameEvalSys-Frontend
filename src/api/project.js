@@ -85,8 +85,8 @@ export const getProjectDetail = (projectId) => {
  * 获取当前用户授权可访问的项目列表
  * @returns {Promise} -response data
  */
-export const getAuthorizedProjectList = () => {
-  return service.get(`/projects/authorized`);
+export const getAuthorizedProjectList = (params) => {
+  return service.get(`/projects/authorized`, { params });
 };
 
 
