@@ -2,8 +2,8 @@ import { test } from "./testRoutes";
 
 // normal页面（打分用户/普通用户，管理员也可访问）
 const Home = () => import("@/pages/normal/home/HomePage.vue");
-const ScoringList = () => import("@/pages/normal/scoring/ScoringList.vue");
-const ProjectScoring = () => import("@/pages/normal/scoring/ProjectScoring.vue");
+const ScoringList = () => import("@/pages/normal/scoring/list/index.vue");
+const ProjectScoring = () => import("@/pages/normal/scoring/groups/index.vue");
 // const loginTest = () => import("@/pages/public/login/LoginTest.vue")
 export const norm = [
   ...test,
