@@ -1,6 +1,16 @@
-// src/composables/useElPagination.js
 import { ref, computed, watch, unref } from 'vue'
 
+/**
+ * 基于El pagination的组合式函数
+ * @param {Object} options 要初始化的参数
+ * @param {Number} options.initialPage 初始页
+ * @param {Number}options.initialPageSize 初始的分页大小
+ * @param {Array}options.defaultPageSizes 可调整的分页大小
+ * @param {Number}options.maxPageSize 最大分页大小
+ * @param {Function}options.onPageChange 页变化时触发的回调函数
+ * @param {Number}options.debounceTime 回调函数执行的防抖时间
+ * @returns {Object} 要暴露的方法和变量
+ */
 export function useElPagination(options = {}) {
   const {
     initialPage = 1,
@@ -22,6 +32,7 @@ export function useElPagination(options = {}) {
   // 分页禁用 = loading 或 无数据
   const disabled = computed(() => loading.value || total.value === 0)
 
+  // 总页数（一般El pagination会根据 总数据数量 自行计算）
   const totalPages = computed(() =>
     Math.max(1, Math.ceil(total.value / pageSize.value))
   )
@@ -36,7 +47,6 @@ export function useElPagination(options = {}) {
       controller = null
     }
   }
-
 
   // 防抖
   let timer = null
