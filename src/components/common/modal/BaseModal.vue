@@ -4,7 +4,7 @@
       @mouseleave="resetMaskState" v-if="visible">
       <!-- 外层也用v-if控制，避免遮罩残留 -->
       <!-- 用v-if，且依赖props传入的visible -->
-      <div class="base-modal" @click.stop v-if="visible" ref="modalContentRef">
+      <div class="base-modal" @click.stop v-if="visible" :style="modalSizes">
         <button class="default-close" @click="closeModal" v-if="showDefaultClose">x</button>
         <slot name="layout"></slot>
       </div>
@@ -14,7 +14,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, reactive, watch } from 'vue'
 //我自己控制 $attrs 传给谁，不要vue自动帮我绑到根 DOM。
 defineOptions({
   inheritAttrs: false
@@ -26,6 +26,25 @@ const props = defineProps({
     type: Boolean,
     default: false
   },
+
+  minWidth: {
+    type: Number,
+    default: 0
+  },
+  maxWidth: {
+    type: Number,
+    default: 0
+  },
+
+  minHeight: {
+    type: Number,
+    default: 0
+  },
+  maxHeight: {
+    type: Number,
+    default: 0
+  },
+
   showDefaultClose: {
     type: Boolean,
     default: true
@@ -80,6 +99,24 @@ const handleMaskMouseup = (e) => {
   }
   resetMaskState()
 }
+const modalSizes = reactive({
+  'min-width': '400px',
+  'max-width': '700px',
+  'min-height': '100px',
+  'max-height': '90vh'
+})
+
+watch(
+  () => [props.minWidth, props.maxWidth, props.minHeight, props.maxHeight],
+  ([nMinWidth, nMaxWidth, nMinHeight, nMaxHeight]) => {
+    if (nMinWidth) modalSizes['min-width'] = nMinWidth + 'px';
+    if (nMaxWidth) modalSizes['max-width'] = nMaxWidth + 'px';
+    if (nMinHeight) modalSizes['min-height'] = nMinHeight + 'px';
+    if (nMaxHeight) modalSizes['max-height'] = nMaxHeight + 'px';
+  },
+  { immediate: true }
+)
+
 
 // (可扩展)监听visible变化，确保动画执行完整
 // watch(() => props.visible, (newVal) => {
@@ -105,10 +142,6 @@ const handleMaskMouseup = (e) => {
 }
 
 .base-modal {
-  min-width: 400px;
-  max-width: 700px;
-  min-height: 100px;
-  max-height: 90vh;
   padding: 15px 20px;
   position: relative;
   display: flex;
