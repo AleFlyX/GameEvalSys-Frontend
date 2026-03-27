@@ -24,7 +24,7 @@
           </el-input>
         </el-form-item>
         <el-form-item class="login-btn-item">
-          <el-button type="primary" size="large" class="login-btn" @click="showSlideBlock = true" :loading="loading">
+          <el-button type="primary" size="large" class="login-btn" @click="handleFormValidate" :loading="loading">
             登录
           </el-button>
         </el-form-item>
@@ -62,27 +62,42 @@ const loginForm = reactive({
 });
 // 表单验证规则
 const loginRules = reactive({
-  username: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
-  password: [{ required: true, message: '请输入密码', trigger: 'blur' }]
+  username:
+    [
+      { required: true, message: '请输入用户名', trigger: 'blur' },
+      { min: 3, max: 50 }
+    ],
+  password:
+    [
+      { required: true, message: '请输入密码', trigger: 'blur' },
+      { min: 6, max: 100 }
+    ]
 });
 
 const showSlideBlock = ref(false);
+const handleFormValidate = async () => {
+  // 表单验证
+  const valid = await loginFormRef.value.validate();
+  console.log('BEFORE' + valid)
+  if (!valid) {
+    return Promise.reject();
+  }
+  showSlideBlock.value = true;
+  return Promise.resolve();
+}
+
 const handlePassValidate = (isPass) => {
-  console.log(isPass)
   if (!isPass) return;
+  loading.value = true;
   showSlideBlock.value = false;
   handleLogin();
+  return;
 }
 
 // 登录提交方法
 const handleLogin = async () => {
-  // 表单验证
-
-  const valid = await loginFormRef.value.validate();
-  if (!valid) return;
 
   try {
-    loading.value = true;
     // 调用登录方法
     await userStore.login(loginForm);
     ElMessage.success('登录成功');
