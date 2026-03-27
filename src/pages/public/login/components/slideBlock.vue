@@ -1,6 +1,6 @@
 <template>
-  <BaseDialogModal :visible="visible" @update:visible="$emit('update:visible', $event)" :showDefaultClose="false"
-    :allowMaskClose="isSuccess">
+  <BaseDialogModal :max-width="handleMaxWidth()" :min-width="handleMinWidth()" v-bind="$attrs" :visible="visible"
+    @update:visible="$emit('update:visible', $event)" :showDefaultClose="false" :allowMaskClose="isSuccess">
     <template #header>
       验证
     </template>
@@ -187,6 +187,19 @@ const stopDrag = () => {
  */
 const reset = () => {
   initCaptcha()
+}
+
+const handleMaxWidth = () => {
+  if (window.innerWidth < 768) {
+    return 350;
+  }
+  return 0;
+}
+const handleMinWidth = () => {
+  if (window.innerWidth < 768) {
+    return 100;
+  }
+  return 0;
 }
 
 // 监听 visible 变化，当显示时重新初始化
