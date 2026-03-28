@@ -562,9 +562,14 @@
     "message": "查询成功",
     "data": [
       {
-        "id": 1,
-        "name": "第一小组",
-        "projectId": 1
+        "id": 42,
+        "name": "项目1",
+        "description": "项目2",
+        "projectId": 27,
+        "relationId": 203,
+        "isEnabled": 1,
+        "createTime": "2026-03-20 20:39:40",
+        "updateTime": "2026-03-20 20:39:40"
       }
     ]
   }
