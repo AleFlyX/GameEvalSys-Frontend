@@ -59,12 +59,22 @@ export const getScoringRecord = (groupId, projectId) => {
   return service.get(`/scoring/records`, { params: { projectId: projectId, groupId: groupId } });
 };
 
+/**
+ * 获取用户对当前项目的所有打分记录
+ * @param {*} params
+ * @returns
+ */
+export const getProjectSrocingRecds = (projectId, params = { page: 1, size: 10 }) => {
+  return service.get(`/projects/${projectId}/records`, { params })
+}
+
 export const ScoringApi = {
   getScoringStandardsDetails,
   createScoringStandards,
   getScoringStandardsList,
   submitScoring,
   getScoringRecord,
+  getProjectSrocingRecds,
 };
 // export const adminScoringApi = {
 //   createScoringStandards,

@@ -563,8 +563,8 @@
     "data": [
       {
         "id": 42,
-        "name": "项目1",
-        "description": "项目2",
+        "name": "小组1",
+        "description": "项目2的小组",
         "projectId": 27,
         "relationId": 203,
         "isEnabled": 1,
@@ -672,6 +672,70 @@
   | projectId | number | 是 | 项目ID |
   | groupId | number | 是 | 小组ID |
 - **响应示例**：同上（单个打分记录）
+
+### 6.3 获取用户对项目内所有小组的打分记录
+
+- **接口地址**：`/projects/{projectId}/records`
+- **请求方式**：GET
+- **请求头**：`Authorization: Bearer {token}`
+- **请求参数**（Query）：
+  | 参数名 | 类型 | 必填 | 说明 |
+  |--------|------|------|------|
+  | page | number | 否 | 页码（默认1） |
+  | size | number | 否 | 每页条数（默认10） |
+- **响应示例**：
+
+  ```json
+  {
+    "code": 200,
+    "message": "获取成功",
+    "data": {
+      "list": [
+        {
+          "id": 1,
+          "projectId": 1,
+          "groupId": 1,
+          "userId": 2,
+          "scores": [
+            {
+              "indicatorId": 1,
+              "score": 4
+            },
+            {
+              "indicatorId": 2,
+              "score": 2
+            }
+          ],
+          "totalScore": 6,
+          "createTime": "2026-01-27 14:00:00",
+          "updateTime": "2026-01-27 14:00:00"
+        },
+        {
+          "id": 2,
+          "projectId": 1,
+          "groupId": 1,
+          "userId": 2,
+          "scores": [
+            {
+              "indicatorId": 1,
+              "score": 4
+            },
+            {
+              "indicatorId": 2,
+              "score": 2
+            }
+          ],
+          "totalScore": 6,
+          "createTime": "2026-01-27 14:00:00",
+          "updateTime": "2026-01-27 14:00:00"
+        }
+      ],
+      "total": 21,
+      "page": 1,
+      "size": 10
+    }
+  }
+  ```
 
 ## 7. 统计与导出模块
 
