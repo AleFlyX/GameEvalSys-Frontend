@@ -41,6 +41,7 @@
 
 <script setup>
 import { ref, computed, onUnmounted, watch, nextTick } from 'vue'
+import { blockValidateDelay } from '../config/blockValidateDelay' //发送登录请求延迟
 
 const props = defineProps({
   visible: {
@@ -167,7 +168,7 @@ const stopDrag = () => {
     setTimeout(() => {
       emit('success', isSuccess.value);
       errorMsg.value = ''
-    }, 1000)
+    }, blockValidateDelay)
   } else {
     // 验证失败，提示并复位
     errorMsg.value = '验证失败，请重试'
