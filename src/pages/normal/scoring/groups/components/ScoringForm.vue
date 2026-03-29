@@ -116,6 +116,8 @@ const fetchScoringStandard = async () => {
 
   try {
     // 获取项目详情
+    // StandardsID 应该通过父组件传过来
+    //TODO
     const projectDetail = await projectApi.getProjectDetail(props.projectId);
     if (projectDetail?.code === 200 && projectDetail.data?.standardId) {
       const response = await ScoringApi.getScoringStandardsDetails(projectDetail.data.standardId);
