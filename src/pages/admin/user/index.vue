@@ -77,7 +77,7 @@ import { useUserActions } from './composables/useUserActions'
 import { useUserList } from './composables/useUserList'
 import { useUserModal } from './composables/useUserModal'
 import { useMessage } from '@/composables/useMessage'
-import { columnsRules } from './utils/dataTableColumnsRule'
+import { columnsRules } from './config/data-table/dataTableColumnsRule'
 
 const message = useMessage()
 const { changeUserStatus } = useUserActions()
