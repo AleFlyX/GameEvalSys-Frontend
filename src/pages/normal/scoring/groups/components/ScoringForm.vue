@@ -38,9 +38,10 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { ScoringApi } from '@/api/scoring';
-import { projectApi } from '@/api/project';
+import { useProjectStore } from '@/stores/modules/projectStore';
+import { useScoreStore } from '@/stores/modules/scoreStore';
 import { ElMessage } from 'element-plus';
 
 const props = defineProps({
@@ -64,7 +65,6 @@ const props = defineProps({
 
 const emit = defineEmits(['update:visible', 'refresh', 'submit']);
 
-
 const baseFormRef = ref(null);
 const submitLoading = ref(false);
 const indicators = ref([]);
@@ -72,6 +72,9 @@ const formData = ref({
   scores: [],
   remark: ''
 });
+// 缓存入口：项目详情（含 standardId）与打分标准都走 store
+const projectStore = useProjectStore();
+const scoreStore = useScoreStore();
 
 // 验证规则
 const scoringFormRules = {
@@ -115,14 +118,14 @@ const fetchScoringStandard = async () => {
   }
 
   try {
-    // 获取项目详情
-    // StandardsID 应该通过父组件传过来
-    //TODO
-    const projectDetail = await projectApi.getProjectDetail(props.projectId);
-    if (projectDetail?.code === 200 && projectDetail.data?.standardId) {
-      const response = await ScoringApi.getScoringStandardsDetails(projectDetail.data.standardId);
-      if (response.code === 200 && response.data?.indicators) {
-        indicators.value = response.data.indicators;
+    // 1) 先拿项目详情（优先命中缓存），再取 standardId
+    const projectDetail = await projectStore.fetchProjectDetails(props.projectId);
+    const standardId = Number(projectDetail?.standardId);
+    if (Number.isFinite(standardId) && standardId > 0) {
+      // 2) 再拿标准详情（优先命中缓存）
+      const standardDetail = await scoreStore.fetchScoreStandard(standardId);
+      if (standardDetail?.indicators?.length) {
+        indicators.value = standardDetail.indicators;
         formData.value.scores = new Array(indicators.value.length).fill(null);
       } else {
         setDefaultIndicators();
@@ -203,13 +206,20 @@ const handleSubmit = async () => {
     });
 
     if (response.code === 200) {
+      const projectId = Number(props.projectId);
+      const groupId = Number(props.groupId);
+      // 提交成功后失效当前小组评分缓存，避免查看详情读到旧数据
+      scoreStore.clearScoringRecordsCache(projectId, groupId);
+
       ElMessage.success('打分成功');
       emit('submit', {
-        projectId: props.projectId,
-        groupId: props.groupId,
+        projectId,
+        groupId,
         scores: scores,
         totalScore: totalScore.value
       });
+      // 通知父组件刷新列表状态（scored/not_scored）
+      emit('refresh');
       // handleCancel();
     } else {
       ElMessage.error(response.message || '打分失败');
@@ -230,16 +240,9 @@ watch(formData.value, (newVal) => {
   console.log('ScoreChange', newVal.scores)
 });
 
-// watch(visible, (newVal) => {
-//   emit('update:visible', newVal);
-// });
-
-onMounted(() => {
+watch(() => props.projectId, () => {
   fetchScoringStandard();
-  // if (props.visible) {
-  //   fetchScoringStandard();
-  // }
-});
+}, { immediate: true });
 </script>
 
 <style scoped>
