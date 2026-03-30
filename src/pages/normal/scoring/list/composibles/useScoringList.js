@@ -1,4 +1,5 @@
 import { ref, onMounted } from 'vue';
+import { useProjectStore } from '@/stores/modules/projectStore';
 import { projectApi } from '@/api/project';
 import { useMessage } from '@/composables/useMessage';
 import { useElPagination } from '@/composables/useElPagination';
@@ -9,6 +10,8 @@ import { useElPagination } from '@/composables/useElPagination';
  */
 export const useScoringList = () => {
 
+  // 这里直接接入项目缓存：列表请求成功后预热详情数据
+  const projectStore = useProjectStore();
   const message = useMessage();
   const scoringList = ref([]);
 
@@ -35,10 +38,20 @@ export const useScoringList = () => {
   const fetchScoringProjects = async (params = { page: 1, size: 10 }) => {
     try {
       disabled.value = true;
+
       const response = await projectApi.getAuthorizedProjectList(params)
       console.log(response.data)
       scoringList.value = response.data.list || [];
       total.value = response.data.total || 0;
+
+      // 仅在关键字段完整时预热缓存，避免把缺失字段的数据写进详情缓存
+      scoringList.value.forEach((projectItem) => {
+        const hasProjectId = Number.isFinite(Number(projectItem?.id));
+        const hasStandardId = Number.isFinite(Number(projectItem?.standardId));
+        if (hasProjectId && hasStandardId) {
+          projectStore.setProjectDetails(projectItem);
+        }
+      });
       // 计算统计数据
       // calculateStats();
 
