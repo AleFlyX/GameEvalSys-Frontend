@@ -1,9 +1,9 @@
 <template>
   <li class="fold-menu-group">
     <!-- 折叠菜单头部 -->
-    <div class="fold-menu-header" :class="{ active: showSubMenu }" @click="handleExtend()">
+    <div class="fold-menu-header" :class="{ active: props.showSubMenu }" @click="handleExtend()">
       {{ props.label }}
-      <span class="arrow" :class="{ active: showSubMenu }">
+      <span class="arrow" :class="{ active: props.showSubMenu }">
         <el-icon>
           <ArrowUpBold />
         </el-icon>
@@ -18,33 +18,23 @@
   </li>
 </template>
 <script setup>
-import { ref, watch } from 'vue';
 import { ArrowUpBold } from "@element-plus/icons-vue";
 const props = defineProps({
   label: {
     type: String,
     default: '',
   },
-  inFolder: {
+  showSubMenu: {
     type: Boolean,
     default: false
   }
 })
 const emits = defineEmits(['update:showSubMenu']);
 
-const showSubMenu = ref(props.inFolder);
-//是否展开
+// 受控模式：展开状态由父组件统一管理，避免父子状态不一致
 const handleExtend = () => {
-  showSubMenu.value = !showSubMenu.value;
+  emits('update:showSubMenu', !props.showSubMenu);
 }
-
-watch(() => props.inFolder, (nv) => {
-  showSubMenu.value = nv;
-}, { immediate: true })
-
-watch(() => showSubMenu.value, (nv) => {
-  emits('update:showSubMenu', nv);
-})
 </script>
 <style scoped>
 /* 折叠菜单组 - 包裹头部+子项 */
