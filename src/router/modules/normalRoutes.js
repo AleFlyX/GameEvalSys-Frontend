@@ -18,13 +18,13 @@ export const norm = [
     path: "home",
     name: "首页",
     component: Home,
-    meta: { title: "首页", roles: ["super_admin", "admin", "scorer", "normal"] }, // 可访问角色
+    meta: { title: "首页", roles: ["super_admin", "admin", "scorer", "normal"], icon: 'HomeFilled' }, // 可访问角色
   },
   {
     path: "scoring",
     name: "打分列表",
     component: ScoringList,
-    meta: { title: "打分项目列表", roles: ["super_admin", "admin", "scorer"] },
+    meta: { title: "打分项目列表", roles: ["super_admin", "admin", "scorer"], icon: 'Edit' },
   },
   {
     path: "scoring/:projectId", //可通过route.params.projectId读取;

@@ -2,12 +2,17 @@
   <li class="fold-menu-group">
     <!-- 折叠菜单头部 -->
     <div class="fold-menu-header" :class="{ active: props.showSubMenu }" @click="handleExtend()">
-      {{ props.label }}
+      <div class="label-prefix">
+        <slot name="prefix">
+        </slot>
+        {{ props.label }}
+      </div>
       <span class="arrow" :class="{ active: props.showSubMenu }">
         <el-icon>
           <ArrowUpBold />
         </el-icon>
       </span>
+
     </div>
     <!-- 折叠菜单子项 -->
     <ul class="fold-submenu">
@@ -40,6 +45,12 @@ const handleExtend = () => {
 /* 折叠菜单组 - 包裹头部+子项 */
 .fold-menu-group {
   list-style: none;
+}
+
+.label-prefix {
+  display: flex;
+  align-items: center;
+  gap: 5px;
 }
 
 /* 折叠菜单头部 */

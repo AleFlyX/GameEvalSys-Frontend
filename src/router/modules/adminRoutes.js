@@ -12,13 +12,13 @@ export const admin = [
     path: "reviewerGroups",
     name: "评审队伍(班级)",
     component: reviewerGroups,
-    meta: { title: "评审队伍管理", roles: ["super_admin", "admin"] },
+    meta: { title: "评审队伍管理", roles: ["super_admin", "admin"], icon: 'OfficeBuilding' },
   },
   {
     path: "user",
     name: "用户管理",
     component: UserList,
-    meta: { title: "用户管理", roles: ["super_admin", "admin"] },
+    meta: { title: "用户管理", roles: ["super_admin", "admin"], icon: 'Avatar' },
   },
   // {
   //   path: "user/add",
@@ -36,19 +36,19 @@ export const admin = [
     path: "scoringStds",
     name: "打分标准",
     component: scoringStds,
-    meta: { title: "打分标准", roles: ["super_admin", "admin"] },
+    meta: { title: "打分标准", roles: ["super_admin", "admin"], icon: 'Checked' },
   },
   {
     path: "projectGroups",
     name: "受审队伍",
     component: projectGroupsList,
-    meta: { title: "项目受审队伍管理", roles: ["super_admin", "admin"] },
+    meta: { title: "项目受审队伍管理", roles: ["super_admin", "admin"], icon: 'User' },
   },
   {
     path: "project",
     name: "项目管理",
     component: ProjectList,
-    meta: { title: "项目管理", roles: ["super_admin", "admin"] },
+    meta: { title: "项目管理", roles: ["super_admin", "admin"], icon: 'Management' },
   },
 
   // {
@@ -68,6 +68,6 @@ export const admin = [
     // path: "statistic/:projectId",
     name: "得分统计",
     component: Statistic,
-    meta: { title: "打分统计", roles: ["super_admin", "admin"] },
+    meta: { title: "打分统计", roles: ["super_admin", "admin"], icon: 'DataAnalysis' },
   },
 ];

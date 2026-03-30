@@ -8,25 +8,43 @@
       <!-- 普通菜单 -->
       <div v-for="item in norm" :key="item.path" @click="gotoRoute(item.path)">
         <MenuItem v-if="!item.meta.hidden" :active="(isActive(item.path) && (!showSubMenu))">
-        {{ item.name }}
+        <div class="menu-content">
+          <el-icon>
+            <component :is="elementIconMap[item.meta.icon] || null"></component>
+          </el-icon>
+          {{ item.name }}
+        </div>
         </MenuItem>
       </div>
 
       <!-- 折叠菜单组 -->
       <MenuFolder v-if="userStore.isAdmin" label="管理面板" :show-sub-menu="showSubMenu"
         @update:showSubMenu="showSubMenu = $event">
-
+        <template #prefix>
+          <el-icon>
+            <component :is="elementIconMap['Setting']"></component>
+          </el-icon>
+        </template>
         <div v-for="item in admin" :key="item.path">
-
           <MenuItem v-if="!item.meta.hidden" @click="gotoRoute(item.path)" type="subMenu" :active="isActive(item.path)"
             :show="showSubMenu">
-          {{ item.name }}
+          <div class="menu-content">
+            <el-icon :size="showSubMenu ? 18 : 0">
+              <component :is="elementIconMap[item.meta.icon] || null"></component>
+            </el-icon>
+            {{ item.name }}
+          </div>
+          <!-- {{ item.name }} -->
           </MenuItem>
-
         </div>
-
       </MenuFolder>
-      <MenuItem :active="showAgent" v-if="userStore.isAdmin" @click="handleAgentShow">使用PageAgent</MenuItem>
+      <MenuItem :active="showAgent" v-if="userStore.isAdmin" @click="handleAgentShow">
+      <div class="menu-content">
+        <el-icon>
+          <component :is="elementIconMap['ChatSquare']"></component>
+        </el-icon>使用PageAgent
+      </div>
+      </MenuItem>
     </ul>
   </div>
 </template>
@@ -37,6 +55,7 @@ import { useRouter, useRoute } from "vue-router";
 import { norm } from "@/router/modules/normalRoutes";
 import { admin } from "@/router/modules/adminRoutes";
 import { useUserStore } from "@/stores/modules/userStore";
+import { elementIconMap } from "@/utils/elementIcons";
 import MenuItem from "./components/menuItem.vue";
 import MenuFolder from "./components/menuFolder.vue";
 
@@ -46,6 +65,7 @@ const showSubMenu = ref(false); // 折叠菜单展开状态
 const userStore = useUserStore();
 
 const emits = defineEmits(['showAgent']);
+
 const showAgent = ref(false);
 const handleAgentShow = () => {
   showAgent.value = !showAgent.value;
@@ -117,5 +137,11 @@ watch(
   padding: 10px 0;
   list-style: none;
   /* 统一ul无序列表样式 */
+}
+
+.menu-content {
+  display: flex;
+  align-items: center;
+  gap: 5px;
 }
 </style>
