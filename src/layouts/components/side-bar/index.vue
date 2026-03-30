@@ -1,6 +1,9 @@
 <template>
   <div class="sidebar">
     <span class="title">项目评分平台</span>
+    <!-- <MyBtn v-if="userStore.isAdmin" type="primary" style="align-self: center;margin: 5px;width: 50%;"
+      @click="handleAgentShow">使用Agent
+    </MyBtn> -->
     <ul class="nav-items">
       <!-- 普通菜单 -->
       <div v-for="item in norm" :key="item.path" @click="gotoRoute(item.path)">
@@ -10,7 +13,7 @@
       </div>
 
       <!-- 折叠菜单组 -->
-      <MenuFolder v-if="userStore.isAdmin" label="管理面板" :inFolder="isAdminPath"
+      <MenuFolder v-if="userStore.isAdmin" label="管理面板" :show-sub-menu="showSubMenu"
         @update:showSubMenu="showSubMenu = $event">
 
         <div v-for="item in admin" :key="item.path">
@@ -23,7 +26,7 @@
         </div>
 
       </MenuFolder>
-
+      <MenuItem :active="showAgent" v-if="userStore.isAdmin" @click="handleAgentShow">使用PageAgent</MenuItem>
     </ul>
   </div>
 </template>
@@ -41,6 +44,13 @@ const router = useRouter();
 const route = useRoute(); // 当前路由实例
 const showSubMenu = ref(false); // 折叠菜单展开状态
 const userStore = useUserStore();
+
+const emits = defineEmits(['showAgent']);
+const showAgent = ref(false);
+const handleAgentShow = () => {
+  showAgent.value = !showAgent.value;
+  emits('showAgent', showAgent.value)
+}
 
 // 跳转路由方法
 const gotoRoute = (path) => {
