@@ -17,7 +17,7 @@
         :add-mode="addMode" />
     </template>
     <template #operations>
-      <button @click="handleConfirm()" class="primary-btn" :disabled="isSubmitting">确认</button>
+      <button v-if="addMode" @click="handleConfirm()" class="primary-btn" :disabled="isSubmitting">确认</button>
       <button @click="handleClose()">取消</button>
     </template>
   </BaseFormModal>
