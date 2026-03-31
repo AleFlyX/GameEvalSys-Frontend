@@ -33,7 +33,8 @@ export default defineConfig({
     proxy: {
       // 匹配所有以/api/v1开头的请求，转发到后端
       "/api/v1": {
-        target: "http://localhost:8080", // 后端开发地址
+        target: "http://192.168.1.151:8899", // 后端开发地址
+        // target: "http://localhost:8080", // 后端开发地址
         changeOrigin: true, // 开启跨域
         ws: true, // 支持WebSocket
         rewrite: (path) => path,
@@ -43,16 +44,17 @@ export default defineConfig({
     },
   },
   // 打包配置
-  // build: {
-  //   outDir: "dist", // 打包输出目录
-  //   chunkSizeWarningLimit: 1500, // 解决打包体积过大警告
-  //   rollupOptions: {
-  //     // 打包分割（优化打包体积）
-  //     output: {
-  //       chunkFileNames: "js/[name]-[hash].js",
-  //       entryFileNames: "js/[name]-[hash].js",
-  //       assetFileNames: "[ext]/[name]-[hash].[ext]",
-  //     },
-  //   },
-  // },
+  build: {
+    outDir: "./deploy/dist",
+    // outDir: "dist", // 打包输出目录
+    chunkSizeWarningLimit: 1500, // 解决打包体积过大警告
+    // rollupOptions: {
+    //   // 打包分割（优化打包体积）
+    //   output: {
+    //     chunkFileNames: "js/[name]-[hash].js",
+    //     entryFileNames: "js/[name]-[hash].js",
+    //     assetFileNames: "[ext]/[name]-[hash].[ext]",
+    //   },
+    // },
+  },
 });

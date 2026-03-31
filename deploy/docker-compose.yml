@@ -1,0 +1,13 @@
+services:
+  gameevaluate-frontend:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    image: gameevaluate-frontend:latest
+    container_name: gameevaluate-frontend
+    restart: unless-stopped
+    ports:
+      - "8999:80"
+    # 让容器内可通过 host.docker.internal 访问宿主机后端（Linux 需要这一行）
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
