@@ -1,5 +1,6 @@
 // import LoginPage from "@/pages/public/login/LoginPage.vue"
 const Login = () => import("@/pages/public/login/LoginPage.vue");
+const About = () => import("@/pages/public/about/index.vue");
 const Forbidden = () => import("@/pages/public/403/ForbiddenPage.vue");
 const NotFound = () => import("@/pages/public/404/NotFound.vue");
 // 后台主布局（admin/normal页面共用）
@@ -22,6 +23,12 @@ export const pub = [
     meta: { requireAuth: true },
     redirect: "/home",
     children: [...norm, ...admin], //主界面的路由
+  },
+  {
+    path: "/about",
+    name: "关于",
+    component: About,
+    meta: { title: "关于", requireAuth: false },
   },
   {
     path: "/403",
