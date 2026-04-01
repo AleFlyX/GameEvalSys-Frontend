@@ -67,7 +67,7 @@
     :group-data="selectedGroup" @refresh="handleRefresh">
   </ScoreProject>
   <ScoringDetails v-model:visible="showScoringDetailDialog" :selected-group="selectedGroup"
-    :scoring-details="scoringDetails" :total-score="totalScore">
+    :scoring-details="scoringDetails" :scoring-std-details="scoringStdDetails" :total-score="totalScore">
   </ScoringDetails>
 
 </template>
@@ -103,6 +103,7 @@ const selectedGroup = ref(null);
 const showScoringFormDialog = ref(false);
 const showScoringDetailDialog = ref(false);
 const scoringDetails = ref([]);
+const scoringStdDetails = ref({})
 const totalScore = ref(0);
 
 const route = useRoute();
@@ -224,6 +225,11 @@ const handleViewScore = async (row) => {
   try {
     // 优先读缓存（L1/L2），命中后直接展示详情
     const cachedRecord = scoreStore.getScoringRecordsCache(currentProjectId, currentGroupId);
+    const projectDetail = await projectStore.fetchProjectDetails(currentProjectId);
+    const stdId = projectDetail.standardId;
+    scoringStdDetails.value = await scoreStore.fetchScoreStandard(stdId)
+
+    console.error(cachedRecord, projectDetail, scoringStdDetails.value)
     if (cachedRecord) {
       applyRecordDetails(cachedRecord);
       showScoringDetailDialog.value = true;
@@ -315,61 +321,5 @@ onMounted(() => {
 
 .group-list {
   margin-top: 12px;
-}
-
-.scoring-detail {
-  padding: 12px 0;
-}
-
-.detail-item {
-  display: flex;
-  margin-bottom: 16px;
-  align-items: center;
-}
-
-.detail-item label {
-  font-weight: 600;
-  min-width: 100px;
-  margin-right: 20px;
-}
-
-.score-value {
-  color: var(--primary);
-  font-weight: 600;
-  font-size: 16px;
-  margin: 0 10px;
-}
-
-.score-range {
-  color: #909399;
-  font-size: 12px;
-}
-
-.total-score {
-  display: flex;
-  margin-top: 20px;
-  padding-top: 16px;
-  border-top: 1px solid #ebeef5;
-  align-items: center;
-}
-
-.total-score label {
-  font-weight: 600;
-  min-width: 100px;
-  margin-right: 20px;
-}
-
-.total-score span {
-  color: var(--danger);
-  font-weight: 600;
-  font-size: 18px;
-}
-
-.modal-footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-  padding-top: 12px;
-  border-top: 1px solid #f0f0f0;
 }
 </style>
