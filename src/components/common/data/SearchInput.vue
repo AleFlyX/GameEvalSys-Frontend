@@ -17,7 +17,8 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue';
+import { debounce } from '@/utils/debounce';
 const props = defineProps({
   placeholder: {
     type: String,
@@ -53,6 +54,14 @@ const props = defineProps({
   addBtnText: {
     type: String,
     default: '添加'
+  },
+  immediate: { //若启用immediate，每次变化值都向父组件search事件emit
+    type: Boolean,
+    default: false
+  },
+  delay: { //emit search的防抖
+    type: [String, Number],
+    default: 0
   }
 })
 
@@ -98,6 +107,16 @@ const emits = defineEmits([
   'search',
   'add'
 ])
+
+const handleEmitSearch = (content = '') => {
+  emits('search', content.trim());
+}
+// 如果数字无限大则会设为1秒
+const delay = computed(() => {
+  return isFinite(Number(props.delay)) ? Number(props.delay) : 1000;
+})
+const debouncedEmitSearch = debounce(handleEmitSearch, delay.value, { dev: true });
+
 const inputContent = ref('');
 const handleInputSearch = () => {
   console.log('handleInputSearch', inputContent.value)
@@ -109,6 +128,16 @@ const handleAdd = () => {
   emits('add')
 }
 
+watch(() => inputContent.value, (newCt) => {
+  if (props.immediate) {
+    // emits('search', newCt);
+    debouncedEmitSearch(newCt)
+  }
+  else if (newCt.trim() === '') { //在输入内容为空的时候触发搜索以便更新父组件。这样在删除所有内容时默认触发刷新
+    if (delay.value) debouncedEmitSearch(newCt.trim())
+    else emits('search', newCt);
+  }
+})
 </script>
 
 <style scoped>
