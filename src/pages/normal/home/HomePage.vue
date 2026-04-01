@@ -1,529 +1,739 @@
 <template>
-  <div class="zen-home-container">
-    <!-- 顶部欢迎区：留白+渐变+自然纹理 -->
-    <div class="welcome-section">
-      <div class="welcome-bg"></div>
-      <div class="welcome-content">
-        <h1 class="welcome-title">
-          Welcome! <span class="user-name">{{ userName }}</span>
+  <div class="home-page" v-loading="loading">
+    <section class="hero-panel">
+      <div class="hero-copy">
+        <p class="hero-eyebrow">PROJECT EVALUATE DASHBOARD</p>
+        <h1 class="hero-title">
+          欢迎回来，<span>{{ userName }}</span>
         </h1>
-        <p class="welcome-desc">
-          C++ 项目评分平台
+        <p class="hero-desc">
+          {{ roleLabel }} · 当前聚焦项目：{{ focusProjectName }}
         </p>
-        <div class="stats-bar">
-          <div class="stat-item">
-            <span class="stat-value">{{ projectCount }}</span>
-            <span class="stat-label">活跃项目</span>
+      </div>
+      <div class="hero-actions">
+        <el-button type="primary" @click="handleGoScoring">
+          开始评分
+        </el-button>
+        <!-- <el-button @click="fetchHomeData">
+          刷新数据
+        </el-button> -->
+      </div>
+    </section>
+
+    <section class="stats-grid">
+      <article v-for="card in statCards" :key="card.key" class="stat-card">
+        <div class="stat-head">
+          <div class="stat-icon-wrap">
+            <el-icon class="stat-icon">
+              <component :is="resolveIcon(card.icon)" />
+            </el-icon>
           </div>
-          <div class="stat-item">
-            <span class="stat-value">{{ scoreCount }}</span>
-            <span class="stat-label">待打分项</span>
-          </div>
-          <div class="stat-item">
-            <span class="stat-value">{{ completeRate }}%</span>
-            <span class="stat-label">完成进度</span>
-          </div>
-          <div class="go-judge">
-            <button class="go-judge-btn">开始评分</button>
-            <!-- <TestBtn>开始</TestBtn> -->
+          <span class="stat-label">{{ card.label }}</span>
+        </div>
+        <p class="stat-value">{{ card.value }}</p>
+        <p class="stat-sub">{{ card.sub }}</p>
+      </article>
+    </section>
+
+    <section class="dashboard-grid">
+      <article class="dashboard-panel trend-panel">
+        <div class="panel-header">
+          <h2>最近 7 天打分趋势</h2>
+          <span>总计 {{ trendTotal }} 条</span>
+        </div>
+        <div v-if="trendPoints.length" class="trend-chart">
+          <div v-for="point in trendPoints" :key="point.label" class="trend-column">
+            <div class="trend-bar-bg">
+              <div class="trend-bar" :style="{ height: toBarHeight(point.count) }"></div>
+            </div>
+            <span class="trend-date">{{ point.label }}</span>
+            <span class="trend-count">{{ point.count }}</span>
           </div>
         </div>
-      </div>
-    </div>
+        <el-empty v-else description="暂无趋势数据" />
+      </article>
 
-    <!-- 数据卡片区：网格布局+磨砂质感+悬停交互 -->
-    <div class="card-grid">
-      <!-- <TestBtn>开始</TestBtn> -->
-      <!-- 项目进度卡片 -->
-      <ChartCard title="评分完成进度" ring-chart ring-progress="38"></ChartCard>
+      <article class="dashboard-panel progress-panel">
+        <div class="panel-header">
+          <h2>整体完成率</h2>
+          <span>按当前可见项目计算</span>
+        </div>
+        <div class="progress-main">
+          <el-progress type="dashboard" :percentage="dashboardStats.completionRate" :stroke-width="10"
+            color="#409eff" />
+        </div>
+        <p class="progress-desc">
+          进行中项目 {{ dashboardStats.ongoingProjects }} 个，已结束 {{ dashboardStats.endedProjects }} 个。
+        </p>
+      </article>
 
-      <!-- 打分趋势卡片 -->
-      <ChartCard title="打分趋势" icon="TrendCharts" line-chart>
-        <template #description>最近7日打分数量
-          <span class="positive">132</span>
-          条
-        </template>
-        <!-- <template #footer>
-          更新于 {{ updateTime }}
-        </template> -->
-      </ChartCard>
-
-      <!-- 待处理任务卡片 -->
-      <ChartCard title="待处理任务" icon="Clock">
-        <template #body>
-          <div class="task-list">
-            <div class="task-item" v-for="task in taskList" :key="task.id">
-              <div class="task-dot" :style="{ backgroundColor: task.color }"></div>
-              <div class="task-content">
-                <span class="task-name">{{ task.name }}</span>
-                <span class="task-deadline">{{ task.deadline }}</span>
-              </div>
+      <article class="dashboard-panel tasks-panel">
+        <div class="panel-header">
+          <h2>待处理任务</h2>
+          <span>项目：{{ focusProjectName }}</span>
+        </div>
+        <div class="task-list">
+          <div v-if="pendingTasks.length === 0" class="task-empty">
+            当前没有待处理任务
+          </div>
+          <div v-for="task in pendingTasks" :key="task.id" class="task-item">
+            <span class="task-dot"></span>
+            <div class="task-content">
+              <p class="task-name">{{ task.name }}</p>
+              <p class="task-deadline">{{ task.deadline }}</p>
             </div>
           </div>
-        </template>
-      </ChartCard>
+        </div>
+      </article>
 
-      <ChartCard title="快捷操作" icon="Setting">
-        <template #body>
-          <div class="shortcut-grid">
-            <div v-for="item in shortcutList" :key="item.id">
-              <div class="shortcut-item" v-if="showShortcutIcon(item.admin)" @click="jumpTo(item.path)">
-                <el-icon class="shortcut-icon" :style="{ color: item.color }">
-                  <component :is="resolveShortcutIcon(item.icon)" />
-                </el-icon>
-                <span class="shortcut-name">{{ item.name }}</span>
-              </div>
-            </div>
-          </div>
-        </template>
-        <template #footer>自定义入口</template>
-      </ChartCard>
-      <!-- 快捷入口卡片 -->
-    </div>
-
-    <!-- 加载动画（初始入场） -->
-    <!-- <div class="loading-overlay" v-if="loading">
-      <div class="breathing-circle"></div>
-    </div> -->
+      <article class="dashboard-panel shortcut-panel">
+        <div class="panel-header">
+          <h2>快捷入口</h2>
+          <span>按角色自动展示</span>
+        </div>
+        <div class="shortcut-grid">
+          <button v-for="item in shortcutList" :key="item.id" class="shortcut-item" type="button"
+            @click="jumpTo(item.path)">
+            <el-icon class="shortcut-icon" :style="{ color: item.color }">
+              <component :is="resolveIcon(item.icon)" />
+            </el-icon>
+            <span>{{ item.name }}</span>
+          </button>
+        </div>
+      </article>
+    </section>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, computed } from 'vue';
+import { computed, onMounted, reactive, ref } from 'vue';
 import { useRouter } from 'vue-router';
-// import {
-//   Progress, List, TrendCharts, Clock, Setting,
-//   Plus, User, FolderOpened, Document, Check
-// } from '@element-plus/icons-vue';
+
+import { projectApi } from '@/api/project';
+import { projectGroupApi } from '@/api/project-group';
+import { ScoringApi } from '@/api/scoring';
+import { useMessage } from '@/composables/useMessage';
 import { useUserStore } from '@/stores/modules/userStore';
-import ChartCard from '@/components/common/data/ChartCard.vue';
 import { getElementIcon } from '@/utils/elementIcons';
-// import TestBtn from '@/components/common/form/testBtn.vue';
-// import MyBtn from '@/components/common/form/MyBtn.vue';
-// import { formatRoleValue } from '@/utils/format.js';
 
 const router = useRouter();
-
-// 状态管理
 const userStore = useUserStore();
-const loading = ref(true);
-const cardFlipState = ref({ project: false });
-const sparklineCanvas = ref(null);
-let sparklineChart = null;
+const message = useMessage();
 
-// 模拟数据
-const userName = computed(() => userStore.userInfo.username || '管理者');
-const projectCount = ref(8);
-const scoreCount = ref(12);
-const completeRate = ref(78);
-const trendTotal = ref(156);
-const updateTime = ref('2026-03-10 14:20');
+const loading = ref(false);
+const trendPoints = ref([]);
+const pendingTasks = ref([]);
+const focusProjectName = ref('暂无项目');
 
-// 项目详情数据
-const projectDetail = ref([
-  { id: 1, name: '2026中期答辩', rate: 85 },
-  { id: 2, name: '年度项目评审', rate: 72 },
-  { id: 3, name: '毕业设计打分', rate: 90 },
-  { id: 4, name: '实验室考核', rate: 65 }
-]);
-
-// 待处理任务数据
-const taskList = ref([
-  { id: 1, name: '完成中期答辩打分', deadline: '2026-03-15', color: '#FFB7C5' },
-  { id: 2, name: '审核新增项目申请', deadline: '2026-03-12', color: '#88D18A' },
-  { id: 3, name: '更新打分标准配置', deadline: '2026-03-18', color: '#2D3142' }
-]);
-
-// 快捷入口数据
-const shortcutList = ref([
-  { id: 1, name: '新增项目', path: '/project', icon: 'Plus', color: '#FFB7C5', admin: true },
-  { id: 2, name: '用户管理', path: '/user', icon: 'User', color: '#88D18A', admin: true },
-  { id: 3, name: '项目管理', path: '/project', icon: 'FolderOpened', color: '#2D3142', admin: true },
-  { id: 4, name: '打分记录', path: '', icon: 'Document', color: '#9FA8A3' },
-  { id: 5, name: '已完成项', path: '', icon: 'Check', color: '#6B7280' }
-]);
-const showShortcutIcon = (needAdmin) => {
-  if (needAdmin && userStore.isAdmin) {
-    return true;
-  }
-  else if (!needAdmin) {
-    return true;
-  }
-}
-
-const resolveShortcutIcon = (iconName) => {
-  return getElementIcon(iconName)
-}
-
-const jumpTo = (path) => {
-  router.push(path)
-}
-// 卡片翻转切换
-const toggleCardFlip = (cardType) => {
-  cardFlipState.value[cardType] = !cardFlipState.value[cardType];
-};
-
-// 绘制Sparkline趋势图
-const drawSparkline = () => {
-  const canvas = sparklineCanvas.value;
-  if (!canvas) return;
-
-  const ctx = canvas.getContext('2d');
-  // 设置canvas尺寸（适配容器）
-  canvas.width = canvas.offsetWidth;
-  canvas.height = canvas.offsetHeight;
-
-  // 模拟7天趋势数据
-  const data = [18, 25, 20, 30, 22, 28, 32];
-  const maxValue = Math.max(...data);
-  const minValue = Math.min(...data);
-  const width = canvas.width;
-  const height = canvas.height;
-
-  // 清空画布
-  ctx.clearRect(0, 0, width, height);
-
-  // 绘制趋势线
-  ctx.beginPath();
-  ctx.moveTo(0, height - (data[0] - minValue) / (maxValue - minValue) * height + 10);
-
-  for (let i = 1; i < data.length; i++) {
-    const x = (width / (data.length - 1)) * i;
-    const y = height - (data[i] - minValue) / (maxValue - minValue) * height + 10;
-    ctx.lineTo(x, y);
-  }
-
-  // 样式：抹茶绿渐变
-  const gradient = ctx.createLinearGradient(0, 0, 0, height);
-  gradient.addColorStop(0, 'rgba(136, 209, 138, 0.6)');
-  gradient.addColorStop(1, 'rgba(136, 209, 138, 0.1)');
-
-  ctx.strokeStyle = '#88D18A';
-  ctx.lineWidth = 2;
-  ctx.stroke();
-
-  // 填充下方区域
-  ctx.lineTo(width, height);
-  ctx.lineTo(0, height);
-  ctx.fillStyle = gradient;
-  ctx.fill();
-
-  // 绘制数据点
-  data.forEach((value, index) => {
-    const x = (width / (data.length - 1)) * index;
-    const y = height - (value - minValue) / (maxValue - minValue) * height + 10;
-
-    ctx.beginPath();
-    ctx.arc(x, y, 3, 0, Math.PI * 2);
-    ctx.fillStyle = '#88D18A';
-    ctx.fill();
-  });
-};
-
-// 生命周期
-onMounted(() => {
-  // 模拟加载动画（禅意呼吸效果）
-  setTimeout(() => {
-    loading.value = false;
-    // 绘制趋势图
-    drawSparkline();
-    // 监听窗口大小变化，重新绘制图表
-    window.addEventListener('resize', drawSparkline);
-  }, 1500);
+const dashboardStats = reactive({
+  totalProjects: 0,
+  ongoingProjects: 0,
+  endedProjects: 0,
+  pendingGroups: 0,
+  completionRate: 0,
 });
 
-onUnmounted(() => {
-  window.removeEventListener('resize', drawSparkline);
+const PROJECT_PAGE_SIZE = 100;
+const SCORE_RECORD_PAGE_SIZE = 200;
+const roleSet = ['super_admin', 'admin', 'scorer'];
+
+const userName = computed(() => {
+  return userStore.userInfo?.username || userStore.userInfo?.name || '用户';
+});
+
+const roleLabel = computed(() => {
+  const roleMap = {
+    super_admin: '超级管理员',
+    admin: '管理员',
+    scorer: '打分员',
+    normal: '普通用户',
+  };
+  return roleMap[userStore.userRole] || '访问用户';
+});
+
+const trendMax = computed(() => {
+  if (!trendPoints.value.length) return 1;
+  return Math.max(1, ...trendPoints.value.map((item) => Number(item.count) || 0));
+});
+
+const trendTotal = computed(() => {
+  return trendPoints.value.reduce((sum, item) => sum + (Number(item.count) || 0), 0);
+});
+
+const statCards = computed(() => {
+  return [
+    {
+      key: 'total',
+      label: '我的项目',
+      value: dashboardStats.totalProjects,
+      sub: '当前可见项目总数',
+      icon: 'FolderOpened',
+    },
+    {
+      key: 'ongoing',
+      label: '进行中项目',
+      value: dashboardStats.ongoingProjects,
+      sub: '当前仍可继续评分',
+      icon: 'Clock',
+    },
+    {
+      key: 'pending',
+      label: '待评分小组',
+      value: dashboardStats.pendingGroups,
+      sub: '焦点项目中未完成评分',
+      icon: 'Edit',
+    },
+    {
+      key: 'rate',
+      label: '完成率',
+      value: `${dashboardStats.completionRate}%`,
+      sub: '已结束项目占比',
+      icon: 'DataAnalysis',
+    },
+  ];
+});
+
+const shortcutList = computed(() => {
+  const role = userStore.userRole;
+  const source = [
+    { id: 'scoring', name: '打分列表', path: '/scoring', icon: 'Edit', color: '#409eff', roles: roleSet },
+    { id: 'project', name: '项目管理', path: '/project', icon: 'Management', color: '#ffaa00', roles: ['super_admin', 'admin'] },
+    { id: 'projectGroup', name: '受审队伍', path: '/projectGroups', icon: 'User', color: '#66cc66', roles: ['super_admin', 'admin'] },
+    { id: 'statistic', name: '统计分析', path: '/statistic', icon: 'TrendCharts', color: '#f56c6c', roles: ['super_admin', 'admin'] },
+    { id: 'user', name: '用户管理', path: '/user', icon: 'Avatar', color: '#7b89ff', roles: ['super_admin', 'admin'] },
+    { id: 'home', name: '首页', path: '/home', icon: 'HomeFilled', color: '#9ca3af', roles: ['super_admin', 'admin', 'scorer', 'normal'] },
+  ];
+  return source.filter((item) => item.roles.includes(role));
+});
+
+const resolveIcon = (iconName) => getElementIcon(iconName);
+
+const jumpTo = (path) => {
+  if (!path) return;
+  router.push(path);
+};
+
+const handleGoScoring = () => {
+  if (!roleSet.includes(userStore.userRole)) {
+    message.info('当前角色没有评分权限');
+    return;
+  }
+  router.push('/scoring');
+};
+
+const padNumber = (value) => String(value).padStart(2, '0');
+
+const getDayKey = (date) => {
+  return `${date.getFullYear()}-${padNumber(date.getMonth() + 1)}-${padNumber(date.getDate())}`;
+};
+
+const getDayLabel = (date) => {
+  return `${padNumber(date.getMonth() + 1)}/${padNumber(date.getDate())}`;
+};
+
+const parseDate = (value) => {
+  if (!value) return null;
+  const candidate = new Date(String(value).replace(/-/g, '/'));
+  if (Number.isNaN(candidate.getTime())) return null;
+  return candidate;
+};
+
+const normalizeProjectResponse = (response) => {
+  const list = Array.isArray(response?.data?.list) ? response.data.list : [];
+  const total = Number(response?.data?.total);
+  return {
+    list,
+    total: Number.isFinite(total) ? total : list.length,
+  };
+};
+
+const fetchProjectList = async () => {
+  const candidates = userStore.isAdmin
+    ? [
+      () => projectApi.getProjectList({ page: 1, size: PROJECT_PAGE_SIZE }),
+      () => projectApi.getAuthorizedProjectList({ page: 1, size: PROJECT_PAGE_SIZE }),
+    ]
+    : [
+      () => projectApi.getAuthorizedProjectList({ page: 1, size: PROJECT_PAGE_SIZE }),
+      () => projectApi.getProjectList({ page: 1, size: PROJECT_PAGE_SIZE }),
+    ];
+
+  for (const requester of candidates) {
+    try {
+      const response = await requester();
+      return normalizeProjectResponse(response);
+    } catch (_) {
+      // 尝试下一个可用接口，保证首页可回退展示
+    }
+  }
+
+  return { list: [], total: 0 };
+};
+
+const pickFocusProject = (projects) => {
+  return (
+    projects.find((project) => project?.status === 'ongoing') ||
+    projects.find((project) => project?.status === 'not_started') ||
+    projects[0] ||
+    null
+  );
+};
+
+const buildTrendPoints = (records) => {
+  const today = new Date();
+  const trendMap = new Map();
+
+  for (let i = 6; i >= 0; i -= 1) {
+    const date = new Date(today);
+    date.setDate(today.getDate() - i);
+    trendMap.set(getDayKey(date), {
+      label: getDayLabel(date),
+      count: 0,
+    });
+  }
+
+  records.forEach((item) => {
+    const recordDate = parseDate(item?.updateTime || item?.createTime);
+    if (!recordDate) return;
+    const key = getDayKey(recordDate);
+    if (!trendMap.has(key)) return;
+    const oldVal = trendMap.get(key);
+    trendMap.set(key, { ...oldVal, count: oldVal.count + 1 });
+  });
+
+  return Array.from(trendMap.values());
+};
+
+const buildPendingTasks = (groups, scoredGroupIdSet, project) => {
+  const deadline = project?.endDate ? `截止：${project.endDate}` : '截止时间待定';
+  const pendingGroups = groups.filter((group) => !scoredGroupIdSet.has(Number(group?.id)));
+
+  return pendingGroups.slice(0, 6).map((group) => ({
+    id: group.id,
+    name: `完成「${group.name || `小组${group.id}`}」评分`,
+    deadline,
+  }));
+};
+
+const updateSummaryStats = (projects, total) => {
+  const ongoingCount = projects.filter((item) => item?.status === 'ongoing').length;
+  const endedCount = projects.filter((item) => item?.status === 'ended').length;
+
+  dashboardStats.totalProjects = total;
+  dashboardStats.ongoingProjects = ongoingCount;
+  dashboardStats.endedProjects = endedCount;
+  dashboardStats.completionRate = total > 0 ? Math.round((endedCount / total) * 100) : 0;
+};
+
+const resetTaskAndTrend = () => {
+  dashboardStats.pendingGroups = 0;
+  trendPoints.value = [];
+  pendingTasks.value = [];
+  focusProjectName.value = '暂无项目';
+};
+
+const fetchProjectDetailData = async (project) => {
+  if (!project?.id) {
+    resetTaskAndTrend();
+    return;
+  }
+
+  focusProjectName.value = project.name || `项目#${project.id}`;
+
+  const [groupResponse, recordResponse] = await Promise.all([
+    projectGroupApi.getProjectGroups(project.id),
+    ScoringApi.getProjectSrocingRecds(project.id, { page: 1, size: SCORE_RECORD_PAGE_SIZE }),
+  ]);
+
+  const groupList = Array.isArray(groupResponse?.data) ? groupResponse.data : [];
+  const records = Array.isArray(recordResponse?.data?.list) ? recordResponse.data.list : [];
+
+  const scoredGroupIdSet = new Set(
+    records.map((item) => Number(item?.groupId)).filter((id) => Number.isFinite(id)),
+  );
+
+  dashboardStats.pendingGroups = Math.max(groupList.length - scoredGroupIdSet.size, 0);
+  trendPoints.value = buildTrendPoints(records);
+  pendingTasks.value = buildPendingTasks(groupList, scoredGroupIdSet, project);
+};
+
+const toBarHeight = (count) => {
+  const ratio = (Number(count) || 0) / trendMax.value;
+  return `${Math.max(10, Math.round(ratio * 120))}px`;
+};
+
+const fetchHomeData = async () => {
+  loading.value = true;
+
+  try {
+    const { list, total } = await fetchProjectList();
+    updateSummaryStats(list, total);
+
+    const focusProject = pickFocusProject(list);
+    await fetchProjectDetailData(focusProject);
+  } catch (error) {
+    resetTaskAndTrend();
+    message.error('首页数据加载失败，请稍后重试');
+    console.error('home data load failed:', error);
+  } finally {
+    loading.value = false;
+  }
+};
+
+onMounted(() => {
+  fetchHomeData();
 });
 </script>
 
 <style scoped>
-/* 全局容器：日式禅意主色调+留白 */
-.zen-home-container {
-  width: 100%;
-  max-height: 100vh;
-  /* background-color: #F8F6F1; */
-  /* 米白色主调 */
-  padding: 2rem;
-  box-sizing: border-box;
-  font-family: "Noto Sans JP", "PingFang SC", sans-serif;
+.home-page {
+  min-height: 100%;
+  padding: 24px;
+  font-family: "Source Han Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+  background:
+    radial-gradient(circle at 12% 12%, rgba(64, 158, 255, 0.12) 0, rgba(64, 158, 255, 0) 32%),
+    radial-gradient(circle at 88% 8%, rgba(102, 204, 102, 0.12) 0, rgba(102, 204, 102, 0) 26%),
+    #f6f9fc;
 }
 
-/* 加载动画：禅意呼吸效果 */
-.loading-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: #F8F6F1;
+.hero-panel,
+.stat-card,
+.dashboard-panel {
+  animation: fadeUp 0.5s ease both;
+}
+
+.hero-panel {
   display: flex;
-  justify-content: center;
-  align-items: center;
-  transition: all 0.3s;
-  z-index: 9999;
+  justify-content: space-between;
+  gap: 20px;
+  border-radius: 20px;
+  padding: 24px;
+  background: linear-gradient(120deg, #1f5fa8, #409eff 45%, #70b6ff);
+  box-shadow: 0 14px 36px rgba(64, 158, 255, 0.25);
+  color: #ffffff;
 }
 
-.breathing-circle {
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #FFB7C5 0%, #88D18A 100%);
-  animation: breathing 3s ease-in-out infinite;
+.hero-eyebrow {
+  margin: 0;
+  font-size: 12px;
+  letter-spacing: 1.5px;
+  opacity: 0.82;
 }
 
-@keyframes breathing {
-
-  0%,
-  100% {
-    transform: scale(0.8);
-    opacity: 0.6;
-  }
-
-  50% {
-    transform: scale(1.2);
-    opacity: 1;
-  }
-}
-
-/* 顶部欢迎区：渐变+自然纹理+留白 */
-.welcome-section {
-  position: relative;
-  width: 100%;
-  height: 300px;
-  border-radius: 16px;
-  overflow: hidden;
-  margin-bottom: 2rem;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-}
-
-.welcome-bg {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  /* box-shadow: 8px 8px 16px #b6b9ba,
-    -8px -8px 16px #fafafd;
-  background-image: linear-gradient(154deg, #f4f6f8, #b6b9ba); */
-  box-shadow: 8px 8px 16px #b6b9ba,
-    -8px -8px 16px #fafafd;
-  /* background: var(--gray-box-shadow); */
-  background: linear-gradient(to right, rgb(142, 158, 171), rgb(217, 221, 222));
-  /* background-image: linear-gradient(154deg, #b6b9ba, #8d8d93); */
-  /* background: url('https://picsum.photos/id/1048/1920/1080') center/cover no-repeat; */
-  /* filter: brightness(0.8) contrast(0.9); */
-  /* 渐变遮罩：营造深度感 */
-  /* background-image: linear-gradient(rgba(45, 49, 66, 0.1), rgba(45, 49, 66, 0.6)),
-    url('https://picsum.photos/id/1048/1920/1080'); */
-}
-
-.welcome-content {
-  position: relative;
-  z-index: 2;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  padding: 0 4rem;
-  color: #F8F6F1;
-}
-
-.welcome-title {
-  font-size: 2.5rem;
-  margin: 0 0 1rem 0;
-  font-weight: 300;
-  letter-spacing: 2px;
-}
-
-.user-name {
-  color: #88D18A;
+.hero-title {
+  margin: 12px 0 8px;
+  font-size: 32px;
   font-weight: 700;
 }
 
-.welcome-desc {
-  font-size: 1.1rem;
-  margin: 0 0 2rem 0;
-  opacity: 0.9;
-  font-weight: 200;
+.hero-title span {
+  color: #d4f1ff;
 }
 
-.stats-bar {
+.hero-desc {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 14px;
+}
+
+.hero-actions {
   display: flex;
-  flex-direction: row;
   align-items: center;
-  width: 100%;
-  gap: 3rem;
+  gap: 12px;
 }
 
-.stat-item {
-  display: flex;
-  flex-direction: column;
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 18px;
 }
 
-.go-judge {
-  margin-left: auto;
-  align-self: center;
-}
-
-.go-judge-btn {
-  width: 100px;
-  height: 50px;
-  border: none;
+.stat-card {
   border-radius: 16px;
-  box-shadow: 8px 8px 16px #b6b9ba,
-    -8px -8px 16px #fafafd;
-  background-image: linear-gradient(154deg, #f4f6f8, #b6b9ba);
-  transition: all 0.3s ease-in-out;
+  padding: 18px;
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: 0 10px 24px rgba(31, 47, 70, 0.08);
+  backdrop-filter: blur(10px);
 }
 
-.go-judge-btn:active {
-  box-shadow: 8px 8px 16px #b6b9ba,
-    -8px -8px 16px #ceced6;
-  background-image: linear-gradient(154deg, #b6b9ba, #f4f6f8);
+.stat-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
-.stat-value {
-  font-size: 2rem;
-  font-weight: 500;
-  margin-bottom: 0.5rem;
-  color: #88D18A;
+.stat-icon-wrap {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #ecf5ff;
+}
+
+.stat-icon {
+  color: #409eff;
+  font-size: 18px;
 }
 
 .stat-label {
-  font-size: 0.9rem;
-  opacity: 0.8;
-  text-transform: uppercase;
-  letter-spacing: 1px;
+  font-size: 13px;
+  color: #66758a;
 }
 
-/* 数据卡片网格：响应式布局+留白 */
-.card-grid {
+.stat-value {
+  margin: 16px 0 4px;
+  font-size: 34px;
+  font-weight: 700;
+  color: #1f2f46;
+  line-height: 1;
+}
+
+.stat-sub {
+  margin: 0;
+  font-size: 12px;
+  color: #9aa8bb;
+}
+
+.dashboard-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 2rem;
-  width: 100%;
+  grid-template-columns: 2fr 1fr;
+  gap: 16px;
+  margin-top: 16px;
 }
 
-/* .positive {
-  color: #88D18A;
-  font-weight: 500;
-} */
-
-/* Sparkline趋势图容器 */
-.sparkline-chart {
-  width: 100%;
-  height: 120px;
-  margin-bottom: 1rem;
+.dashboard-panel {
+  border-radius: 16px;
+  padding: 18px;
+  background: #ffffff;
+  box-shadow: 0 10px 28px rgba(20, 42, 74, 0.08);
 }
 
-/* 任务列表样式 */
+.trend-panel {
+  min-height: 320px;
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.panel-header h2 {
+  margin: 0;
+  font-size: 16px;
+  color: #1f2f46;
+}
+
+.panel-header span {
+  font-size: 12px;
+  color: #8a97aa;
+}
+
+.trend-chart {
+  height: 235px;
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 10px;
+  align-items: end;
+}
+
+.trend-column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.trend-bar-bg {
+  width: 100%;
+  max-width: 36px;
+  height: 130px;
+  border-radius: 12px;
+  background: linear-gradient(180deg, #f2f7fe, #e8f1fc);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 4px;
+}
+
+.trend-bar {
+  width: calc(100% - 8px);
+  border-radius: 8px;
+  background: linear-gradient(180deg, #6ab2ff 0%, #409eff 100%);
+  transition: height 0.35s ease;
+}
+
+.trend-date {
+  font-size: 12px;
+  color: #7d8da2;
+}
+
+.trend-count {
+  font-size: 12px;
+  color: #1f2f46;
+  font-weight: 600;
+}
+
+.progress-panel,
+.tasks-panel,
+.shortcut-panel {
+  min-height: 220px;
+}
+
+.progress-main {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 160px;
+}
+
+.progress-desc {
+  margin: 0;
+  text-align: center;
+  font-size: 13px;
+  color: #637287;
+}
+
 .task-list {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 10px;
+}
+
+.task-empty {
+  padding: 28px 12px;
+  text-align: center;
+  color: #8a97aa;
+  font-size: 13px;
+  border: 1px dashed #dce6f4;
+  border-radius: 12px;
 }
 
 .task-item {
   display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 1.2rem;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px;
+  border-radius: 10px;
+  background: #f7fbff;
 }
 
 .task-dot {
   width: 8px;
   height: 8px;
+  margin-top: 6px;
   border-radius: 50%;
+  background: #409eff;
 }
 
 .task-content {
-  display: flex;
-  /* flex-direction: column; */
-  justify-content: space-between;
-  /* gap: 15px; */
-  width: 100%;
+  flex: 1;
+  min-width: 0;
 }
 
 .task-name {
-  font-size: 0.95rem;
-  color: #2D3142;
-}
-
-.card-back .task-name {
-  color: #F8F6F1;
+  margin: 0;
+  font-size: 13px;
+  color: #1f2f46;
 }
 
 .task-deadline {
-  font-size: 0.8rem;
-  color: #9FA8A3;
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: #7d8da2;
 }
 
-.task-more {
-  color: #88D18A !important;
-  padding: 0 !important;
-}
-
-/* 快捷入口网格 */
 .shortcut-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1.5rem;
-  text-align: center;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
 }
 
 .shortcut-item {
+  border: none;
+  border-radius: 10px;
+  padding: 12px 10px;
+  cursor: pointer;
+  background: #f6f9fc;
+  color: #45576f;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.8rem;
-  padding: 1rem 0;
-  border-radius: 8px;
-  transition: all 0.3s ease;
+  gap: 8px;
+  transition: all 0.2s ease;
 }
 
 .shortcut-item:hover {
-  background-color: rgba(45, 49, 66, 0.05);
-  transform: scale(1.05);
+  transform: translateY(-2px);
+  background: #ebf3ff;
 }
 
 .shortcut-icon {
-  font-size: 1.5rem;
+  font-size: 18px;
 }
 
-.shortcut-name {
-  font-size: 0.85rem;
-  color: #2D3142;
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-/* 响应式适配 */
-@media (max-width: 768px) {
-  .zen-home-container {
-    padding: 1rem;
+@media (max-width: 1200px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .welcome-section {
-    height: 250px;
-  }
-
-  .welcome-content {
-    padding: 0 2rem;
-  }
-
-  .welcome-title {
-    font-size: 2rem;
-  }
-
-  .stats-bar {
-    gap: 1.5rem;
-  }
-
-  .stat-value {
-    font-size: 1.5rem;
+  .dashboard-grid {
+    grid-template-columns: 1fr;
   }
 
   .shortcut-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .home-page {
+    padding: 14px;
+  }
+
+  .hero-panel {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .hero-title {
+    font-size: 26px;
+  }
+
+  .hero-actions {
+    width: 100%;
+  }
+
+  .hero-actions :deep(.el-button) {
+    flex: 1;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .shortcut-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .trend-chart {
+    gap: 6px;
   }
 }
 </style>
