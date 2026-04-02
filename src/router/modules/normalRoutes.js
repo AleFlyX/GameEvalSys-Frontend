@@ -1,19 +1,13 @@
-import { test } from "./testRoutes";
 
 // normal页面（打分用户/普通用户，管理员也可访问）
 const Home = () => import("@/pages/normal/home/HomePage.vue");
 const ScoringList = () => import("@/pages/normal/scoring/list/index.vue");
 const ProjectScoring = () => import("@/pages/normal/scoring/groups/index.vue");
-// const loginTest = () => import("@/pages/public/login/LoginTest.vue")
+import { test } from "./testRoutes";
+const testRts = import.meta.env.VITE_SHOW_TEST_ROUTES == 1 ? test : []
 export const norm = [
-  ...test,
+  ...testRts,
   // normal子路由（打分用户/管理员均可访问）
-  // {
-  //   path: "loginTest",
-  //   name: "loginTest",
-  //   component: loginTest,
-  //   meta: { title: "登陆测试", roles: ["super_admin", "admin", "scorer", "normal"] }, // 可访问角色
-  // },
   {
     path: "home",
     name: "首页",
@@ -33,3 +27,9 @@ export const norm = [
     meta: { title: "项目打分", roles: ["super_admin", "admin", "scorer"], hidden: true },
   },
 ];
+// if (import.meta.env.SHOW_TEST_ROUTES == 1) {
+//   const test = () => import("./testRoutes");
+//   console.log("222222222222222222222222222222222222222222222222", test)
+//   norm.push(...test);
+//   console.log(norm)
+// }

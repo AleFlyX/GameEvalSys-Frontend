@@ -3,7 +3,7 @@ const UserList = () => import("@/pages/admin/user/index.vue");
 const ProjectList = () => import("@/pages/admin/project/ProjectList.vue");
 const ProjectEdit = () => import("@/pages/admin/project/ProjectEdit.vue");
 const reviewerGroups = () => import("@/pages/admin/reviewer-group/ReviewerGroupList.vue")
-const projectGroupsList = () => import("@/pages/admin/project-group/ProjectGroupList.vue")
+const projectGroupsList = () => import("@/pages/admin/project-group/index.vue")
 const scoringStds = () => import("@/pages/admin/scoring-std/index.vue")
 const Statistic = () => import("@/pages/admin/statistic/StatisticPannel.vue");
 
