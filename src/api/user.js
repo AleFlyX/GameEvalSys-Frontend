@@ -76,10 +76,21 @@ export const userApi = {
    * @param {string} [data.name] - 真实姓名
    * @param {string} [data.role] - 角色
    * @param {boolean} [data.isEnabled] - 是否启用
+   * @param {String} newPassword - 新密码
    * @returns {Promise}
    */
   editUser: (userId, data) => {
     return service.put(`/users/${userId}`, data);
+  },
+
+  /**
+   * 变更用户自己的密码
+   * @param {String} oldPassword 原密码
+   * @param {String} newPassword 新密码
+   * @return {Promise}
+   */
+  editPassword: (data) => {
+    return service.put(`/users/me/password`, data);
   },
 
   /**
