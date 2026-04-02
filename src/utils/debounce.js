@@ -4,13 +4,17 @@
  * @param {number} delay - 延迟时间（毫秒）
  * @param {Object} [options={}] - 配置项
  * @param {boolean} [options.immediate=false] - 是否立即执行（第一次触发时执行，后续触发不执行，直到延迟结束）
+ * @param {boolean} [options.dev=false] - 是否调试（打印出传入的参数）
  * @returns {Function} 防抖后的函数（包含取消防抖的方法 cancel）
  */
 export function debounce(fn, delay, options = {}) {
   let timer = null; // 闭包保存定时器ID，避免全局污染
-  const { immediate = false } = options;
+  const { immediate = false, dev = false } = options;
   let isInvoked = false; // 标记是否已立即执行过
-
+  if (dev) console.log("*****debounce utils****** fn: "
+    + fn
+    + ";delay: " + delay + "ms; options.immediate: "
+    + immediate);
   // 防抖核心函数
   const debounced = function (...args) {
     // 保存原函数的this指向（比如DOM事件中的this）
