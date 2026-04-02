@@ -127,6 +127,7 @@
   | name | string | 否 | 真实姓名 |
   | role | string | 否 | 角色 |
   | isEnabled | boolean | 否 | 是否启用 |
+  | newPassword | string | 否 | 新密码 |
 - **响应示例**：
   ```json
   {
@@ -223,6 +224,24 @@
   ]
 }
 ```
+
+### 2.6 用户更改自己的密码
+
+- **接口地址**：`/users/me/password`
+- **请求方式**：PUT
+- **请求头**：`Authorization: Bearer {token}`
+  | 参数名 | 类型 | 必填 | 说明 |
+  |--------|------|------|------|
+  | oldPassword | String | 是 | 用户正在使用的密码 |
+  | newPassword | String | 是 | 用户想要更改成的密码 |
+- **响应示例**：
+  ```json
+  {
+    "code": 200,
+    "message": "编辑成功",
+    "data": null
+  }
+  ```
 
 ## 3. 打分标准管理模块（管理员）
 
