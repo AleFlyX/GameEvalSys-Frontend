@@ -4,6 +4,8 @@ const createEmptyUser = () => ({
   id: '',
   username: '',
   password: '',
+  oldPassword: '',
+  newPassword: '',
   name: '',
   reviewerGroupIds: [],
   isEnabled: true,

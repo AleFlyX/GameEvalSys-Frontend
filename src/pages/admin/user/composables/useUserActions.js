@@ -3,7 +3,7 @@ import { userApi } from '@/api/user'
 import { showDisableUserConfirm } from './userConfirm'
 
 /**
- * 用户状态切换、创建、编辑这类业务动作封装
+ * 用户状态切换、创建、编辑这类业务动作api封装
  * @returns {Object}
  */
 export function useUserActions() {

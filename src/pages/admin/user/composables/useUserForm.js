@@ -49,7 +49,14 @@ export function useUserForm({ mode, onClose, onSuccess }) {
     submitting.value = true
 
     try {
+      //如果不是编辑用户，不能发送密码相关字段
       if (isEditMode.value) {
+        if (!payload.newPassword) {
+          delete payload.newPassword
+        }
+        delete payload.password
+        delete payload.oldPassword
+
         const response = await updateUser(payload.id, payload)
         message.success(response.message || '保存成功')
       } else {
@@ -57,6 +64,8 @@ export function useUserForm({ mode, onClose, onSuccess }) {
           payload.password = DEFAULT_PASSWORD
           message.info('该用户使用默认密码注册')
         }
+        delete payload.oldPassword
+        delete payload.newPassword
 
         const response = await createUsers({ users: [payload] })
         message.success(response.message || '创建成功')
