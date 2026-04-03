@@ -13,12 +13,7 @@
         <el-input v-model="formData.password" type="text" autocomplete="off" placeholder="请输入登录密码" />
       </el-form-item>
     </div>
-    <el-form-item v-if="userSelfEditMode" label="旧密码" prop="oldPassword">
-      <el-input v-model="formData.oldPassword" type="text" autocomplete="off" placeholder="请输入旧密码" />
-    </el-form-item>
-    <el-form-item v-if="editMode || userSelfEditMode" label="新密码" prop="newPassword">
-      <el-input v-model="formData.newPassword" type="text" autocomplete="off" placeholder="请输入新密码" />
-    </el-form-item>
+
     <el-form-item label="用户昵称" prop="name">
       <el-input v-model="formData.name" type="text" autocomplete="off" :disabled="isReadOnly" />
     </el-form-item>
@@ -43,6 +38,14 @@
         <el-option v-for="item in reviewerGroups" :key="item.id" :label="item.name" :value="item.id" />
       </el-select>
     </el-form-item>
+    <div v-if="editMode || userSelfEditMode" class="pwd-zoon">
+      <el-form-item v-if="userSelfEditMode" label="旧密码" prop="oldPassword">
+        <el-input v-model="formData.oldPassword" type="text" autocomplete="off" placeholder="请输入旧密码" />
+      </el-form-item>
+      <el-form-item v-if="editMode || userSelfEditMode" label="新密码" prop="newPassword">
+        <el-input v-model="formData.newPassword" type="text" autocomplete="off" placeholder="请输入新密码" />
+      </el-form-item>
+    </div>
 
     <el-form-item label="账户状态" v-if="editMode">
       <el-switch v-model="formData.isEnabled" size="large" :disabled="isReadOnly"
@@ -219,3 +222,20 @@ const handleChangedData = (newVal) => {
   emits('update:data', newVal);
 }
 </script>
+
+<style scoped>
+.pwd-zoon {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 15px 5px;
+  /* border: 1px solid; */
+  border-radius: 15px;
+  box-shadow: 0 0 5px var(--gray-box-shadow);
+  transition: ease-in-out 0.2s;
+}
+
+.pwd-zoon:hover {
+  box-shadow: 0 0 15px var(--primary-box-shadow);
+}
+</style>
