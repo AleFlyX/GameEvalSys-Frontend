@@ -1,10 +1,13 @@
 import { defineStore } from "pinia";
 import { projectApi } from "@/api/project";
+import { useUserStore } from "./userStore";
 
 const DEFAULT_PROJECT_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 // localStorage key: app + version + user + cache-type
 const PROJECT_CACHE_STORAGE_PREFIX = "game-evaluate:project-cache:v1";
 const PROJECT_CACHE_STORAGE_SUFFIX = "project-details";
+
+const userStore = useUserStore();
 
 export const useProjectStore = defineStore("projectStore", () => {
   // L1 cache: in-memory Map (fastest read path)
@@ -23,11 +26,12 @@ export const useProjectStore = defineStore("projectStore", () => {
     typeof window !== "undefined" && typeof window.localStorage !== "undefined";
 
   const getCurrentUserId = () => {
-    if (!canUseStorage()) return "guest";
+    if (!canUseStorage() || !userStore.isLogin) return "guest";
     try {
-      const userInfoText = window.localStorage.getItem("userInfo");
-      const userInfo = userInfoText ? JSON.parse(userInfoText) : null;
-      const userId = normalizeProjectId(userInfo?.id);
+      // const userInfoText = window.localStorage.getItem("userInfo");
+      // const userInfo = userInfoText ? JSON.parse(userInfoText) : null;
+      // const userId = normalizeProjectId(userInfo?.id);
+      const userId = normalizeProjectId(userStore.userInfo?.id);
       return userId ? String(userId) : "guest";
     } catch {
       return "guest";
@@ -179,8 +183,7 @@ export const useProjectStore = defineStore("projectStore", () => {
     // Same key currently loading: reuse inflight Promise
     if (pendingRequest) return pendingRequest;
 
-    const requestTask = projectApi
-      .getProjectDetail(normalizedId)
+    const requestTask = projectApi.getProjectDetail(normalizedId)
       .then((response) => {
         if (response?.code !== 200 || !response?.data) {
           throw new Error(response?.message || "获取项目详情失败");
