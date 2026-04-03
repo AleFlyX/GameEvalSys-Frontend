@@ -1,27 +1,48 @@
 <template>
-  <header>
-    <span class="title">
-      {{ title }}
-    </span>
+  <div>
+    <header>
+      <span class="title">
+        {{ title }}
+      </span>
 
-    <div class="header-right">
-      <div class="not-login" v-if="!userStore.isLogin">
-        <button @click="goto('/login')">登录</button>
-        <!-- <button>注册</button> -->
-      </div>
-      <div class="personnal-info" v-if="userStore.isLogin">
-        <div class="avatar">
-          <p>{{ username[0] }}</p>
-          <ul class="dropdown">
-            <li @click="goto('/personalInfo')">个人信息</li>
-            <li @click="goto('/about')">关于OJ</li>
-            <li @click="logout()" style="color:#cc3300;">退出登录</li>
-          </ul>
+      <div class="header-right">
+        <div class="not-login" v-if="!userStore.isLogin">
+          <button @click="goto('/login')">登录</button>
+          <!-- <button>注册</button> -->
         </div>
-        <p class="username">{{ username }},欢迎</p>
+        <div class="personnal-info" v-if="userStore.isLogin">
+          <div class="avatar">
+            <p>{{ username[0] }}</p>
+            <ul class="dropdown">
+              <li @click="openProfileModal">个人信息</li>
+              <li @click="goto('/about')">关于OJ</li>
+              <li @click="logout()" style="color:#cc3300;">退出登录</li>
+            </ul>
+          </div>
+          <p class="username">{{ username }},欢迎</p>
+        </div>
       </div>
-    </div>
-  </header>
+    </header>
+
+    <BaseFormModal :visible="showProfileModal" @update:visible="showProfileModal = $event">
+      <template #title>
+        个人信息
+      </template>
+      <template #form>
+        <UserForm ref="profileFormRef" :init-data="profileData" :edit-mode="false" :user-self-edit-mode="true"
+          :read-only="true">
+        </UserForm>
+      </template>
+      <template #operations>
+        <button @click="handleProfileSave" class="primary-btn" :disabled="profileSubmitting">
+          修改密码
+        </button>
+        <button @click="closeProfileModal" class="cancel-btn" :disabled="profileSubmitting">
+          关闭
+        </button>
+      </template>
+    </BaseFormModal>
+  </div>
 </template>
 
 <script setup>
@@ -30,10 +51,16 @@ import { computed, ref } from "vue";
 // import { comn } from "@/router/testRoutes";
 import { pub } from "@/router/modules/publicRoutes";
 import { useUserStore } from "@/stores/modules/userStore";
+import { useMessage } from "@/composables/useMessage";
+import { userApi } from "@/api/user";
+
+import BaseFormModal from "@/components/common/modal/BaseFormModal.vue";
+import UserForm from "@/components/business/user/user-form/UserForm.vue";
 
 const route = useRoute();
 const router = useRouter();
 const userStore = useUserStore();
+const message = useMessage();
 
 function getTitle(routePath) {
   console.log(pub)
@@ -48,9 +75,62 @@ const title = computed(() => {
   return getTitle(route.path)
 });
 
-const username = ref("");
-username.value = userStore.userInfo.username;
-// username.value = "abc"
+const username = computed(() => userStore.userInfo?.username || "");
+
+const showProfileModal = ref(false);
+const profileFormRef = ref(null);
+const profileSubmitting = ref(false);
+const profileData = ref({});
+
+const buildProfileData = () => ({
+  id: userStore.userInfo?.id || "",
+  username: userStore.userInfo?.username || "",
+  name: userStore.userInfo?.name || "",
+  reviewerGroupIds: userStore.userInfo?.reviewerGroupIds || [],
+  isEnabled: userStore.userInfo?.isEnabled ?? true,
+  role: userStore.userInfo?.role || "normal",
+  oldPassword: "",
+  newPassword: ""
+});
+
+const openProfileModal = () => {
+  profileData.value = buildProfileData();
+  showProfileModal.value = true;
+};
+
+const closeProfileModal = () => {
+  showProfileModal.value = false;
+};
+
+const handleProfileSave = async () => {
+  if (!profileFormRef.value || profileSubmitting.value) {
+    return;
+  }
+
+  const { valid, data } = await profileFormRef.value.validate();
+  if (!valid) {
+    message.error("请完善表单数据");
+    return;
+  }
+
+  const oldPassword = data?.oldPassword?.trim?.() || "";
+  const newPassword = data?.newPassword?.trim?.() || "";
+  if (!oldPassword || !newPassword) {
+    message.warning("请输入旧密码和新密码");
+    return;
+  }
+
+  profileSubmitting.value = true;
+  try {
+    const response = await userApi.editPassword({ oldPassword, newPassword });
+    message.success(response.message || "密码修改成功");
+    closeProfileModal();
+  } catch (err) {
+    message.error(`密码修改失败: ${err?.message || err}`);
+  } finally {
+    profileSubmitting.value = false;
+  }
+};
 
 
 const goto = (path) => {
@@ -79,7 +159,7 @@ header {
   align-items: center;
   justify-content: space-between;
   box-shadow: 1px 1px 8px gray;
-  margin-bottom: 10px;
+  /* margin-bottom: 10px; */
 }
 
 
@@ -167,7 +247,8 @@ header {
   padding-top: 60px;
   opacity: 0;
   line-height: 45px;
-  transform: translateY(-60px);
+  /* transform: translateY(-60px); */
+  transform: translateY(-30%);
   /* border: 1px solid; */
   transition: all 0.3s;
   z-index: 999;
@@ -197,6 +278,7 @@ header {
   border-top: 0;
   border-bottom-left-radius: 10px;
   border-bottom-right-radius: 10px;
-  transform: translateY(75px);
+  /* transform: translateY(75px); */
+  transform: translateY(30%);
 }
 </style>
