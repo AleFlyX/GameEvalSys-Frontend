@@ -36,12 +36,13 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue';
+import { ref, reactive, toRaw } from 'vue';
 import { useRouter } from 'vue-router';
 import { ElMessage } from 'element-plus';
 import { elementIconMap } from '@/utils/elementIcons'
 import { useUserStore } from '@/stores/modules/userStore.js';
 import SlideBlock from './components/slideBlock.vue';
+import { removeSpacesFromObject } from '@/utils/removeSpacesFromData';
 //icon
 const { User, Lock } = elementIconMap
 
@@ -56,7 +57,7 @@ const validateBlock = ref(null);
 // 加载状态
 const loading = ref(false);
 // 登录表单
-const loginForm = reactive({
+const loginForm = ref({
   username: '',
   password: ''
 });
@@ -76,6 +77,8 @@ const loginRules = reactive({
 
 const showSlideBlock = ref(false);
 const handleFormValidate = async () => {
+  //去除所有空格
+  loginForm.value = removeSpacesFromObject(loginForm.value, true);
   // 表单验证
   const valid = await loginFormRef.value.validate();
   console.log('BEFORE' + valid)
@@ -99,7 +102,7 @@ const handleLogin = async () => {
 
   try {
     // 调用登录方法
-    await userStore.login(loginForm);
+    await userStore.login(loginForm.value);
     ElMessage.success('登录成功');
     // 获取登录前的重定向地址，无则跳转到首页
     const redirect = router.currentRoute.value.query.redirect || '/home';
