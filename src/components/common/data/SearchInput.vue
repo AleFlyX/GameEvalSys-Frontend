@@ -138,6 +138,9 @@ watch(() => inputContent.value, (newCt) => {
     else emits('search', newCt);
   }
 })
+defineExpose({
+  reset: () => { inputContent.value = '' }
+})
 </script>
 
 <style scoped>
