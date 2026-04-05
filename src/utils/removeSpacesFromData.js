@@ -51,3 +51,19 @@ export function removeSpacesFromObject(input, removeAll = false) {
   //其他特殊对象（Date, RegExp, Map, Set 等）直接返回原值，不做处理
   return input;
 }
+
+/**
+ * 检查form值是否有效
+ * El Form Validator属性自定义验证器
+ * @param {Object} rule
+ * @param {Any} value
+ * @param {Function} callback
+ */
+export const validateSpace = (rule, value, callback) => {
+  if (removeSpacesFromObject(value, true) === '') {
+    callback(new Error('请输入有效值'))
+  }
+  else {
+    callback()
+  }
+}
