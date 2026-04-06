@@ -67,14 +67,15 @@ import { ElMessage } from 'element-plus';
 import PagePanel from '@/layouts/PagePanel.vue';
 import OverviewCard from '@/components/common/data/OverviewCard.vue';
 import SearchInput from '@/components/common/data/SearchInput.vue';
-import ProjectConfirm from './components/ProjectConfirm.vue';
-import ProjectAdd from './components/ProjectAdd.vue';
+import ProjectConfirm from '../components/ProjectConfirm.vue';
+import ProjectAdd from '../components/ProjectAdd.vue';
 
 import ProjectDetails from '@/components/business/project/project-detail/index.vue';
 import DataTableColums from '@/components/common/data/DataTableColums.vue';
 import { PROJECT_LIST_RULES } from '../config/data-table/projectList';
 
 import { projectApi } from '@/api/project';
+import { useLoading } from '@/composables/useLodaing';
 
 const router = useRouter();
 
@@ -93,17 +94,19 @@ const pageParams = reactive({
 
 const projectList = ref([])
 
-const loading = ref(true)
+const { isLoading: loading, start: startLoading, end: endLoading } = useLoading('adminProject:list')
 const getProjectsList = async (pageParams) => {
+  startLoading();
   try {
     const response = await projectApi.getProjectList(pageParams);
     projectList.value = response.data.list;
-    loading.value = false;
     totalData.value = response.data.total
     console.log(projectList.value)
   } catch (err) {
     ElMessage.error('netWorkERROR', err)
     console.log('获取项目列表错误', err)
+  } finally {
+    endLoading();
   }
 }
 
