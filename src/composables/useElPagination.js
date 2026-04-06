@@ -1,4 +1,5 @@
 import { ref, computed, watch, unref } from 'vue'
+import { useLoading } from '@/composables/useLodaing'
 
 /**
  * 基于El pagination的组合式函数
@@ -18,7 +19,8 @@ export function useElPagination(options = {}) {
     defaultPageSizes = [10, 20, 30, 50],
     maxPageSize = 100,
     onPageChange = async () => { },
-    debounceTime = 300 // 防抖时间
+    debounceTime = 300, // 防抖时间
+    loadingKey
   } = options
 
   // 基础状态
@@ -27,7 +29,8 @@ export function useElPagination(options = {}) {
   const total = ref(0)
 
   // loading 控制
-  const loading = ref(false)
+  const resolvedLoadingKey = loadingKey || `pagination:${Math.random().toString(36).slice(2, 10)}`
+  const { isLoading: loading, start: startLoading, end: endLoading } = useLoading(resolvedLoadingKey)
 
   // 分页禁用 = loading 或 无数据
   const disabled = computed(() => loading.value || total.value === 0)
@@ -67,7 +70,7 @@ export function useElPagination(options = {}) {
 
     controller = new AbortController()
 
-    loading.value = true
+    startLoading()
 
     try {
       await onPageChange(page, size, controller.signal)
@@ -77,7 +80,7 @@ export function useElPagination(options = {}) {
         console.error('分页请求错误:', err)
       }
     } finally {
-      loading.value = false
+      endLoading()
     }
   }
 
