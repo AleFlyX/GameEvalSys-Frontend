@@ -1,6 +1,8 @@
 import axios from "axios";
-import { ElMessage, ElMessageBox } from "element-plus";
-// import { useRouter } from "vue-router";
+import { useMessage } from "@/composables/useMessage";
+import { showMsgBox } from "./ConfirmBox";
+
+const message = useMessage();
 
 // 创建axios实例
 const service = axios.create({
@@ -26,7 +28,7 @@ service.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
-    // 3. GET请求防止缓存（可选）
+    // 3. GET请求防止缓存
     if (config.method === "get" && config.params) {
       config.params = {
         ...config.params,
@@ -52,24 +54,29 @@ service.interceptors.response.use(
       return res; // 直接返回数据，业务层无需再取data
     } else {
       // 2. 接口返回业务错误（如参数错误、权限不足等）
-      ElMessage.error(res.message || "请求失败");
+      message.error(res.message || "请求失败");
       return Promise.reject(res);
     }
   },
   (error) => {
     // 3. HTTP状态码错误处理
     console.error("响应拦截器错误：", error);
+    const responseData = error.response?.data;
+    const backendMessage = responseData?.message;
+    if (backendMessage) {
+      error.message = backendMessage;
+    }
     const status = error.response?.status;
     switch (status) {
       case 401:
         // token过期/未登录：清除token并跳转登录页
         localStorage.removeItem("token");
-        ElMessageBox.confirm("登录状态已过期，请重新登录", "提示", {
+        showMsgBox("提示", "登录状态已过期，请重新登录", {
           confirmButtonText: "去登录",
           showCancelButton: false,
           showClose: false,
+          showDefaultClose: false,
           closeOnClickModal: false,
-          // cancelButtonText: '取消',
           type: "warning",
         }).then(() => {
           if (router && typeof router.push === "function") {
@@ -80,37 +87,23 @@ service.interceptors.response.use(
         });
         break;
       case 403:
-        ElMessage.error("没有权限执行该操作");
+        message.error(backendMessage || "没有权限执行该操作");
         break;
       case 404:
-        ElMessage.error("请求的资源不存在");
+        message.error(backendMessage || "请求的资源不存在");
+        break;
+      case 400:
+        message.error(backendMessage || "参数错误");
         break;
       case 500:
-        ElMessage.error("服务器内部错误，请稍后重试");
+        message.error(backendMessage || "服务器内部错误，请稍后重试");
         break;
       default:
-        ElMessage.error(error.message || "请求出错，请稍后重试");
+        message.error(backendMessage || error.message || "请求出错，请稍后重试");
     }
     return Promise.reject(error);
   },
 );
 
-// -------------------------- 导出常用请求方法（简化业务层调用） --------------------------
-// const request = {
-//   get(url, params = {}) {
-//     return service.get(url, { params })
-//   },
-//   post(url, data = {}) {
-//     return service.post(url, data)
-//   },
-//   put(url, data = {}) {
-//     return service.put(url, data)
-//   },
-//   delete(url, params = {}) {
-//     return service.delete(url, { params })
-//   },
-// }
 
-// export { request }
-// export default request
 export default service;
