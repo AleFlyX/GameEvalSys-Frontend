@@ -31,6 +31,7 @@ import BaseFormModal from '@/components/common/modal/BaseFormModal.vue';
 import ScoringStdForm from './ScoringStdForm.vue';
 
 import { ScoringApi } from '@/api/scoring';
+import { useLoading } from '@/composables/useLodaing';
 
 const props = defineProps({
   addMode: {
@@ -56,13 +57,13 @@ const handleClose = () => {
   emits('update:visible', false);
 };
 
-const loading = ref(false);
+const { isLoading: loading, start: startLoading, end: endLoading } = useLoading('scoringStd:detail');
 const standardData = ref({ name: '', indicators: [] })
 const loadStandardDetail = async (stdId) => {
   if (!stdId || props.addMode) {
     return;
   }
-  loading.value = true;
+  startLoading();
   try {
     const response = await ScoringApi.getScoringStandardsDetails(stdId);
     standardData.value = response.data || {};
@@ -71,7 +72,7 @@ const loadStandardDetail = async (stdId) => {
   } catch (err) {
     ElMessage.error(`加载打分标准失败: ${err.message || err}`);
   } finally {
-    loading.value = false;
+    endLoading();
   }
 };
 

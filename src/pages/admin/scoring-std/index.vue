@@ -64,8 +64,9 @@ import ScoringStdOperation from './components/ScoringStdOperation.vue';
 import { ScoringApi } from '@/api/scoring';
 import DataTableColums from '@/components/common/data/DataTableColums.vue';
 import { COLUMN_RULES } from './config/scoringStdColumnRule';
+import { useLoading } from '@/composables/useLodaing';
 
-const loading = ref(false);
+const { isLoading: loading, start: startLoading, end: endLoading } = useLoading('scoringStd:list');
 const tableData = ref([]);
 const totalCount = ref(0);
 const enabledCount = ref(0);
@@ -76,7 +77,7 @@ const selectedStandardId = ref(null);
 
 // 加载打分标准列表
 const fetchScoringStandards = async () => {
-  loading.value = true;
+  startLoading();
   try {
     const response = await ScoringApi.getScoringStandardsList();
     console.log('STDS ', response.data)
@@ -88,7 +89,7 @@ const fetchScoringStandards = async () => {
   } catch (err) {
     ElMessage.error(`加载打分标准列表失败: ${err.message || err}`);
   } finally {
-    loading.value = false;
+    endLoading();
   }
 };
 

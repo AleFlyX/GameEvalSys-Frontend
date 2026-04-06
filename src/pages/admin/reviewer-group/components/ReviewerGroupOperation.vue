@@ -31,6 +31,7 @@ import { reviewerGroupApi } from '@/api/reviewer-group';
 import { ElMessage } from 'element-plus';
 import BaseFormModal from '@/components/common/modal/BaseFormModal.vue';
 import ReviewerGroupForm from './ReviewerGroupForm.vue';
+import { useLoading } from '@/composables/useLodaing';
 
 const props = defineProps({
   editData: {
@@ -47,7 +48,7 @@ const formData = computed(() => {
   return props.editData;
 })
 
-const submitLoading = ref(false);
+const { isLoading: submitLoading, start: startSubmitLoading, end: endSubmitLoading } = useLoading('reviewerGroup:submit');
 // 处理提交
 const handleSubmit = async () => {
 
@@ -56,7 +57,7 @@ const handleSubmit = async () => {
     return;
   }
 
-  submitLoading.value = true;
+  startSubmitLoading();
   try {
     if (isEdit.value) {
       // 编辑
@@ -73,7 +74,7 @@ const handleSubmit = async () => {
     ElMessage.error((isEdit.value ? '更新' : '创建') + '失败: ' + error);
     console.error('Error:', error);
   } finally {
-    submitLoading.value = false;
+    endSubmitLoading();
   }
 };
 

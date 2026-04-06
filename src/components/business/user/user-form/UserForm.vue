@@ -63,7 +63,8 @@ import BaseForm from '@/components/common/form/BaseForm.vue';
 import { reviewerGroupApi } from '@/api/reviewer-group';
 
 import { userFormRules } from '@/components/business/user/user-form/userFormRules';
-import { ElMessage } from 'element-plus';
+import { useMessage } from '@/composables/useMessage';
+import { useLoading } from '@/composables/useLodaing';
 const props = defineProps({
   initData: {
     type: Object,
@@ -98,6 +99,8 @@ const emits = defineEmits(['update:data', 'update:keywords'])
 
 const baseFormRef = ref(null)
 
+const message = useMessage();
+
 // 通过 computed 获取 BaseForm 的 formData，避免创建重复的数据对象
 const formData = computed(() => {
   return baseFormRef.value?.formData || {};
@@ -127,12 +130,12 @@ const showInfo = () => {
     return;
   }
   if (isNormal.value) {
-    ElMessage.info('普通用户 无法修改评审团')
+    message.info('普通用户 无法修改评审团')
   }
 
 }
 
-const loading = ref(false)
+const { isLoading: loading, start: startLoading, end: endLoading } = useLoading('userForm:reviewerGroups')
 const reviewerGroups = ref([])
 // 初始化加载用户已加入的评审团信息（编辑模式）
 const initializeUserReviewerGroups = async () => {
@@ -170,14 +173,15 @@ const initializeUserReviewerGroups = async () => {
 }
 
 const getReviewerGroupList = async (keywords) => {
-  loading.value = true;
+  startLoading();
   console.log('searching reviewer group list', keywords)
   try {
     const response = await reviewerGroupApi.getReviewerGroupList({ keyWords: keywords })
     reviewerGroups.value = response.data;
-    loading.value = false;
   } catch (err) {
     console.log(err)
+  } finally {
+    endLoading();
   }
 }
 defineExpose({

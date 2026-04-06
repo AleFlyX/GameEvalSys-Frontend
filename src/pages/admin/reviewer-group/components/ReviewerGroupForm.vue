@@ -33,6 +33,7 @@ import BaseForm from '@/components/common/form/BaseForm.vue';
 import { userApi } from '@/api/user';
 import { useMessage } from '@/composables/useMessage';
 import { REVIEWER_GROUPS_FORM_RULES } from '../config/form-rules/reviewerGroupForm';
+import { useLoading } from '@/composables/useLodaing';
 
 const props = defineProps({
   initData: {
@@ -48,11 +49,11 @@ const clonedFormData = computed(() => {
 
 const message = useMessage();
 
-const loadingUsers = ref(false)
+const { isLoading: loadingUsers, start: startLoadingUsers, end: endLoadingUsers } = useLoading('reviewerGroupForm:users')
 const availableMembers = ref([]);
 // 获取可用成员列表
 const fetchAvailableMembers = async (kWords) => {
-  loadingUsers.value = true;
+  startLoadingUsers();
   try {
     const templateParam = { page: 1, size: 20 }
     // if (keyWords) templateParam = { keyWords: keywords };
@@ -79,7 +80,7 @@ const fetchAvailableMembers = async (kWords) => {
       // { id: 5, labelText: '打分员04 (scorer04) - scorer' }
     ];
   } finally {
-    loadingUsers.value = false;
+    endLoadingUsers();
   }
 };
 

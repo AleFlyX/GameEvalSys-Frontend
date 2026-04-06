@@ -57,7 +57,8 @@ import { ref, computed, watch, onMounted } from 'vue';
 import BaseModal from '@/components/common/modal/BaseModal.vue';
 import { ScoringApi } from '@/api/scoring';
 import { projectApi } from '@/api/project';
-import { ElMessage } from 'element-plus';
+import { useMessage } from '@/composables/useMessage';
+import { useLoading } from '@/composables/useLodaing';
 
 const props = defineProps({
   visible: {
@@ -84,9 +85,10 @@ const props = defineProps({
 
 const emit = defineEmits(['update:visible', 'refresh', 'submit']);
 
+const message = useMessage();
 const visible = ref(props.visible);
 const formRef = ref(null);
-const submitLoading = ref(false);
+const { isLoading: submitLoading, start: startSubmitLoading, end: endSubmitLoading } = useLoading('scoringForm:submit');
 const indicators = ref([]);
 const formData = ref({
   scores: [],
@@ -187,18 +189,18 @@ const handleSubmit = async () => {
   // 验证所有指标都已填写
   const allScoresFilled = formData.value.scores.every(score => score !== null && score !== undefined);
   if (!allScoresFilled) {
-    ElMessage.error('请为所有指标评分');
+    message.error('请为所有指标评分');
     return;
   }
 
   // 验证表单其他字段
   const valid = await formRef.value?.validate().catch(() => false);
   if (!valid) {
-    ElMessage.error('请填写所有必填项');
+    message.error('请填写所有必填项');
     return;
   }
 
-  submitLoading.value = true;
+  startSubmitLoading();
   try {
     const scores = indicators.value.map((indicator, index) => ({
       indicatorId: indicator.id,
@@ -213,7 +215,7 @@ const handleSubmit = async () => {
     });
 
     if (response.code === 200) {
-      ElMessage.success('打分成功');
+      message.success('打分成功');
       emit('submit', {
         projectId: props.projectId,
         groupId: props.groupId,
@@ -222,13 +224,13 @@ const handleSubmit = async () => {
       });
       handleCancel();
     } else {
-      ElMessage.error(response.message || '打分失败');
+      message.error(response.message || '打分失败');
     }
   } catch (error) {
-    ElMessage.error('打分失败: ' + (error?.message || error));
+    message.error('打分失败: ' + (error?.message || error));
     console.error('Error submitting scoring:', error);
   } finally {
-    submitLoading.value = false;
+    endSubmitLoading();
   }
 };
 

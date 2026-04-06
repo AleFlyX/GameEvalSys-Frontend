@@ -5,7 +5,9 @@
     </nav>
     <div class="wrapper">
       <HeadBar />
-      <main>
+      <main v-loading="isLoading">
+        <el-skeleton v-if="isSkeleton" style="--el-skeleton-circle-size: 100px">
+        </el-skeleton>
         <RouterView />
       </main>
     </div>
@@ -13,10 +15,13 @@
 </template>
 
 <script setup>
+import { RouterView } from 'vue-router';
+import { useLoading } from '@/composables/useLodaing';
+import { usePageAgent } from '@/composables/usePageAgent';
 import HeadBar from '@/layouts/components/head-bar/index.vue';
 import SideBar from '@/layouts/components/side-bar/index.vue';
-import { RouterView } from 'vue-router';
-import { usePageAgent } from '@/composables/usePageAgent';
+
+const { isLoading, isSkeleton } = useLoading('global:main'); //main内容全局加载
 
 const agent = usePageAgent();
 const handleShowAgent = (event) => {
