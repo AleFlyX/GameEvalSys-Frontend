@@ -36,13 +36,14 @@
 </template>
 
 <script setup>
-import { ref, reactive, toRaw } from 'vue';
+import { ref, reactive } from 'vue';
 import { useRouter } from 'vue-router';
 import { ElMessage } from 'element-plus';
 import { elementIconMap } from '@/utils/elementIcons'
 import { useUserStore } from '@/stores/modules/userStore.js';
 import SlideBlock from './components/slideBlock.vue';
-import { removeSpacesFromObject } from '@/utils/removeSpacesFromData';
+import { removeSpacesFromObject, validateSpace } from '@/utils/removeSpacesFromData';
+import { useLoading } from '@/composables/useLodaing';
 //icon
 const { User, Lock } = elementIconMap
 
@@ -55,7 +56,7 @@ const loginFormRef = ref(null);
 // 滑块Ref
 const validateBlock = ref(null);
 // 加载状态
-const loading = ref(false);
+const { isLoading: loading, start: startLoading, end: endLoading } = useLoading('login:submit');
 // 登录表单
 const loginForm = ref({
   username: '',
@@ -66,12 +67,12 @@ const loginRules = reactive({
   username:
     [
       { required: true, message: '请输入用户名', trigger: 'blur' },
-      { min: 3, max: 50 }
+      { min: 3, max: 50, validator: validateSpace }
     ],
   password:
     [
       { required: true, message: '请输入密码', trigger: 'blur' },
-      { min: 6, max: 100 }
+      { min: 6, max: 100, validator: validateSpace }
     ]
 });
 
@@ -80,18 +81,23 @@ const handleFormValidate = async () => {
   //去除所有空格
   loginForm.value = removeSpacesFromObject(loginForm.value, true);
   // 表单验证
-  const valid = await loginFormRef.value.validate();
-  console.log('BEFORE' + valid)
-  if (!valid) {
-    return Promise.reject();
+  try {
+    const valid = await loginFormRef.value.validate();
+    if (!valid) {
+      return Promise.reject();
+    }
+    showSlideBlock.value = true;
+    return Promise.resolve();
   }
-  showSlideBlock.value = true;
-  return Promise.resolve();
+  catch (e) {
+    console.log(e)
+  }
+
 }
 
 const handlePassValidate = (isPass) => {
   if (!isPass) return;
-  loading.value = true;
+  startLoading();
   showSlideBlock.value = false;
   handleLogin();
   return;
@@ -112,7 +118,7 @@ const handleLogin = async () => {
     ElMessage.error(err.message || '登录失败，请检查用户名或密码');
     console.error('登录失败：', err);
   } finally {
-    loading.value = false;
+    endLoading();
   }
 };
 </script>
