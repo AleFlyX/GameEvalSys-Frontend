@@ -39,7 +39,7 @@ export const useLoading = (key = 'global') => {
     }
   }
   return {
-    loading: isLoading.value,
+    isLoading: isLoading.value,
     isSkeleton: isSkeleton.value,
     start, // 手动开始
     end,  //手动结束

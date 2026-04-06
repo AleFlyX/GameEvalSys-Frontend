@@ -14,7 +14,7 @@
 
     <template #main-table>
       <div class="project-edit-container">
-        <el-tabs v-model="activeTab" @tab-click="onTabChange">
+        <el-tabs v-model="activeTab" @tab-click="onTabChange" v-loading="initLoading || isSaving">
           <!-- Tab 1: 基本信息 -->
           <el-tab-pane label="基本信息" name="basic">
             <ProjectForm v-if="activeTab === 'basic'" ref="projectFormRef" edit-mode :data="formData" />
@@ -25,7 +25,7 @@
             <ProjectGroups v-if="activeTab === 'groups'" ref="groupsFormRef" :project-id="formData.id"
               @edited="projectGroupCache = $event" :edited-at-local="projectGroupCache.edited"
               :goroup-ids-cache="projectGroupCache.cache" @update:group-ids="handleNewGroupIds"
-              @error-notice="ElMessage.error($event)" @success-notice="ElMessage.success($event)" />
+              @error-notice="message.error($event)" @success-notice="message.success($event)" />
           </el-tab-pane>
 
           <!-- Tab 3: 评审团配置 -->
@@ -44,30 +44,29 @@
         <el-button type="primary" :loading="isSubmitting" @click="handleSave">
           保存更改
         </el-button>
-        <el-button @click="handleCancel">取消</el-button>
+        <el-button @click="handleGoBack">取消</el-button>
       </div>
     </template>
   </PagePanel>
 </template>
 
 <script setup>
-import { ref, reactive, watch, onMounted, onUnmounted, nextTick } from 'vue';
+import { ref, reactive, watch, computed, onMounted, onUnmounted, nextTick } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
-import { ElMessage, ElMessageBox } from 'element-plus';
-
-// import { useProjectStore } from '@/stores/modules/projectStore';
+import { useMessage } from '@/composables/useMessage';
+import { useLoading } from '@/composables/useLodaing';
 
 import PagePanel from '@/layouts/PagePanel.vue';
 import MyBtn from '@/components/common/form/MyBtn.vue';
+import ProjectForm from '../components/ProjectForm.vue';
+import ProjectGroups from '../components/ProjectGroups.vue';
+import ProjectReviewGroups from '../components/ProjectReviewGroups.vue';
 
 import { projectApi } from '@/api/project';
 
-import ProjectForm from './components/ProjectForm.vue';
-import ProjectGroups from './components/ProjectGroups.vue';
-import ProjectReviewGroups from './components/ProjectReviewGroups.vue';
 import { showMsgBox } from '@/utils/ConfirmBox';
 
-
+const message = useMessage();
 const router = useRouter();
 const route = useRoute();
 // const projectStore = useProjectStore();
@@ -84,7 +83,6 @@ const isDataAdjusted = reactive({ // 标记被改的数据
 });
 
 const projectFormRef = ref(null);
-// const basicFormValidator = ref(null);
 
 /**
  * groupIds,scorerIds若为空值则说明没有产生更改,对应后端按传过去的字段来修改内容
@@ -105,37 +103,15 @@ const formData = reactive({
   status: 'not_started'
 });
 
-// const isSame = () => {
-//   const same = (originalFormData == toRaw(formData))
-//   console.log(originalFormData, toRaw(formData))
-//   ElMessage.info(same)
-// }
-
-const handleGoBack = () => {
-  if (isDataAdjusted.groupIdsChanged || isDataAdjusted.scorerIdsChanged) {
-    showMsgBox('未保存', '检测到有做出更改,是否保存', { confirmButtonText: '立即保存' })
-      .then(async () => {
-        await handleSave()
-      })
-      .catch(() => {
-        ElMessage.info('取消保存')
-      }).finally(() => {
-        router.push('/project')
-      })
-    return;
-  }
-  router.push('/project')
-}
-
+const { isLoading: initLoading, requestWithPageLoading: initRequest } = useLoading('projectEdit:initForm');
 // 初始化表单数据
 const initFormData = async () => {
   try {
     // await fetchReviewerGroupOptions();
-
     const projectId = route.params.id;
     if (projectId) {
       // 这里应该调用 API 获取项目详情
-      const response = await projectApi.getProjectDetail(projectId);
+      const response = await initRequest(projectApi.getProjectDetail, projectId)
       Object.assign(formData, response.data);
       console.log('初始化表单数据', response.data)
       console.log('**********BASIC************', formData)
@@ -144,19 +120,60 @@ const initFormData = async () => {
       // basicFormValidator.value = projectFormRef.value;
     }
   } catch (err) {
-    ElMessage.error(`加载项目信息失败: ${err}`);
+    message.error(`加载项目信息失败: ${err}`);
     router.back();
   }
 };
+
+// 根据是否有对相关数据产生变更来决定产生变更
+const isDataChanged = computed(() => isDataAdjusted.basicInfoChanged || isDataAdjusted.groupIdsChanged || isDataAdjusted.scorerIdsChanged)
+
+/**
+ * 根据变更的数据构造发送到后端的DTO
+ * @param {Object} data
+ */
+const buildEditedData = (data) => {
+
+  // 未做出任何改动直接退出
+  if (!isDataChanged.value) {
+    return;
+  }
+  if (!isDataAdjusted.groupIdsChanged) {
+    delete data.groupIds;
+  }
+  if (!isDataAdjusted.scorerIdsChanged) {
+    delete data.scorerIds;
+  }
+  console.log("DELETED DATA", data)
+  return data;
+}
+
+
+const { isLoading: isSaving, requestWithPageLoading: saveFormRequest } = useLoading('projectEdit:saveForm')
+const handleGoBack = () => {
+  if (isDataChanged.value) {
+    showMsgBox('未保存', '检测到有做出更改,是否保存', { confirmButtonText: '立即保存' })
+      .then(async () => {
+        await handleSave();
+      })
+      .catch(() => {
+        message.info('取消保存')
+      }).finally(() => {
+        router.push('/project')
+      })
+    return;
+  }
+  router.push('/project')
+}
 
 // 小组数据是否被编辑过
 const projectGroupCache = reactive({
   edited: false,
   cache: []
 });
-watch(projectGroupCache, (new1) => {
-  console.log(new1)
-})
+// watch(projectGroupCache, (new1) => {
+//   console.log(new1)
+// })
 //更新项目表单的小组数据
 const handleNewGroupIds = (newArr) => {
   console.log('RECV NEW GROUPS ARRAY------------', newArr);
@@ -169,49 +186,15 @@ const projectScorerCache = reactive({
   edited: false,
   cache: []
 });
-watch(() => projectScorerCache.cache, (newVals) => {
-  console.log('SCORER IDS CHANGED', newVals)
-})
+// watch(() => projectScorerCache.cache, (newVals) => {
+//   console.log('SCORER IDS CHANGED', newVals)
+// })
 // 更新项目表单的打分者数据
 const handleNewScorerIds = (newArr) => {
   console.log('RECV NEW scorer ARRAY------------', newArr);
   console.log('SCORER IDS CHANGED', projectScorerCache)
   isDataAdjusted.scorerIdsChanged = true;
   formData.scorerIds = newArr;
-}
-const isDataChanged = (data) => {
-  // 未做出任何改动直接退出
-  if (!isDataAdjusted.basicInfoChanged && !isDataAdjusted.groupIdsChanged && !isDataAdjusted.scorerIdsChanged) {
-    router.back();
-  }
-  // 未产生改变的数据都删去该项
-  // if (!isDataAdjusted.basicInfoChanged) {
-  //   const basicInfoTemplate = {
-  //     id: '1',
-  //     name: '1',
-  //     description: '1',
-  //     startDate: '1',
-  //     endDate: '1',
-  //     standardId: '1',
-  //     isEnabled: true,
-  //     status: 'not_started'
-  //   }
-  //   for (let item in formData) {
-  //     console.log(item)
-  //     if (basicInfoTemplate[item]) {
-  //       console.log('DELETE ITEM', item)
-  //       delete data.item
-  //     }
-  //   }
-  // }
-  if (!isDataAdjusted.groupIdsChanged) {
-    delete data.groupIds;
-  }
-  if (!isDataAdjusted.scorerIdsChanged) {
-    delete data.scorerIds;
-  }
-  console.log("DELETED DATA", data)
-  return data;
 }
 
 // 保存更改
@@ -230,41 +213,26 @@ const handleSave = async () => {
     formValidatedData = data;
     if (!valid) return;
   } catch (err) {
-    ElMessage.error('表单验证失败: ' + err);
+    message.error('表单验证失败: ' + err);
     return;
   }
 
-  formValidatedData = isDataChanged(formValidatedData);
+  formValidatedData = buildEditedData(formValidatedData);
 
   isSubmitting.value = true;
 
   try {
-    const response = await projectApi.editProject(formData.id, formValidatedData);
+    await saveFormRequest(projectApi.editProject, formData.id, formValidatedData);
     console.log('项目编辑表单数据', formValidatedData)
-    ElMessage.success(`${response.message}`);
-    ElMessage.success('项目已成功更新');
+    message.success('项目已成功更新');
     router.back();
   } catch (err) {
-    ElMessage.error(`保存项目失败: ${err}`);
+    message.error(`保存项目失败: ${err}`);
   } finally {
     isSubmitting.value = false;
   }
 };
 
-// 取消编辑
-const handleCancel = () => {
-  ElMessageBox.confirm('确实要放弃编辑吗？', '提示', {
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
-    type: 'warning'
-  })
-    .then(() => {
-      router.back();
-    })
-    .catch(() => {
-      // 用户取消
-    });
-};
 // 浏览器刷新/关闭时的提醒逻辑
 const handleBeforeUnload = (e) => {
   if (isDataAdjusted.basicInfoChanged || isDataAdjusted.groupIdsChanged || isDataAdjusted.scorerIdsChanged) {
