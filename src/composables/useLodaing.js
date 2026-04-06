@@ -18,31 +18,23 @@ export const useLoading = (key = 'global') => {
   /**
    * 执行异步任务，自动控制 start/end
    * @param {Function} asyncFn - 返回 Promise 的异步函数
-   * @param {Object} options - 配置
-   * @param {boolean} options.catchError - 是否自动捕获错误并打印，默认 false
+   * @param {Any} args 传入的异步函数的所需参数（例：requestWithLoading(api.getUser,114514,true)）
    * @returns {Promise} 异步任务的返回值
    */
-  async function requestWithPageLoading(fn, catchError = false) {
-    loadingStore.start()
+  async function requestWithLoading(fn, ...args) {
+    loadingStore.start(key)
     try {
-      return await fn();
-    }
-    catch (e) {
-      if (catchError) {
-        console.error(`[useAsyncLoading:${key}]`, e)
-      } else {
-        throw e // 让调用者自己处理
-      }
+      return await fn(...args);
     }
     finally {
-      loadingStore.end();
+      loadingStore.end(key);
     }
   }
   return {
-    isLoading: isLoading.value,
-    isSkeleton: isSkeleton.value,
+    isLoading,
+    isSkeleton,
     start, // 手动开始
     end,  //手动结束
-    requestWithPageLoading //自动管理结束开始
+    requestWithLoading //自动管理结束开始
   }
 }
