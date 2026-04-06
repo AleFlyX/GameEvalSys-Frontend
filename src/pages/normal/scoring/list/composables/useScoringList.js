@@ -1,6 +1,7 @@
 import { ref, onMounted } from 'vue';
-import { useProjectStore } from '@/stores/modules/projectStore';
 import { projectApi } from '@/api/project';
+import { useProjectStore } from '@/stores/modules/projectStore';
+import { useLoading } from '@/composables/useLodaing';
 import { useMessage } from '@/composables/useMessage';
 import { useElPagination } from '@/composables/useElPagination';
 
@@ -13,7 +14,7 @@ export const useScoringList = () => {
   // 这里直接接入项目缓存：列表请求成功后预热详情数据
   const projectStore = useProjectStore();
   const message = useMessage();
-  const scoringList = ref([]);
+  const scoringList = ref([{ id: 2 }]);
 
   const {
     currentPage,
@@ -34,8 +35,10 @@ export const useScoringList = () => {
       await fetchScoringProjects({ page, size });
     }
   });
+  const { isLoading: initLoading, start: StartInit, end: EndInit } = useLoading('scoringList:init');
   // 获取打分项目列表
   const fetchScoringProjects = async (params = { page: 1, size: 10 }) => {
+    StartInit();
     try {
       disabled.value = true;
 
@@ -59,6 +62,7 @@ export const useScoringList = () => {
       message.error('获取项目列表失败: ' + error);
       console.error('Error fetching projects:', error);
     } finally {
+      EndInit();
       disabled.value = false;
     }
   };
@@ -85,6 +89,7 @@ export const useScoringList = () => {
     message,
 
     //data table
+    initLoading,
     scoringList,
     handleRefresh
   };

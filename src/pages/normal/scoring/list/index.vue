@@ -21,7 +21,7 @@
         </SearchInput>
       </div> -->
 
-      <el-table :data="scoringList" stripe style="width: 100%">
+      <el-table :data="scoringList" stripe style="width: 100%" v-loading="initLoading || loadingTable">
         <DataTableColums :col-rules="columnsRules"></DataTableColums>
         <el-table-column>
           <template #header>
@@ -30,7 +30,7 @@
             </div>
           </template>
           <template #default="scope">
-            <el-button size="small" type="primary" @click="handleStartScoring(scope.row)">
+            <el-button v-loading="loadingTable" size="small" type="primary" @click="handleStartScoring(scope.row)">
               查看小组
             </el-button>
             <el-button size="small" @click="handleViewDetail(scope.row)">
@@ -64,8 +64,8 @@ import ProjectDetails from '@/components/business/project/project-detail/index.v
 
 // import { useUserStore } from '@/stores/modules/userStore';
 import { columnsRules } from '../config/projectListColRules';//数据表格列定义
-import { useScoringList } from './composibles/useScoringList';
-import { useHandleTable } from './composibles/useHandleTable';
+import { useScoringList } from './composables/useScoringList';
+import { useHandleInteract } from './composables/useHandleInteract';
 
 // const userStore = useUserStore()
 const {
@@ -76,7 +76,7 @@ const {
   defaultPageSizes,
   handleSizeChange,
   handleCurrentChange,
-
+  initLoading,
   // message, //elmessage
   scoringList,  //data table
   // handleRefresh,
@@ -85,9 +85,10 @@ const {
 const {
   selectedProject,
   showProjectDetailDialog,
+  loadingTable,
   handleStartScoring,
   handleViewDetail
-} = useHandleTable();
+} = useHandleInteract();
 
 // 统计数据
 const overViewCardsMap = reactive({
@@ -96,8 +97,6 @@ const overViewCardsMap = reactive({
   completedProjects: '0',
   pendingProjects: '0'
 });
-
-
 // const searchKeyword = ref('');
 
 // 计算统计数据
