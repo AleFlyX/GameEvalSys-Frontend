@@ -68,7 +68,8 @@ import { projectGroupApi } from '@/api/project-group';
 import { reviewerGroupApi } from '@/api/reviewer-group';
 
 import { projectFormRules } from '../config/form-rules/projectForm';
-import { ElMessage } from 'element-plus';
+import { useMessage } from '@/composables/useMessage';
+import { useLoading } from '@/composables/useLodaing';
 
 const props = defineProps({
   data: {
@@ -94,6 +95,8 @@ const props = defineProps({
 
 const emits = defineEmits(['update:data'])
 
+const message = useMessage();
+
 const scoringStdRef = ref(null)
 const reviewerGroupChoiceRef = ref(null)
 const showInfo = (ref) => {//ref比对
@@ -106,17 +109,12 @@ const showInfo = (ref) => {//ref比对
   else if (ref.scoringStdRef == reviewerGroupChoiceRef.value && !props.editMode) {
     msgInfo = '评审团不可修改';
   }
-  ElMessage.info(msgInfo)
+  message.info(msgInfo)
 }
 
 const baseFormRef = ref(null)
 
 const formData = ref(props.data)
-
-// const formData = computed(() => {
-//   return baseFormRef.value?.formData || {};
-// })
-
 
 const scoringStdList = ref([]);
 const initProjectFormData = async () => {
@@ -133,44 +131,47 @@ const initProjectFormData = async () => {
   }
 }
 
-const loadingScoringStd = ref(true)
+const { isLoading: loadingScoringStd, start: startLoadingScoringStd, end: endLoadingScoringStd } = useLoading('projectForm:scoringStd')
 const getScoringStdList = async (keyWords) => {
-  loadingScoringStd.value = true;
+  startLoadingScoringStd();
   try {
     const response = await ScoringApi.getScoringStandardsList(keyWords);
     scoringStdList.value = response.data;
     console.log('获取项目打分标准', response.data)
-    loadingScoringStd.value = false;
   } catch (err) {
     console.log('获取打分标准失败', err)
+  } finally {
+    endLoadingScoringStd();
   }
 }
 
 const commonGroups = ref([])
-const loadingCommonGroups = ref(true)
+const { isLoading: loadingCommonGroups, start: startLoadingCommonGroups, end: endLoadingCommonGroups } = useLoading('projectForm:commonGroups')
 const getCommonGroups = async (keywords) => {
-  loadingCommonGroups.value = true;
+  startLoadingCommonGroups();
   try {
     const response = await projectGroupApi.getGroupList({ keyWords: keywords });
     commonGroups.value = response.data.list;
-    loadingCommonGroups.value = false;
     console.log(response.data)
   } catch (err) {
     console.log(err)
+  } finally {
+    endLoadingCommonGroups();
   }
 }
 
 const reviewerGroups = ref([])
-const loadingReviewerGps = ref(false)
+const { isLoading: loadingReviewerGps, start: startLoadingReviewerGps, end: endLoadingReviewerGps } = useLoading('projectForm:reviewerGroups')
 const getReviewerGroupList = async (keywords) => {
-  loadingReviewerGps.value = true;
+  startLoadingReviewerGps();
   console.log('searching reviewer group list', keywords)
   try {
     const response = await reviewerGroupApi.getReviewerGroupList({ keyWords: keywords })
     reviewerGroups.value = response.data;
-    loadingReviewerGps.value = false;
   } catch (err) {
     console.log(err)
+  } finally {
+    endLoadingReviewerGps();
   }
 }
 

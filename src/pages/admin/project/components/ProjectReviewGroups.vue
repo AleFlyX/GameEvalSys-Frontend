@@ -49,6 +49,7 @@ import { showMsgBox } from '@/utils/ConfirmBox';
 import { ElMessage } from 'element-plus';
 
 import { userApi } from '@/api/user'
+import { useLoading } from '@/composables/useLodaing';
 
 import { REVIEWER_LIST_RULES } from '../config/data-table/projectReviewerList';
 
@@ -83,7 +84,7 @@ const reviewerGroupMembers = ref([])
 // 成员选择相关
 const selectedMemberId = ref(null)
 const usersOptions = ref([])
-const usersLoading = ref(false)
+const { isLoading: usersLoading, start: startUsersLoading, end: endUsersLoading } = useLoading('projectReviewGroups:search')
 
 const fetchReviewerGroupMembers = async () => {
   if (props.editedAtLocal) {
@@ -111,7 +112,7 @@ const remoteSearchUsers = async (query) => {
     return;
   }
 
-  usersLoading.value = true;
+  startUsersLoading();
   try {
     const response = await userApi.getUserList({
       page: 1,
@@ -127,7 +128,7 @@ const remoteSearchUsers = async (query) => {
     ElMessage.error('获取用户列表失败');
     usersOptions.value = [];
   } finally {
-    usersLoading.value = false;
+    endUsersLoading();
   }
 };
 

@@ -45,6 +45,7 @@ import { showMsgBox } from '@/utils/ConfirmBox';
 import { ElMessage } from 'element-plus';
 
 import { projectGroupApi } from '@/api/project-group';
+import { useLoading } from '@/composables/useLodaing';
 
 import { PROJECT_GROUP_LIST_RULES } from '../config/data-table/projectGroupList';
 
@@ -75,7 +76,7 @@ const groupsList = ref([])
 // 小组选择相关
 const selectedGroupId = ref(null)
 const groupsOptions = ref([])
-const groupsLoading = ref(false)
+const { isLoading: groupsLoading, start: startGroupsLoading, end: endGroupsLoading } = useLoading('projectGroups:search')
 
 const fetchProjectGroups = async () => {
   if (props.editedAtLocal) { // 如果已经在本地编辑过一次了，说明已经初始化一次数据了，无需再向后端获取数据
@@ -102,7 +103,7 @@ const remoteSearchGroups = async (query) => {
     return;
   }
 
-  groupsLoading.value = true;
+  startGroupsLoading();
   try {
     const response = await projectGroupApi.getGroupList({
       page: 1,
@@ -118,7 +119,7 @@ const remoteSearchGroups = async (query) => {
     ElMessage.error('获取小组列表失败');
     groupsOptions.value = [];
   } finally {
-    groupsLoading.value = false;
+    endGroupsLoading();
   }
 };
 

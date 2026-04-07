@@ -18,7 +18,7 @@
 
 <script setup>
 import { ref } from 'vue';
-import { ElMessage } from 'element-plus';
+import { useMessage } from '@/composables/useMessage';
 import BaseFormModal from '@/components/common/modal/BaseFormModal.vue';
 import ProjectForm from './ProjectForm.vue';
 import { projectApi } from '@/api/project';
@@ -28,6 +28,8 @@ defineOptions({
 })
 
 const emits = defineEmits(['update:visible', 'refresh'])
+
+const message = useMessage();
 
 const initialFormData = {
   name: '',
@@ -51,7 +53,7 @@ const handleConfirm = async () => {
   disableBehavior.value = true
 
   if (!formRef.value) {
-    ElMessage.error('表单加载失败')
+    message.error('表单加载失败')
     disableBehavior.value = false
     return
   }
@@ -61,17 +63,16 @@ const handleConfirm = async () => {
   if (valid) {
     try {
       const response = await projectApi.createProjectWithReviewerGroup(data)
-      ElMessage.success(`${response.message}`)
-      // ElMessage.success('项目创建成功')
+      message.success(`${response.message}`)
       emits('refresh', true)
       handleClose()
     } catch (err) {
-      ElMessage.error(`创建项目失败: ${err}`)
+      message.error(`创建项目失败: ${err?.message}`)
     } finally {
       disableBehavior.value = false
     }
   } else {
-    ElMessage.error('请完善表单数据')
+    message.error('请完善表单数据')
     disableBehavior.value = false
   }
 }

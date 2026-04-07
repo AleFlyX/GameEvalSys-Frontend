@@ -103,7 +103,7 @@ const formData = reactive({
   status: 'not_started'
 });
 
-const { isLoading: initLoading, requestWithPageLoading: initRequest } = useLoading('projectEdit:initForm');
+const { isLoading: initLoading, requestWithLoading: initRequest } = useLoading('projectEdit:initForm');
 // 初始化表单数据
 const initFormData = async () => {
   try {
@@ -149,7 +149,7 @@ const buildEditedData = (data) => {
 }
 
 
-const { isLoading: isSaving, requestWithPageLoading: saveFormRequest } = useLoading('projectEdit:saveForm')
+const { isLoading: isSaving, requestWithLoading: saveFormRequest } = useLoading('projectEdit:saveForm')
 const handleGoBack = () => {
   if (isDataChanged.value) {
     showMsgBox('未保存', '检测到有做出更改,是否保存', { confirmButtonText: '立即保存' })
