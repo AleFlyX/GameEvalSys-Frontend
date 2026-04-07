@@ -53,6 +53,27 @@ export const userApi = {
   },
 
   /**
+   * 批量修改用户启用状态
+   * @param {Object} data
+   * @param {Array<number>} data.userIds - 需要操作的用户ID列表
+   * @param {boolean} data.isEnabled - 目标启用状态
+   * @returns {Promise}
+   */
+  batchUpdateUserStatus: (data) => {
+    return service.put("/users/batch-status", data);
+  },
+
+  /**
+   * 批量删除用户
+   * @param {Object} data
+   * @param {Array<number>} data.userIds - 需要删除的用户ID列表
+   * @returns {Promise}
+   */
+  batchDeleteUsers: (data) => {
+    return service.delete("/users/batch-delete", { data });
+  },
+
+  /**
    * 创建新用户（批量创建或单个取决于实际业务）
    * @param {Object} requestObj - 请求体
    * @param {Array} requestObj.users -批量注册用户信息
