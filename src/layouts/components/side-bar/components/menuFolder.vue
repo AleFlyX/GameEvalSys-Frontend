@@ -1,48 +1,74 @@
 <template>
   <li class="fold-menu-group">
-    <!-- 折叠菜单头部 -->
-    <div class="fold-menu-header" :class="{ active: props.showSubMenu }" @click="handleExtend()">
+    <div class="fold-menu-header" :class="{ active: opened }" @click="handleToggle">
       <div class="label-prefix">
-        <slot name="prefix">
-        </slot>
-        {{ props.label }}
+        <slot name="prefix" />
+        {{ label }}
       </div>
-      <span class="arrow" :class="{ active: props.showSubMenu }">
+      <span class="arrow" :class="{ active: opened, hidden: alwaysOpen }">
         <el-icon>
           <ArrowUpBold />
         </el-icon>
       </span>
-
     </div>
-    <!-- 折叠菜单子项 -->
-    <ul class="fold-submenu">
-      <slot>
 
-      </slot>
-    </ul>
+    <transition name="submenu-collapse">
+      <ul v-show="opened" class="fold-submenu">
+        <slot />
+      </ul>
+    </transition>
   </li>
 </template>
+
 <script setup>
+import { computed, ref, watch } from "vue";
+import { useRoute } from "vue-router";
 import { ArrowUpBold } from "@element-plus/icons-vue";
+
 const props = defineProps({
+  baseIndex: {
+    type: String,
+    required: true,
+  },
   label: {
     type: String,
-    default: '',
+    default: "",
   },
-  showSubMenu: {
+  active: {
     type: Boolean,
-    default: false
-  }
-})
-const emits = defineEmits(['update:showSubMenu']);
+    default: false,
+  },
+  alwaysOpen: {
+    type: Boolean,
+    default: false,
+  },
+});
 
-// 受控模式：展开状态由父组件统一管理，避免父子状态不一致
-const handleExtend = () => {
-  emits('update:showSubMenu', !props.showSubMenu);
-}
+const emits = defineEmits(['update:active']);
+
+const route = useRoute();
+
+const childMenuItemActive = computed(() => route.path.startsWith(props.baseIndex)) // fold的子item被点击或进入子item的path
+const opened = ref(false);
+
+const handleToggle = () => {
+  if (props.alwaysOpen) {
+    return;
+  }
+  opened.value = !opened.value;
+  console.log('update:active', opened.value)
+  emits('update:active', opened.value);
+};
+watch(
+  () => childMenuItemActive.value,
+  (nv) => {
+    if (!nv) { //点击folder外部路径时关闭正在展开的folder
+      opened.value = false;
+    }
+  })
 </script>
+
 <style scoped>
-/* 折叠菜单组 - 包裹头部+子项 */
 .fold-menu-group {
   list-style: none;
 }
@@ -53,7 +79,6 @@ const handleExtend = () => {
   gap: 5px;
 }
 
-/* 折叠菜单头部 */
 .fold-menu-header {
   line-height: 48px;
   font-size: 16px;
@@ -68,24 +93,20 @@ const handleExtend = () => {
   align-items: center;
 }
 
-/* 折叠头部悬浮/展开态 */
 .fold-menu-header:hover,
 .fold-menu-header.active {
   background-color: #34495e;
   padding-left: 25px;
 }
 
-/* 折叠头部展开选中态（和普通菜单统一视觉） */
 .fold-menu-header.active {
   background-color: #1abc9c;
   border-left-color: #0f997d;
   color: #fff;
 }
 
-/* 折叠箭头样式 */
 .arrow {
   font-size: 14px;
-
   transition: all 0.2s ease;
 }
 
@@ -93,14 +114,26 @@ const handleExtend = () => {
   transform: rotate(0.5turn);
 }
 
-/* 折叠子菜单容器 */
+.arrow.hidden {
+  opacity: 0;
+}
+
 .fold-submenu {
   list-style: none;
   margin: 0;
   padding: 0;
   background-color: #1a2533;
-  /* 子菜单背景加深，区分层级 */
   overflow: hidden;
-  /* 隐藏溢出，配合子项动画 */
+}
+
+.submenu-collapse-enter-active,
+.submenu-collapse-leave-active {
+  transition: all 0.2s ease;
+}
+
+.submenu-collapse-enter-from,
+.submenu-collapse-leave-to {
+  opacity: 0;
+  transform: translateY(-6px);
 }
 </style>

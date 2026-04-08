@@ -1,107 +1,90 @@
 <template>
   <div class="sidebar">
     <span class="title">项目评分平台</span>
-    <!-- <MyBtn v-if="userStore.isAdmin" type="primary" style="align-self: center;margin: 5px;width: 50%;"
-      @click="handleAgentShow">使用Agent
-    </MyBtn> -->
     <ul class="nav-items">
-      <!-- 普通菜单 -->
-      <div v-for="item in norm" :key="item.path" @click="gotoRoute(item.path)">
-        <MenuItem v-if="!item.meta.hidden" :active="(isActive(item.path) && (!showSubMenu))">
-        <div class="menu-content">
-          <el-icon>
-            <component :is="elementIconMap[item.meta.icon] || null"></component>
-          </el-icon>
-          {{ item.name }}
-        </div>
-        </MenuItem>
-      </div>
+      <MenuItem v-for="item in visibleNormMenus" :key="item.path" :index="item.path" :label="item.name">
+      <template #prefix>
+        <el-icon>
+          <component :is="elementIconMap[item.meta.icon] || null" />
+        </el-icon>
+      </template>
+      </MenuItem>
 
-      <!-- 折叠菜单组 -->
-      <MenuFolder v-if="userStore.isAdmin" label="管理面板" :show-sub-menu="showSubMenu"
-        @update:showSubMenu="showSubMenu = $event">
+      <MenuFolder v-if="userStore.isAdmin" base-index="/admin" label="管理面板">
         <template #prefix>
           <el-icon>
-            <component :is="elementIconMap['Setting']"></component>
+            <component :is="elementIconMap.Setting" />
           </el-icon>
         </template>
-        <div v-for="item in admin" :key="item.path">
-          <MenuItem v-if="!item.meta.hidden" @click="gotoRoute(item.path)" type="subMenu" :active="isActive(item.path)"
-            :show="showSubMenu">
-          <div class="menu-content">
-            <el-icon :size="showSubMenu ? 18 : 0">
-              <component :is="elementIconMap[item.meta.icon] || null"></component>
-            </el-icon>
-            {{ item.name }}
-          </div>
-          <!-- {{ item.name }} -->
-          </MenuItem>
-        </div>
+
+        <MenuItem v-for="item in visibleAdminMenus" :key="item.path" :index="item.path" :label="item.name" level="sub">
+        <template #prefix>
+          <el-icon>
+            <component :is="elementIconMap[item.meta.icon] || null" />
+          </el-icon>
+        </template>
+        </MenuItem>
+
       </MenuFolder>
-      <MenuItem :active="showAgent" v-if="userStore.isAdmin" @click="handleAgentShow">
-      <div class="menu-content">
+
+      <MenuFolder v-if="userStore.isSuperAdmin" base-index="superAdmin" label="后台管理">
+        <template #prefix>
+          <el-icon>
+            <component :is="elementIconMap.Setting" />
+          </el-icon>
+        </template>
+        <MenuItem v-for="item in visibleSuperAdminMenus" :key="item.path" :index="item.path" :label="item.name"
+          level="sub">
+        <template #prefix>
+          <el-icon>
+            <component :is="elementIconMap[item.meta.icon] || null" />
+          </el-icon>
+        </template>
+        </MenuItem>
+      </MenuFolder>
+
+      <MenuItem v-if="userStore.isAdmin" :active="showAgent" label="使用PageAgent" @click="handleAgentShow">
+      <template #prefix>
         <el-icon>
-          <component :is="elementIconMap['ChatSquare']"></component>
-        </el-icon>使用PageAgent
-      </div>
+          <component :is="elementIconMap.ChatSquare" />
+        </el-icon>
+      </template>
       </MenuItem>
     </ul>
   </div>
 </template>
 
 <script setup>
-import { ref, watch } from "vue";
-import { useRouter, useRoute } from "vue-router";
+import { computed, ref } from "vue";
 import { norm } from "@/router/modules/normalRoutes";
 import { admin } from "@/router/modules/adminRoutes";
+import { superAdmin } from "@/router/modules/superAdminRoutes";
 import { useUserStore } from "@/stores/modules/userStore";
 import { elementIconMap } from "@/utils/elementIcons";
 import MenuItem from "./components/menuItem.vue";
 import MenuFolder from "./components/menuFolder.vue";
 
-const router = useRouter();
-const route = useRoute(); // 当前路由实例
-const showSubMenu = ref(false); // 折叠菜单展开状态
+defineOptions({
+  name: "SidebarMenu",
+});
+
 const userStore = useUserStore();
 
-const emits = defineEmits(['showAgent']);
+// 找出可直接进入的路径
+const visibleNormMenus = computed(() => norm.filter((item) => !item.meta?.hidden));
+const visibleAdminMenus = computed(() => admin.filter((item) => !item.meta?.hidden));
+const visibleSuperAdminMenus = computed(() =>
+  superAdmin.filter((item) => !item.meta?.hidden)
+);
 
+const emits = defineEmits(["showAgent"]);
 const showAgent = ref(false);
 const handleAgentShow = () => {
   showAgent.value = !showAgent.value;
-  emits('showAgent', showAgent.value)
-}
-
-// 跳转路由方法
-const gotoRoute = (path) => {
-  if (!path.startsWith('/')) {
-    path = '/' + path;
-  }
-  router.push(path);//跳转绝对路径
+  emits("showAgent", showAgent.value);
 };
 
-// 路由匹配方法
-const isActive = (path) => {
-  // 精准匹配路由路径，避免/拼接的潜在问题（如path为home时，/home和$route.path直接对比）
-  return route.path === `/${path}`
-};
 
-// 监听路由变化：跳转到admin子菜单时，自动展开折叠面板
-const isAdminPath = ref(false)
-watch(
-  () => route.path,
-  (newPath) => {
-    // 判断当前路由是否是admin子菜单中的项
-    isAdminPath.value = admin.some(item => newPath === `/${item.path}`);
-    if (isAdminPath.value) {
-      showSubMenu.value = true; // 自动展开
-    }
-    else {
-      showSubMenu.value = false;
-    }
-  },
-  { immediate: true } // 初始化时立即执行一次，匹配初始路由
-);
 </script>
 
 <style scoped>
@@ -130,18 +113,5 @@ watch(
   font-weight: 600;
   background-color: #1a2533;
   border-bottom: 1px solid #34495e;
-}
-
-.nav-items {
-  flex: 1;
-  padding: 10px 0;
-  list-style: none;
-  /* 统一ul无序列表样式 */
-}
-
-.menu-content {
-  display: flex;
-  align-items: center;
-  gap: 5px;
 }
 </style>
