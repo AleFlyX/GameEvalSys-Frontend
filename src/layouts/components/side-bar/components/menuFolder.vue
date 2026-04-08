@@ -1,6 +1,6 @@
 <template>
   <li class="fold-menu-group">
-    <div class="fold-menu-header" :class="{ active: opened }" @click="handleToggle">
+    <div class="fold-menu-header" :class="{ active: opened || childMenuItemActive }" @click="handleToggle">
       <div class="label-prefix">
         <slot name="prefix" />
         {{ label }}
