@@ -43,7 +43,11 @@
         <p>暂无打分标准，请创建新的打分标准</p>
       </div>
     </template>
-
+    <template #footer>
+      <el-pagination v-model:current-page="currentPage" v-model:page-size="pageSize" :page-sizes="defaultPageSizes"
+        :total="total" :disabled="disabled" layout="sizes, prev, pager, next" @size-change="handleSizeChange"
+        @current-change="handleCurrentChange" />
+    </template>
     <template #modals>
       <ScoringStdOperation v-model:visible="showOperationDialog" :add-mode="createMode"
         :standard-id="selectedStandardId" @refresh="handleRefresh">
@@ -58,15 +62,33 @@ import { ElMessage } from 'element-plus';
 
 import PagePanel from '@/layouts/PagePanel.vue';
 import OverviewCard from '@/components/common/data/OverviewCard.vue';
-
+import DataTableColums from '@/components/common/data/DataTableColums.vue';
 import ScoringStdOperation from './components/ScoringStdOperation.vue';
 
 import { ScoringApi } from '@/api/scoring';
-import DataTableColums from '@/components/common/data/DataTableColums.vue';
 import { COLUMN_RULES } from './config/scoringStdColumnRule';
+import { useElPagination } from '@/composables/useElPagination';
 import { useLoading } from '@/composables/useLodaing';
 
 const { isLoading: loading, start: startLoading, end: endLoading } = useLoading('scoringStd:list');
+const {
+  currentPage,
+  defaultPageSizes,
+  total,
+  disabled,
+  setTotal,
+  handleSizeChange,
+  handleCurrentChange
+} = useElPagination({
+  initialPage: 1,
+  initialPageSize: 10,
+  defaultPageSizes: [10, 20, 50],
+  maxPageSize: 100,
+  debounceTime: 200,
+  onPageChange: async (page, size) => {
+    await fetchScoringStandards({ page, size })
+  }
+});
 const tableData = ref([]);
 const totalCount = ref(0);
 const enabledCount = ref(0);
@@ -76,14 +98,15 @@ const createMode = ref(false);
 const selectedStandardId = ref(null);
 
 // 加载打分标准列表
-const fetchScoringStandards = async () => {
+const fetchScoringStandards = async (params = { page: 1, size: 10 }) => {
   startLoading();
   try {
-    const response = await ScoringApi.getScoringStandardsList();
-    console.log('STDS ', response.data)
-    tableData.value = response.data || [];
-    totalCount.value = tableData.value.length;
-    enabledCount.value = tableData.value.length; // 默认全部启用
+    const response = await ScoringApi.getScoringStandardsList(params);
+    console.log('STDS ', response)
+    tableData.value = response.data.list || [];
+    totalCount.value = response.data.total;
+    enabledCount.value = response.data.length; // 默认全部启用
+    setTotal(response.data.total);
 
     console.log('打分标准列表:', tableData.value);
   } catch (err) {
