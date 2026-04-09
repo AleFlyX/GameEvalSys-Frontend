@@ -1,8 +1,15 @@
 <template>
-  <button :class="type">
-    <slot>
-      empty
-    </slot>
+  <button class="btn" :class="[
+    `btn--${type || 'default'}`,
+    `btn--${size}`,
+    {
+      'btn--loading': loading,
+      'btn--disabled': disabled,
+    }
+  ]" :disabled="disabled || loading" @click="handleClick">
+    <span class="btn__content">
+      <slot></slot>
+    </span>
   </button>
 </template>
 
@@ -10,92 +17,175 @@
 const props = defineProps({
   type: {
     type: String,
-    default: '' //danger primary pro
-  }
+    default: '', // primary, danger, pro
+  },
+  size: {
+    type: String,
+    default: 'medium', // small, medium, large
+  },
+  loading: {
+    type: Boolean,
+    default: false,
+  },
+  disabled: {
+    type: Boolean,
+    default: false,
+  },
 })
+
+const emits = defineEmits(['click'])
+
+const handleClick = (e) => {
+  if (props.disabled || props.loading) return
+  emits('click', e)
+}
 </script>
 
 <style scoped>
-/* 穿透scoped，作用到插槽内的所有按钮 */
-button {
-  /* 基础按钮样式 */
-  display: flex;
-  justify-content: center;
+/* ---------- 基础按钮样式 ---------- */
+.btn {
+  display: inline-flex;
   align-items: center;
-
-  padding: 8px 20px;
+  justify-content: center;
+  gap: 8px;
   border-radius: 6px;
-  border: 1px solid;
-
-  background-color: #f5f7fa;
-  color: #606266;
-  border-color: #e4e7ed;
-
-  font-size: 14px;
+  border: 1px solid transparent;
+  font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
   outline: none;
+  white-space: nowrap;
 }
 
-button:hover {
-  background-color: var(--primary-light);
-  border-color: var(--primary);
+/* 尺寸变体 */
+.btn--small {
+  padding: 4px 12px;
+  font-size: 12px;
 }
 
-button:active {
+.btn--medium {
+  padding: 8px 20px;
+  font-size: 14px;
+}
+
+.btn--large {
+  padding: 12px 28px;
+  font-size: 16px;
+}
+
+/* 默认类型（无 type 时） */
+.btn--default {
+  background-color: #f5f7fa;
+  color: #606266;
+  border-color: #e4e7ed;
+}
+
+.btn--default:hover:not(:disabled) {
+  background-color: #ecf5ff;
+  border-color: #c0c4cc;
+}
+
+.btn--default:active:not(:disabled) {
   transform: scale(0.97);
-  /* border: 1px solid var(--primary-havy); */
 }
 
-/* 禁用状态通用样式 */
-button:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
-}
-
-button:disabled:hover {
-  /* background-color: inherit;
-  border-color: inherit; */
-  /* 继承css属性会导致opacity=1 */
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-/* 确认按钮（默认样式，可通过class="primary-btn"指定） */
-.primary {
-  background-color: var(--primary-havy);
+/* 主要按钮 */
+.btn--primary {
+  background-color: var(--primary-havy, #409eff);
   color: #ffffff;
 }
 
-.primary:hover {
-  background-color: var(--primary-hover);
+/* 不被禁用的按钮才可以产生悬停效果  :not是伪类悬停选择器 */
+.btn--primary:hover:not(:disabled) {
+  background-color: var(--primary-hover, #66b1ff);
 }
 
-/* 危险按钮（删除，class="danger-btn"） */
-.danger {
-  background-color: var(--danger);
+.btn--primary:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+/* 危险按钮 */
+.btn--danger {
+  background-color: var(--danger, #f56c6c);
   color: #ffffff;
 }
 
-.danger:hover {
-  background-color: var(--danger-hover);
+.btn--danger:hover:not(:disabled) {
+  background-color: var(--danger-hover, #f78989);
 }
 
-.pro {
-  margin: 5px;
-  width: 100px;
-  height: 50px;
-  border: none;
-  border-radius: 16px;
-  box-shadow: 8px 8px 16px #b6b9ba,
-    -8px -8px 16px #fafafd;
+.btn--danger:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+/* pro 风格按钮（拟态/新拟物风格） */
+.btn--pro {
   background-image: linear-gradient(154deg, #f4f6f8, #b6b9ba);
-  transition: all 0.3s ease-in-out;
+  box-shadow: 8px 8px 16px #b6b9ba, -8px -8px 16px #fafafd;
+  border: none;
+  color: #2c3e50;
 }
 
-.pro:active {
-  box-shadow: 8px 8px 16px #b6b9ba,
-    -8px -8px 16px #fafafd;
-  background-image: linear-gradient(154deg, #b6b9ba, #f4f6f8);
+.btn--pro:hover:not(:disabled) {
+  background-image: linear-gradient(154deg, #eef2f5, #a5a9ac);
+  box-shadow: 6px 6px 12px #b6b9ba, -6px -6px 12px #fafafd;
+}
+
+.btn--pro:active:not(:disabled) {
+  transform: scale(0.97);
+  box-shadow: 4px 4px 8px #b6b9ba, -4px -4px 8px #fafafd;
+}
+
+/* ---------- 禁用 & 加载状态 ---------- */
+.btn:disabled,
+.btn--disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+  pointer-events: none;
+  /* 保证完全不可点击 */
+}
+
+/* loading 状态：显示旋转图标（纯 CSS） */
+.btn--loading .btn__content {
+  position: relative;
+  padding-left: 20px;
+}
+
+.btn--loading .btn__content::before {
+  content: '';
+  position: absolute;
+  left: 0;
+
+  /* top将上边框下移到父元素中间,  translateY(-50%)加载框将自身向上移动自身50%空间*/
+  top: 50%;
+  transform: translateY(-50%);
+  width: 14px;
+  height: 14px;
+  /* 四边都是实线，颜色与按钮文字颜色相同 */
+  border: 2px solid currentColor;
+
+  /* 把上边框变成透明，形成缺口 */
+  border-top-color: transparent;
+
+  border-radius: 50%;
+
+  /* 匀速（linear），无限循环（infinite） */
+  animation: btn-spin 0.8s linear infinite;
+}
+
+@keyframes btn-spin {
+  to {
+    /* 在这里把覆盖掉原本的translateY(-50%)的 transform定义的translateY(-50%)补回来 */
+    transform: translateY(-50%) rotate(360deg);
+  }
+}
+
+/* 不同尺寸下 loading 图标位置微调 */
+.btn--small.btn--loading .btn__content {
+  padding-left: 18px;
+}
+
+.btn--large.btn--loading .btn__content {
+  padding-left: 24px;
 }
 </style>
