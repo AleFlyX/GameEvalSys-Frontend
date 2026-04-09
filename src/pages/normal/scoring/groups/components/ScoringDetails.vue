@@ -62,9 +62,6 @@ watch(
   },
   // { immediate: true }
 )
-const handleScoringCacheMatchToStd = () => {
-
-}
 
 onMounted(() => {
   console.log("6465465465456", props.selectedGroup, props.scoringDetails)

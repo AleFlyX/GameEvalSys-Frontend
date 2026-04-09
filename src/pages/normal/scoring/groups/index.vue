@@ -13,10 +13,14 @@
     <div class="modal-body">
       <!-- 搜索框 -->
       <div class="search-section">
-        <SearchInput></SearchInput>
+        <SearchInput ref="searchBarRef" @search="handleSearch" :showAddBtn="false" size="middle" immediate :delay="200">
+          <template #operations>
+            <MyBtn @click="handleResetSearch">重置</MyBtn>
+          </template>
+        </SearchInput>
       </div>
 
-      <el-tabs v-model="activeName" class="tabs" @tab-click="handleClick">
+      <el-tabs v-model="activeName" class="tabs">
         <el-tab-pane label="未评分" name="not_scored">
           未评分
 
@@ -73,214 +77,58 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { Back } from '@element-plus/icons-vue';
-
-import { useChangeTables } from './composibles/useChangeTables';
-
-import { ElMessage } from 'element-plus';
 
 import ScoreProject from './components/ScoreProject.vue';
 import MyBtn from '@/components/common/form/MyBtn.vue';
 import ScoringDetails from './components/ScoringDetails.vue';
 
-import { getProjectGroups } from '@/api/project-group';
-import { getProjectSrocingRecds } from '@/api/scoring';
-import { ScoringApi } from '@/api/scoring';
 import { useProjectStore } from '@/stores/modules/projectStore';
 import { useScoreStore } from '@/stores/modules/scoreStore';
+import { useGroupScoringProject } from './composibles/useGroupScoringProject';
+import { useGroupScoringFilters } from './composibles/useGroupScoringFilters';
+import { useGroupScoringRecords } from './composibles/useGroupScoringRecords';
+import { useHandleDataStatus } from './composibles/useHandleDataStatus';
 
-const {
-  activeName,
-} = useChangeTables();
 const projectStore = useProjectStore();
 const scoreStore = useScoreStore();
-
-const searchKeyword = ref('');
-const groupList = ref([]);
-const selectedGroup = ref(null);
-const showScoringFormDialog = ref(false);
-const showScoringDetailDialog = ref(false);
-const scoringDetails = ref([]);
-const scoringStdDetails = ref({})
-const totalScore = ref(0);
-
 const route = useRoute();
-const projectId = computed(() => {
-  const id = Number(route.params.projectId);
-  return Number.isFinite(id) && id > 0 ? id : null;
+const { projectId, projectName, warmupProjectDetails } = useGroupScoringProject(route, projectStore);
+const {
+  groupList,
+  selectedGroup,
+  showScoringFormDialog,
+  showScoringDetailDialog,
+  scoringDetails,
+  scoringStdDetails,
+  totalScore,
+  fetchGroups,
+  handleScoring,
+  handleViewScore,
+  handleRefresh,
+} = useGroupScoringRecords({
+  projectId,
+  projectStore,
+  scoreStore,
 });
-const projectName = computed(() => {
-  const queryProjectName = route.query.projectName;
-  if (typeof queryProjectName === 'string' && queryProjectName.trim()) {
-    return queryProjectName;
-  }
-  // query 没有项目名时，回退读取项目详情缓存
-  const cachedProject = projectStore.getProjectDetails(projectId.value);
-  return cachedProject?.name || '项目';
-});
-
-const filteredGroups = computed(() => {
-  const groupsByTab = groupList.value.filter((group) => {
-    if (activeName.value === 'scored') return group.scoreStatus === 'scored';
-    return group.scoreStatus !== 'scored';
-  });
-
-  if (!searchKeyword.value) return groupsByTab;
-  return groupsByTab.filter((group) => group.name.includes(searchKeyword.value));
-});
-
-const handleClick = () => {
-  // tab 切换由 activeName 控制，过滤逻辑在 filteredGroups 中处理
-};
-
-const groupIds = ref([]);
-const scoredGroups = ref([]);
-
-// 获取项目的小组列表
-const fetchGroups = async () => {
-  if (!projectId.value) return;
-
-  try {
-    const response = await getProjectGroups(projectId.value);
-    if (response.code === 200 && response.data) {
-      groupList.value = response.data.map(group => ({
-        ...group,
-        scoreStatus: 'not_scored',
-        lastScore: null
-      }));
-      groupIds.value = response.data.map(group => group.id);
-      await fetchScoringStds();
-    }
-  } catch (error) {
-    ElMessage.error('获取小组列表失败: ' + error);
-    console.error('Error fetching groups:', error);
-  }
-};
+const {
+  activeName,
+  searchBarRef,
+  filteredGroups,
+  // handleTabClick,
+  handleSearch,
+  handleResetSearch,
+} = useGroupScoringFilters(groupList);
 
 
-const fetchScoringStds = async () => {
-  if (!projectId.value) return;
-
-  try {
-    const response = await getProjectSrocingRecds(projectId.value, { page: 1, size: 20 });
-    const recordList = response?.data?.list || [];
-    scoredGroups.value = recordList.filter(item => groupIds.value.includes(item.groupId));
-
-    const scoredGroupIds = new Set(scoredGroups.value.map(item => item.groupId));
-    groupList.value = groupList.value.map((group) => ({
-      ...group,
-      scoreStatus: scoredGroupIds.has(group.id) ? 'scored' : 'not_scored',
-    }));
-
-    // 预热每个小组的评分详情缓存，"查看" 时优先命中，减少重复请求
-    scoredGroups.value.forEach((item) => {
-      const scoreItems = Array.isArray(item.scores) ? item.scores : [];
-      const calcTotalScore = scoreItems.reduce((sum, scoreItem) => sum + (Number(scoreItem?.score) || 0), 0);
-      scoreStore.setScoringRecordsCache(item.projectId, item.groupId, {
-        scores: scoreItems,
-        totalScore: Number(item.totalScore) || calcTotalScore,
-      });
-    });
-  }
-  catch (err) {
-    console.log(err)
-  }
-};
-
-// 处理打分
-const handleScoring = (row) => {
-  selectedGroup.value = row;
-  // console.log(row)
-  showScoringFormDialog.value = true;
-};
-
-const resetScoreDetails = () => {
-  scoringDetails.value = [];
-  totalScore.value = 0;
-};
-
-const applyRecordDetails = (recordData) => {
-  const scoreItems = Array.isArray(recordData)
-    ? recordData
-    : (Array.isArray(recordData?.scores) ? recordData.scores : []);
-
-  scoringDetails.value = scoreItems;
-
-  const totalScoreFromRecord = Number(recordData?.totalScore);
-  if (Number.isFinite(totalScoreFromRecord)) {
-    totalScore.value = totalScoreFromRecord;
-    return;
-  }
-  totalScore.value = scoreItems.reduce((sum, item) => sum + (Number(item?.score) || 0), 0);
-};
-
-// 查看打分详情
-const handleViewScore = async (row) => {
-  selectedGroup.value = row;
-  const currentProjectId = Number(row.projectId || projectId.value);
-  const currentGroupId = Number(row.id);
-
-  try {
-    // 优先读缓存（L1/L2），命中后直接展示详情
-    const cachedRecord = scoreStore.getScoringRecordsCache(currentProjectId, currentGroupId);
-    const projectDetail = await projectStore.fetchProjectDetails(currentProjectId);
-    const stdId = projectDetail.standardId;
-    scoringStdDetails.value = await scoreStore.fetchScoreStandard(stdId)
-
-    console.error(cachedRecord, projectDetail, scoringStdDetails.value)
-    if (cachedRecord) {
-      applyRecordDetails(cachedRecord);
-      showScoringDetailDialog.value = true;
-      return;
-    }
-
-    const response = await ScoringApi.getScoringRecord(currentGroupId, currentProjectId);
-    const recordData = response?.data || {};
-    applyRecordDetails(recordData);
-
-    // API 兜底后回写缓存，供后续重复查看复用
-    scoreStore.setScoringRecordsCache(currentProjectId, currentGroupId, {
-      scores: scoringDetails.value,
-      totalScore: totalScore.value,
-    });
-  }
-  catch (err) {
-    console.log(err)
-    resetScoreDetails();
-  }
-  showScoringDetailDialog.value = true;
-};
-
-// 刷新列表
-const handleRefresh = () => {
-  // 提交评分后，先清掉当前项目下所有小组评分缓存，再重新拉取
-  scoreStore.clearScoringRecordsCache(projectId.value);
-  fetchGroups();
-};
 
 // 格式化打分状态
-const formatScoreStatus = (status) => {
-  const statusMap = {
-    'not_scored': '未打分',
-    'scored': '已打分'
-  };
-  return statusMap[status] || status;
-};
-
-const getScoreStatusTag = (status) => {
-  const typeMap = {
-    'not_scored': 'info',
-    'scored': 'success'
-  };
-  return typeMap[status] || 'info';
-};
-
+const { formatScoreStatus, getScoreStatusTag } = useHandleDataStatus();
 
 onMounted(() => {
-  // 预热项目详情缓存，给标题和后续评分流程使用
-  projectStore.fetchProjectDetails(projectId.value).catch(() => undefined);
+  warmupProjectDetails();
   fetchGroups();
 });
 </script>

@@ -1,6 +1,7 @@
 <template>
   <!-- 此表是动态item，所以表中的数据都可以不用BaseForm安全克隆，拿到直接改就行 -->
-  <el-form ref="baseFormRef" :model="formData" :rules="scoringFormRules" label-width="120px" :disabled="disabled">
+  <el-form v-loading="submitLoading" ref="baseFormRef" :model="formData" :rules="scoringFormRules" label-width="120px"
+    :disabled="disabled">
     <!-- 项目信息显示 -->
     <el-form-item label="小组名称">
       <el-text type="info" passive>{{ groupName }}</el-text>
@@ -43,6 +44,7 @@ import { ScoringApi } from '@/api/scoring';
 import { useProjectStore } from '@/stores/modules/projectStore';
 import { useScoreStore } from '@/stores/modules/scoreStore';
 import { ElMessage } from 'element-plus';
+import { useLoading } from '@/composables/useLodaing';
 
 const props = defineProps({
   disabled: {
@@ -66,7 +68,7 @@ const props = defineProps({
 const emit = defineEmits(['update:visible', 'refresh', 'submit']);
 
 const baseFormRef = ref(null);
-const submitLoading = ref(false);
+const { isLoading: submitLoading, start: startSubmitLoading, end: endSubmitLoading } = useLoading('scoringGroupForm:submit');
 const indicators = ref([]);
 const formData = ref({
   scores: [],
@@ -124,6 +126,7 @@ const fetchScoringStandard = async () => {
     if (Number.isFinite(standardId) && standardId > 0) {
       // 2) 再拿标准详情（优先命中缓存）
       const standardDetail = await scoreStore.fetchScoreStandard(standardId);
+      console.log(standardDetail)
       if (standardDetail?.indicators?.length) {
         indicators.value = standardDetail.indicators;
         formData.value.scores = new Array(indicators.value.length).fill(null);
@@ -142,6 +145,13 @@ const fetchScoringStandard = async () => {
 // 设置默认指标（当获取失败时）
 const setDefaultIndicators = () => {
   indicators.value = [
+    {
+      id: 0,
+      name: '当你看到此标准时说明页面数据加载异常',
+      description: '请刷新或重新登录',
+      minScore: 1,
+      maxScore: 999
+    },
     {
       id: 1,
       name: '复杂程度',
@@ -191,7 +201,7 @@ const handleSubmit = async () => {
     return;
   }
 
-  submitLoading.value = true;
+  startSubmitLoading();
   try {
     const scores = indicators.value.map((indicator, index) => ({
       indicatorId: indicator.id,
@@ -228,7 +238,7 @@ const handleSubmit = async () => {
     ElMessage.error('打分失败: ' + (error?.message || error));
     console.error('Error submitting scoring:', error);
   } finally {
-    submitLoading.value = false;
+    endSubmitLoading();
   }
 };
 defineExpose({
