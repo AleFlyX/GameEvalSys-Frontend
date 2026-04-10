@@ -14,7 +14,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, watch } from 'vue'
+import { ref, computed } from 'vue'
 //我自己控制 $attrs 传给谁，不要vue自动帮我绑到根 DOM。
 defineOptions({
   inheritAttrs: false
@@ -26,7 +26,14 @@ const props = defineProps({
     type: Boolean,
     default: false
   },
-
+  width: {  // width优先级比max/min-width高
+    type: [String],
+    default: ''
+  },
+  height: { // height 同理
+    type: [String],
+    default: ''
+  },
   minWidth: {
     type: Number,
     default: 0
@@ -99,24 +106,15 @@ const handleMaskMouseup = (e) => {
   }
   resetMaskState()
 }
-const modalSizes = reactive({
-  'min-width': '400px',
-  'max-width': '700px',
-  'min-height': '100px',
-  'max-height': '90vh'
+
+const modalSizes = computed(() => {
+  return {
+    'min-width': props.width ? props.width : (props.minWidth ? props.minWidth : '400px'),
+    'max-width': props.width ? props.width : (props.maxWidth ? props.maxWidth : '700px'),
+    'min-height': props.height ? props.height : (props.minHeight ? props.minHeight : '100px'),
+    'max-height': props.height ? props.height : (props.maxHeight ? props.maxHeight : '90vh'),
+  }
 })
-
-watch(
-  () => [props.minWidth, props.maxWidth, props.minHeight, props.maxHeight],
-  ([nMinWidth, nMaxWidth, nMinHeight, nMaxHeight]) => {
-    if (nMinWidth) modalSizes['min-width'] = nMinWidth + 'px';
-    if (nMaxWidth) modalSizes['max-width'] = nMaxWidth + 'px';
-    if (nMinHeight) modalSizes['min-height'] = nMinHeight + 'px';
-    if (nMaxHeight) modalSizes['max-height'] = nMaxHeight + 'px';
-  },
-  { immediate: true }
-)
-
 
 // (可扩展)监听visible变化，确保动画执行完整
 // watch(() => props.visible, (newVal) => {
@@ -137,7 +135,7 @@ watch(
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1000;
+  z-index: 9998;
   transition: opacity 0.3s ease;
 }
 
@@ -149,7 +147,7 @@ watch(
   background: white;
   border-radius: 15px;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
-  z-index: 1001;
+  z-index: 9999;
 }
 
 .default-close {
