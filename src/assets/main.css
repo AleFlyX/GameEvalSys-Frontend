@@ -1,22 +1,111 @@
-* {
+/* ============ 全局 CSS 变量定义（浅色主题） ============ */
+:root {
+  /* ===== Element Plus 通用配色 ===== */
   --primary: rgba(6, 164, 255, 0.717);
   --primary-light: #ecf5ff;
   --primary-havy: #409eff;
   --primary-hover: #66b1ff;
   --primary-box-shadow: rgba(1, 166, 255, 0.429);
+  --warning: #ffaa00;
+  --warning-light: #ffeecc;
+  --danger: #f56c6c;
+  --danger-hover: #f78989;
+  --danger-light: #ffd4d4;
+  --success: #66cc66;
+  --success-light: #e6ffe6;
+
+  /* ===== 通用背景与阴影 ===== */
   --light-gray-background: #e3e5e7;
   --gray-box-shadow: rgba(128, 128, 128, 0.381);
   --gray-border: rgba(228, 228, 228, 0.5);
   --box-background: #f8f9fabb;
   --modal-background: rgba(0, 0, 0, 0.5);
-  --danger: #f56c6c;
-  --danger-hover: #f78989;
-  --danger-light: #ffd4d4;
-  --success-light: #e6ffe6;
-  --success: #66cc66;
   --main: #ecf5ff;
-  --warning: #ffaa00;
-  --warning-light: #ffeecc;
+
+  /* =====（浅色主题） ===== */
+  /* 背景色 */
+  --bg-primary: #f5f7fa;
+  --bg-gradient-1: rgba(14, 165, 233, 0.22);
+  --bg-gradient-2: rgba(59, 130, 246, 0.2);
+
+  /* 卡片 */
+  --card-bg: rgba(255, 255, 255, 0.9);
+  --card-backdrop: blur(10px);
+  --card-border: 1px solid rgba(255, 255, 255, 0.75);
+  --card-shadow: 0 18px 45px rgba(30, 64, 175, 0.16);
+
+  /* 文本 */
+  --text: #0f172a;
+  --text-secondary: rgba(0, 0, 0, 0.8);
+  --text-disabled: rgba(0, 0, 0, 0.48);
+
+  /* 输入框 */
+  --input-bg: rgba(248, 250, 252, 0.95);
+  --input-bg-focus: #ffffff;
+  --input-border: #dce4f0;
+  --input-border-hover: #cdd8e7;
+  --input-border-focus: rgba(37, 99, 235, 0.3);
+
+  /* 边框 */
+  --border: #e2e8f0;
+
+  /* 按钮 */
+  --btn-primary: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  --btn-shadow: 0 10px 24px rgba(37, 99, 235, 0.3);
+  --btn-shadow-hover: 0 12px 28px rgba(37, 99, 235, 0.36);
+
+  /* 错误和成功 */
+  --error: #ef4444;
+  --link-primary: #0071e3;
+  --mask-bg: rgba(0, 0, 0, 0.5);
+}
+
+/* ============ 暗黑主题变量覆盖 ============ */
+html[data-theme="dark"] {
+  /* 背景色 */
+  --bg-primary: #1d1d1f;
+  --bg-gradient-1: rgba(10, 90, 200, 0.2);
+  --bg-gradient-2: rgba(59, 130, 246, 0.15);
+
+  /* 卡片 */
+  --card-bg: #272729;
+  --card-backdrop: blur(20px);
+  --card-border: 1px solid rgba(255, 255, 255, 0.12);
+  --card-shadow: 0 18px 45px rgba(0, 0, 0, 0.5);
+
+  /* 文本 */
+  --text: #f5f5f7;
+  --text-secondary: rgba(255, 255, 255, 0.8);
+  --text-disabled: rgba(255, 255, 255, 0.48);
+
+  /* 输入框 */
+  --input-bg: #3a3a3d;
+  --input-bg-focus: #424245;
+  --input-border: #555558;
+  --input-border-hover: #626265;
+  --input-border-focus: rgba(10, 158, 255, 0.3);
+
+  /* 边框 */
+  --border: #424245;
+
+  /* 按钮 */
+  --btn-primary: linear-gradient(135deg, #0071e3 0%, #0a66d2 100%);
+  --btn-shadow: 0 10px 24px rgba(0, 113, 227, 0.2);
+  --btn-shadow-hover: 0 12px 28px rgba(0, 113, 227, 0.25);
+
+  /* 错误和成功 */
+  --error: #f87171;
+  --success: #34d399;
+  --warning: #fbbf24;
+  --link-primary: #0a9eff;
+  --mask-bg: rgba(0, 0, 0, 0.7);
+}
+
+/* ============ 全局过渡效果 ============ */
+html {
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
 }
 
 /* @import './base.css';
