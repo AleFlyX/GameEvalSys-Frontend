@@ -4,7 +4,7 @@
       @mouseleave="resetMaskState" v-if="visible">
       <!-- 外层也用v-if控制，避免遮罩残留 -->
       <!-- 用v-if，且依赖props传入的visible -->
-      <div class="base-modal" @click.stop v-if="visible" :style="modalSizes">
+      <div class="base-modal" @click.stop v-if="visible" :style="modalSizes" :class="{ 'dark-modal': isDarkMode }">
         <button class="default-close" @click="closeModal" v-if="showDefaultClose">x</button>
         <slot name="layout"></slot>
       </div>
@@ -23,6 +23,10 @@ defineOptions({
 const props = defineProps({
   // 接收父组件传入的显隐控制参数
   visible: {
+    type: Boolean,
+    default: false
+  },
+  darkMode: {
     type: Boolean,
     default: false
   },
@@ -115,6 +119,7 @@ const modalSizes = computed(() => {
     'max-height': props.height ? props.height : (props.maxHeight ? props.maxHeight : '90vh'),
   }
 })
+const isDarkMode = computed(() => props.darkMode)
 
 // (可扩展)监听visible变化，确保动画执行完整
 // watch(() => props.visible, (newVal) => {
@@ -150,6 +155,11 @@ const modalSizes = computed(() => {
   z-index: 9999;
 }
 
+.dark-modal {
+  background: #272729;
+  color: white;
+}
+
 .default-close {
   position: absolute;
   top: 0;
@@ -163,6 +173,10 @@ const modalSizes = computed(() => {
   background: transparent;
   transition: all 0.2s ease-in-out;
   cursor: pointer;
+}
+
+.dark-modal .default-close {
+  color: white;
 }
 
 .default-close:hover {
