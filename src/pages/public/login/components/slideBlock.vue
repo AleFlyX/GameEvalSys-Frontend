@@ -1,6 +1,6 @@
 <template>
-  <BaseDialogModal :max-width="handleMaxWidth()" :min-width="handleMinWidth()" v-bind="$attrs" :visible="visible"
-    @update:visible="$emit('update:visible', $event)" :showDefaultClose="false" :allowMaskClose="isSuccess">
+  <BaseDialogModal :dark-mode="darkMode" :max-width="handleMaxWidth()" :min-width="handleMinWidth()" v-bind="$attrs"
+    :visible="visible" @update:visible="$emit('update:visible', $event)" :allowMaskClose="isSuccess">
     <template #header>
       验证
     </template>
@@ -41,10 +41,14 @@
 
 <script setup>
 import { ref, computed, onUnmounted, watch, nextTick } from 'vue'
-import { blockValidateDelay } from '../config/blockValidateDelay' //发送登录请求延迟
+import { blockValidateDelay } from '../config/loginConfig' //发送登录请求延迟
 
 const props = defineProps({
   visible: {
+    type: Boolean,
+    default: false
+  },
+  darkMode: {
     type: Boolean,
     default: false
   }
@@ -231,12 +235,16 @@ onUnmounted(() => {
 }
 
 .captcha-container {
-  background: #f7f9fc;
+  background: var(--input-bg);
   border-radius: 8px;
   padding: 12px 16px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--input-border);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-  transition: ease-in-out 0.3s;
+  transition: all 0.3s ease;
+}
+
+:root[data-theme='dark'] .captcha-container {
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 .captcha-header {
@@ -245,8 +253,8 @@ onUnmounted(() => {
   align-items: center;
   margin-bottom: 12px;
   font-size: 14px;
-  color: #1e293b;
-  transition: ease-in-out 0.15s;
+  color: var(--text);
+  transition: all 0.15s ease;
 }
 
 .captcha-header.success {
@@ -259,22 +267,32 @@ onUnmounted(() => {
   font-size: 18px;
   cursor: pointer;
   padding: 0 6px;
-  color: #64748b;
-  transition: color 0.2s;
+  color: var(--text-secondary);
+  transition: color 0.2s ease;
 }
 
 .refresh-btn:hover {
-  color: #3b82f6;
+  color: #0071e3;
+}
+
+:root[data-theme='dark'] .refresh-btn:hover {
+  color: #0a9eff;
 }
 
 .slider-track {
   position: relative;
   height: 40px;
-  background: #eef2f6;
+  background: var(--input-bg);
   border-radius: 40px;
   cursor: pointer;
   overflow: hidden;
   box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+  border: 1px solid var(--input-border);
+  transition: all 0.2s ease;
+}
+
+:root[data-theme='dark'] .slider-track {
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 /* 缺口视觉标记（灰色虚线区域） */
@@ -301,7 +319,7 @@ onUnmounted(() => {
   left: 0;
   width: 40px;
   height: 40px;
-  background: white;
+  background: var(--card-bg);
   border-radius: 40px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
   display: flex;
@@ -314,23 +332,36 @@ onUnmounted(() => {
   z-index: 2;
   user-select: none;
   will-change: transform;
+  color: var(--text);
+}
+
+:root[data-theme='dark'] .slider-button {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .slider-button.reset {
-  transition: ease-in-out 0.25s;
+  transition: all 0.25s ease;
 }
 
 .slider-button.dragging {
   cursor: grabbing;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  background: #f8fafc;
+  background: var(--input-bg);
+}
+
+:root[data-theme='dark'] .slider-button.dragging {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
 }
 
 .slider-button.success {
-  background: #10b981;
+  background: var(--success);
   color: white;
   cursor: default;
-  box-shadow: none;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+}
+
+:root[data-theme='dark'] .slider-button.success {
+  box-shadow: 0 2px 8px rgba(52, 211, 153, 0.2);
 }
 
 .error-msg {
@@ -338,7 +369,7 @@ onUnmounted(() => {
   height: 13px;
   margin-top: 8px;
   font-size: 12px;
-  color: #ef4444;
+  color: var(--error);
   text-align: center;
   transition: ease-in-out 0.2s;
 }

@@ -1,118 +1,157 @@
 <template>
-  <div class="login-page">
+  <div class="login-page" :title="effectiveTheme">
+    <!-- 主题切换按钮 -->
+    <div class="theme-toggle" @click="handleThemeToggle" title="切换主题">
+      <el-icon v-if="isDarkMode">
+        <Sunny />
+      </el-icon>
+      <el-icon v-else>
+        <Moon />
+      </el-icon>
+      <span>{{ isDarkMode ? '浅色' : '暗黑' }}</span>
+    </div>
+
+    <!-- 登录卡片 -->
     <div class="login-card">
       <h2 class="login-title">课题项目打分系统</h2>
       <p class="login-subtitle">欢迎回来，请登录后继续使用</p>
-      <el-form ref="loginFormRef" :model="loginForm" :rules="loginRules" class="login-form">
-        <el-form-item prop="username">
-          <el-input v-model="loginForm.username" size="large" placeholder="请输入用户名" autocomplete="username" clearable>
-            <template #prefix>
-              <el-icon>
-                <User />
-              </el-icon>
-            </template>
-          </el-input>
-        </el-form-item>
-        <el-form-item prop="password">
-          <el-input v-model="loginForm.password" size="large" type="password" placeholder="请输入密码"
-            autocomplete="current-password" show-password>
-            <template #prefix>
-              <el-icon>
-                <Lock />
-              </el-icon>
-            </template>
-          </el-input>
-        </el-form-item>
-        <el-form-item class="login-btn-item">
-          <el-button type="primary" size="large" class="login-btn" @click="handleFormValidate" :loading="loading">
-            登录
-          </el-button>
-        </el-form-item>
-      </el-form>
+
+      <!-- 登录表单 -->
+      <LoginForm ref="formRef" v-model="loginForm" :rules="loginRules" :loading="isLoading"
+        :default-data="lastLoginAccount" @submit="handleFormSubmit" @forgot-password="handleForgotPassword">
+        <!-- 记住我复选框插槽 -->
+        <template #remember>
+          <RememberMeCheckbox :dark-mode="isDarkMode" v-model="rememberMe" :history-list="accountHistory"
+            :max-history="5" @select-account="handleSelectAccount" @remove-account="handleRemoveAccount"
+            @clear-history="handleClearHistory" />
+        </template>
+      </LoginForm>
     </div>
-    <SlideBlock ref="validateBlock" v-model:visible="showSlideBlock" @success="handlePassValidate">
-    </SlideBlock>
+
+    <!-- 滑块验证组件 -->
+    <SlideBlock :dark-mode="isDarkMode" ref="validateBlock" v-model:visible="showSlideBlock"
+      @success="handlePassValidate" />
   </div>
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { ElMessage } from 'element-plus';
-import { elementIconMap } from '@/utils/elementIcons'
 import { useUserStore } from '@/stores/modules/userStore.js';
-import SlideBlock from './components/slideBlock.vue';
-import { removeSpacesFromObject, validateSpace } from '@/utils/removeSpacesFromData';
 import { useLoading } from '@/composables/useLodaing';
-//icon
-const { User, Lock } = elementIconMap
+import { elementIconMap } from '@/utils/elementIcons';
 
-// 路由实例
+// 导入子组件
+import LoginForm from './components/loginForm.vue';
+import RememberMeCheckbox from './components/rememberMeCheckbox.vue';
+import SlideBlock from './components/slideBlock.vue';
+
+// 导入 Composables
+import { useLoginForm } from './composables/useLoginForm.js';
+import { useLoginTheme } from './composables/useLoginTheme.js';
+import { useLoginHistory } from './composables/useLoginHistory.js';
+
+// 获取图标
+const { Sunny, Moon } = elementIconMap;
+
+// ============ 路由和状态管理 ============
 const router = useRouter();
-// 用户Store
 const userStore = useUserStore();
-// 表单Ref
-const loginFormRef = ref(null);
-// 滑块Ref
-const validateBlock = ref(null);
-// 加载状态
-const { isLoading: loading, start: startLoading, end: endLoading } = useLoading('login:submit');
-// 登录表单
-const loginForm = ref({
-  username: '',
-  password: ''
-});
-// 表单验证规则
-const loginRules = reactive({
-  username:
-    [
-      { required: true, message: '请输入用户名', trigger: 'blur' },
-      { min: 3, max: 50, validator: validateSpace }
-    ],
-  password:
-    [
-      { required: true, message: '请输入密码', trigger: 'blur' },
-      { min: 6, max: 100, validator: validateSpace }
-    ]
-});
 
+// ============ Composables ============
+const { loginFormRef: formRef, loginForm, loginRules, validateForm } = useLoginForm();
+const {
+  effectiveTheme,
+  isDarkMode,
+  toggleTheme,
+  initTheme,
+  initStorageListener
+} = useLoginTheme();
+const {
+  accountHistory,
+  rememberMe,
+  initHistory,
+  addToHistory,
+  removeFromHistory,
+  clearHistory,
+  getLastLoginAccount
+} = useLoginHistory();
+
+// ============ 局部状态 ============
+const { isLoading, start: startLoading, end: endLoading } = useLoading('login:submit');
 const showSlideBlock = ref(false);
-const handleFormValidate = async () => {
-  //去除所有空格
-  loginForm.value = removeSpacesFromObject(loginForm.value, true);
-  // 表单验证
-  try {
-    const valid = await loginFormRef.value.validate();
-    if (!valid) {
-      return Promise.reject();
-    }
-    showSlideBlock.value = true;
-    return Promise.resolve();
-  }
-  catch (e) {
-    console.log(e)
-  }
+const validateBlock = ref(null);
 
-}
+// 最后登录的账号引用
+const lastLoginAccount = getLastLoginAccount();
 
+// ============ 生命周期 ============
+let unsubscribeTheme = null;
+let unsubscribeStorage = null;
+
+onMounted(() => {
+  // 初始化主题
+  unsubscribeTheme = initTheme();
+  // 初始化存储监听（支持跨标签页同步）
+  unsubscribeStorage = initStorageListener();
+  // 初始化账号历史
+  initHistory();
+
+  // 如果设置了记住我，自动填充最后登录账号
+  if (rememberMe.value && lastLoginAccount) {
+    loginForm.value.username = lastLoginAccount.username;
+  }
+});
+
+// 组件卸载时清理
+onUnmounted(() => {
+  unsubscribeTheme?.();
+  unsubscribeStorage?.();
+});
+
+// ============ 事件处理 ============
+
+/**
+ * 处理表单提交
+ */
+const handleFormSubmit = async () => {
+  const valid = await validateForm();
+  if (!valid) {
+    return;
+  }
+  // 显示滑块验证
+  showSlideBlock.value = true;
+};
+
+/**
+ * 处理滑块验证通过
+ */
 const handlePassValidate = (isPass) => {
   if (!isPass) return;
-  startLoading();
+
   showSlideBlock.value = false;
+  startLoading();
   handleLogin();
-  return;
-}
+};
 
-// 登录提交方法
+/**
+ * 登录提交
+ */
 const handleLogin = async () => {
-
   try {
-    // 调用登录方法
+    // 调用登录 API
     await userStore.login(loginForm.value);
+
+    // 如果勾选了记住我，保存账号到历史
+    if (rememberMe.value) {
+      addToHistory(loginForm.value.username);
+    }
+
     ElMessage.success('登录成功');
+
     // 获取登录前的重定向地址，无则跳转到首页
     const redirect = router.currentRoute.value.query.redirect || '/home';
-    // console.log('登录界面读取的redirect路径', redirect)
     router.push(redirect);
   } catch (err) {
     ElMessage.error(err.message || '登录失败，请检查用户名或密码');
@@ -121,132 +160,122 @@ const handleLogin = async () => {
     endLoading();
   }
 };
+
+/**
+ * 处理忘记密码
+ */
+const handleForgotPassword = () => {
+  ElMessage.info('请联系系统管理员重置密码');
+  // 可以跳转到密码重置页面
+  // router.push('/forgot-password');
+};
+
+/**
+ * 处理账号选择
+ */
+const handleSelectAccount = (account) => {
+  loginForm.value.username = account.username;
+  loginForm.value.password = '';
+};
+
+/**
+ * 处理删除账号
+ */
+const handleRemoveAccount = (username) => {
+  removeFromHistory(username);
+};
+
+/**
+ * 处理清空历史
+ */
+const handleClearHistory = () => {
+  clearHistory();
+};
+
+/**
+ * 处理主题切换
+ */
+const handleThemeToggle = () => {
+  if (isDarkMode.value) {
+    toggleTheme('light');
+  } else {
+    toggleTheme('dark');
+  }
+};
 </script>
 
 <style scoped>
-.login-page {
-  width: 100%;
-  min-height: 100vh;
-  min-height: 100dvh;
-  padding: 24px;
-  box-sizing: border-box;
-  position: relative;
-  overflow: hidden;
-  background-color: #f5f7fa;
-  background-image:
-    radial-gradient(circle at 14% 18%, rgba(14, 165, 233, 0.22) 0%, rgba(14, 165, 233, 0) 45%),
-    radial-gradient(circle at 84% 82%, rgba(59, 130, 246, 0.2) 0%, rgba(59, 130, 246, 0) 48%),
-    linear-gradient(145deg, #f8fbff 0%, #eef4ff 46%, #f9fbff 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
+@import './styles/LoginPage.css';
 
-.login-card {
-  width: min(100%, 420px);
-  padding: 36px 32px 30px;
-  background: rgba(255, 255, 255, 0.9);
-  border: 1px solid rgba(255, 255, 255, 0.75);
-  border-radius: 18px;
-  box-shadow: 0 18px 45px rgba(30, 64, 175, 0.16);
-  backdrop-filter: blur(10px);
-  animation: fade-up 0.5s ease;
-}
-
-.login-title {
-  text-align: center;
-  margin: 0;
-  color: #0f172a;
-  font-size: 24px;
-  font-weight: 700;
-  letter-spacing: 0.5px;
-}
-
-.login-subtitle {
-  margin: 10px 0 22px;
-  text-align: center;
-  color: #64748b;
-  font-size: 14px;
-}
-
-.login-form {
-  margin-top: 6px;
-}
-
-.login-btn-item {
-  margin-bottom: 0;
-  margin-top: 8px;
-}
-
-.login-btn {
-  width: 100%;
-  height: 42px;
-  border: none;
-  border-radius: 12px;
-  font-weight: 600;
-  letter-spacing: 0.2px;
-  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-  box-shadow: 0 10px 24px rgba(37, 99, 235, 0.3);
-}
-
-.login-btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 12px 26px rgba(37, 99, 235, 0.36);
-}
-
+/* ============ Element Plus 组件样式覆盖 ============ */
 :deep(.el-form-item) {
   margin-bottom: 20px;
+}
+
+:deep(.el-form-item__label) {
+  color: var(--text);
+}
+
+:deep(.el-form-item__error) {
+  color: var(--error);
+  font-size: 12px;
 }
 
 :deep(.el-input__wrapper) {
   padding: 2px 12px;
   border-radius: 12px;
-  background: rgba(248, 250, 252, 0.95);
-  box-shadow: 0 0 0 1px #dce4f0 inset;
+  background: var(--input-bg);
+  box-shadow: inset 0 0 0 1px var(--input-border);
   transition: all 0.2s ease;
 }
 
 :deep(.el-input__wrapper:hover) {
-  box-shadow: 0 0 0 1px #cdd8e7 inset;
+  box-shadow: inset 0 0 0 1px var(--input-border-hover);
 }
 
 :deep(.el-input__wrapper.is-focus) {
-  background: #ffffff;
-  box-shadow: 0 0 0 2px #60a5fa inset;
+  background: var(--input-bg-focus);
+  box-shadow: 0 0 0 2px var(--input-border-focus);
 }
 
 :deep(.el-input__inner) {
-  color: #0f172a;
+  color: var(--text);
+}
+
+:deep(.el-input__inner::placeholder) {
+  color: var(--text-disabled);
 }
 
 :deep(.el-input__prefix .el-icon) {
-  color: #64748b;
+  color: var(--text-secondary);
 }
 
-@keyframes fade-up {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
+:deep(.el-button--primary) {
+  background: var(--btn-primary);
+  border: none;
+}
 
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+:deep(.el-button--primary:hover) {
+  background: var(--btn-primary);
+  opacity: 0.9;
 }
 
 @media (max-width: 480px) {
-  .login-page {
-    padding: 16px;
+  :deep(.el-form-item) {
+    margin-bottom: 16px;
   }
 
-  .login-card {
-    padding: 28px 20px 24px;
-    border-radius: 14px;
+  :deep(.el-button) {
+    width: 100%;
   }
+}
 
-  .login-title {
-    font-size: 20px;
-  }
+:deep(.el-input__inner:focus) {
+  outline: none;
+}
+
+:deep(.el-button:focus-visible) {
+  outline: 2px solid var(--link-primary);
+  outline-offset: 2px;
 }
 </style>
