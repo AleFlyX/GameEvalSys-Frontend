@@ -49,7 +49,7 @@
         @current-change="handleCurrentChange" />
     </template>
     <template #modals>
-      <ScoringStdOperation v-model:visible="showOperationDialog" :add-mode="createMode"
+      <ScoringStdOperation v-model:visible="showOperationDialog" :add-mode="createMode" :initData="detailDialogInitData"
         :standard-id="selectedStandardId" @refresh="handleRefresh">
       </ScoringStdOperation>
     </template>
@@ -116,6 +116,7 @@ const fetchScoringStandards = async (params = { page: 1, size: 10 }) => {
   }
 };
 
+const detailDialogInitData = ref({});
 // 新增打分标准
 const handleAdd = () => {
   createMode.value = true;
@@ -127,6 +128,8 @@ const handleAdd = () => {
 // 查看详情
 const handleView = (row) => {
   createMode.value = false;
+  console.log('VIEWING ', row)
+  detailDialogInitData.value = row;
   selectedStandardId.value = row.id;
   showOperationDialog.value = true;
 };

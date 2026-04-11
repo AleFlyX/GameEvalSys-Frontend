@@ -51,7 +51,7 @@
 
 <script setup>
 
-import { ref, reactive, computed } from 'vue';
+import { ref, reactive } from 'vue';
 import { safeDeepClone } from '@/utils/proxyDataClone';
 const props = defineProps({
   initData: {

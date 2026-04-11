@@ -13,7 +13,7 @@
         </el-icon>
         <p>加载中...</p>
       </div>
-      <ScoringStdForm v-else ref="formRef" :initData="addMode ? { name: '', indicators: [] } : standardData"
+      <ScoringStdForm v-else ref="formRef" :initData="addMode ? { name: '', indicators: [] } : initData"
         :add-mode="addMode" />
     </template>
     <template #operations>
@@ -41,6 +41,10 @@ const props = defineProps({
   standardId: {
     type: Number,
     default: null
+  },
+  initData: {
+    type: Object,
+    default: () => { }
   }
 })
 
@@ -101,7 +105,9 @@ const handleConfirm = async () => {
 };
 watch(() => props.standardId, async (newId) => {
   console.log(newId)
-  await loadStandardDetail(newId)
+  if (!props.initData) {
+    await loadStandardDetail(newId)
+  }
 })
 
 </script>
