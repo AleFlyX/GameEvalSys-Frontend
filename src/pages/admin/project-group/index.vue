@@ -16,11 +16,9 @@
         </OverviewCard>
       </div>
     </template>
-
-    <SearchInput size="middle" placeholder="搜索项目小组名称..." @search="handleSearch" @add="handleAdd">
-    </SearchInput>
-
     <template #main-table>
+      <SearchInput size="middle" placeholder="搜索项目小组名称..." @search="handleSearch" @add="handleAdd">
+      </SearchInput>
       <div class="data-table">
         <el-table :data="tableData" stripe style="width: 100%">
           <DataTableColums :col-rules="COLUMN_RULES"></DataTableColums>
@@ -43,9 +41,9 @@
     </template>
 
     <template #footer>
-      <el-pagination v-model:current-page="currentPage" v-model:page-size="pageSize"
-        :page-sizes="defaultPageSizes" size="middle" :disabled="disabled" :total="total"
-        @size-change="handleSizeChange" layout="sizes, prev, pager, next" @current-change="handleCurrentChange" />
+      <el-pagination v-model:current-page="currentPage" v-model:page-size="pageSize" :page-sizes="defaultPageSizes"
+        size="middle" :disabled="disabled" :total="total" @size-change="handleSizeChange"
+        layout="sizes, prev, pager, next" @current-change="handleCurrentChange" />
     </template>
 
     <template #modals>
@@ -130,7 +128,7 @@ const handleClose = (val) => {
 const handleChangeStatus = async (newStatus, row) => {
   try {
     await showMsgBox('确认' + (newStatus ? '启用' : '禁用'));
-    await projectGroupApi.editGroup(row.id, { isEnabled: newStatus });
+    await projectGroupApi.editGroup(row.id, { ...row, isEnabled: newStatus ? 1 : 0 });
     ElMessage.success(newStatus ? '启用成功' : '禁用成功');
     await handleRefresh();
   } catch {
