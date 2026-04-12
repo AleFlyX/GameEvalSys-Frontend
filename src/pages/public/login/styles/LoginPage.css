@@ -1,0 +1,268 @@
+/**
+ * 登录页面样式模块
+ * CSS 变量现已迁移至全局 main.css
+ * 此文件包含登录页面的布局和组件样式
+ */
+
+/* ============ 登录页面容器 ============ */
+.login-page {
+  width: 100%;
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding: 24px;
+  box-sizing: border-box;
+  position: relative;
+  overflow: hidden;
+  background-color: var(--bg-primary);
+  background-image:
+    radial-gradient(circle at 14% 18%, var(--bg-gradient-1) 0%, rgba(14, 165, 233, 0) 45%),
+    radial-gradient(circle at 84% 82%, var(--bg-gradient-2) 0%, rgba(59, 130, 246, 0) 48%),
+    linear-gradient(145deg, #f8fbff 0%, #eef4ff 46%, #f9fbff 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.3s ease;
+}
+
+html[data-theme="dark"] .login-page {
+  background-color: var(--bg-primary);
+  background-image:
+    radial-gradient(circle at 14% 18%, var(--bg-gradient-1) 0%, rgba(10, 90, 200, 0) 45%),
+    radial-gradient(circle at 84% 82%, var(--bg-gradient-2) 0%, rgba(59, 130, 246, 0) 48%);
+}
+
+/* ============ 登录卡片 ============ */
+.login-card {
+  width: min(100%, 420px);
+  padding: 40px 32px 30px;
+  background: var(--card-bg);
+  border: var(--card-border);
+  border-radius: 18px;
+  box-shadow: var(--card-shadow);
+  backdrop-filter: var(--card-backdrop);
+  animation: fade-up 0.5s ease;
+  transition: all 0.3s ease;
+}
+
+.login-card:hover {
+  box-shadow:
+    var(--card-shadow),
+    0 0 20px rgba(37, 99, 235, 0.1);
+}
+
+html[data-theme="dark"] .login-card:hover {
+  box-shadow: var(--card-shadow);
+}
+
+/* ============ 标题和副标题 ============ */
+.login-title {
+  text-align: center;
+  margin: 0;
+  color: var(--text);
+  font-size: 28px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  transition: color 0.3s ease;
+}
+
+.login-subtitle {
+  margin: 10px 0 22px;
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 16px;
+  font-weight: 400;
+  transition: color 0.3s ease;
+}
+
+/* ============ 主题切换按钮 ============ */
+.theme-toggle {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  z-index: 10;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--card-bg);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  color: var(--text);
+}
+
+.theme-toggle:hover {
+  background: var(--input-bg);
+  border-color: var(--input-border-hover);
+}
+
+.theme-toggle .el-icon {
+  font-size: 16px;
+}
+
+/* ============ 加载和动画 ============ */
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* ============ Element Plus 组件样式 ============ */
+.el-form-item {
+  margin-bottom: 20px;
+}
+
+.el-form-item__label {
+  color: var(--text);
+}
+
+.el-form-item__error {
+  color: var(--error);
+  font-size: 12px;
+}
+
+.el-input__wrapper {
+  padding: 2px 12px;
+  border-radius: 12px;
+  background: var(--input-bg);
+  box-shadow: inset 0 0 0 1px var(--input-border);
+  transition: all 0.2s ease;
+}
+
+.el-input__wrapper:hover {
+  box-shadow: inset 0 0 0 1px var(--input-border-hover);
+}
+
+.el-input__wrapper.is-focus {
+  background: var(--input-bg-focus);
+  box-shadow: 0 0 0 2px var(--input-border-focus);
+}
+
+.el-input__inner {
+  color: var(--text);
+}
+
+.el-input__inner::placeholder {
+  color: var(--text-disabled);
+}
+
+.el-input__prefix .el-icon {
+  color: var(--text-secondary);
+}
+
+/* ============ 按钮样式 ============ */
+.el-button--primary {
+  background: var(--btn-primary);
+  border: none;
+}
+
+.el-button--primary:hover {
+  background: var(--btn-primary);
+  opacity: 0.9;
+}
+
+/* ============ 响应式设计 ============ */
+@media (max-width: 768px) {
+  .login-page {
+    padding: 20px;
+  }
+
+  .login-card {
+    padding: 32px 24px 24px;
+    border-radius: 14px;
+    max-width: 100%;
+  }
+
+  .login-title {
+    font-size: 24px;
+  }
+
+  .login-subtitle {
+    font-size: 14px;
+    margin: 8px 0 18px;
+  }
+
+  .theme-toggle {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+
+  .el-form-item {
+    margin-bottom: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .login-page {
+    padding: 16px;
+  }
+
+  .login-card {
+    padding: 28px 20px 24px;
+    border-radius: 12px;
+  }
+
+  .login-title {
+    font-size: 20px;
+  }
+
+  .login-subtitle {
+    font-size: 13px;
+    margin: 6px 0 16px;
+  }
+
+  .theme-toggle {
+    padding: 6px 8px;
+    font-size: 11px;
+    top: 16px;
+    right: 16px;
+  }
+
+  .el-button {
+    width: 100%;
+  }
+}
+
+/* ============ 无障碍适配 ============ */
+.login-page:focus-visible {
+  outline: 2px solid var(--link-primary);
+  outline-offset: 2px;
+}
+
+.el-input__inner:focus {
+  outline: none;
+}
+
+.el-button:focus-visible {
+  outline: 2px solid var(--link-primary);
+  outline-offset: 2px;
+}
