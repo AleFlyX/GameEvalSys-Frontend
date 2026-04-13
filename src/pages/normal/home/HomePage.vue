@@ -21,86 +21,47 @@
     </section>
 
     <section class="stats-grid">
-      <article v-for="card in statCards" :key="card.key" class="stat-card">
-        <div class="stat-head">
-          <div class="stat-icon-wrap">
-            <el-icon class="stat-icon">
-              <component :is="resolveIcon(card.icon)" />
-            </el-icon>
-          </div>
-          <span class="stat-label">{{ card.label }}</span>
-        </div>
-        <p class="stat-value">{{ card.value }}</p>
-        <p class="stat-sub">{{ card.sub }}</p>
-      </article>
+      <StatCard v-for="card in statCards" :key="card.key" :label="card.label" :value="card.value" :sub="card.sub"
+        :icon="card.icon" />
     </section>
 
     <section class="dashboard-grid">
-      <article class="dashboard-panel trend-panel">
-        <div class="panel-header">
-          <h2>最近 7 天打分趋势</h2>
-          <span>总计 {{ trendTotal }} 条</span>
-        </div>
-        <div v-if="trendPoints.length" class="trend-chart">
-          <div v-for="point in trendPoints" :key="point.label" class="trend-column">
-            <div class="trend-bar-bg">
-              <div class="trend-bar" :style="{ height: toBarHeight(point.count) }"></div>
-            </div>
-            <span class="trend-date">{{ point.label }}</span>
-            <span class="trend-count">{{ point.count }}</span>
+      <!-- 趋势图 -->
+      <TrendMap :trend-points="trendPoints">
+        <template #header>
+          <div class="panel-header">
+            <h2>最近 7 天打分趋势</h2>
+            <span>总计 {{ trendTotal }} 条</span>
           </div>
-        </div>
-        <el-empty v-else description="暂无趋势数据" />
-      </article>
+        </template>
+      </TrendMap>
 
-      <article class="dashboard-panel progress-panel">
-        <div class="panel-header">
-          <h2>整体完成率</h2>
-          <span>按当前可见项目计算</span>
-        </div>
-        <div class="progress-main">
-          <el-progress type="dashboard" :percentage="dashboardStats.completionRate" :stroke-width="10"
-            color="#409eff" />
-        </div>
-        <p class="progress-desc">
-          进行中项目 {{ dashboardStats.ongoingProjects }} 个，已结束 {{ dashboardStats.endedProjects }} 个。
-        </p>
-      </article>
-
-      <article class="dashboard-panel tasks-panel">
-        <div class="panel-header">
-          <h2>待处理任务</h2>
-          <span>项目：{{ focusProjectName }}</span>
-        </div>
-        <div class="task-list">
-          <div v-if="pendingTasks.length === 0" class="task-empty">
-            当前没有待处理任务
+      <ProgressCard :dashboard-stats="dashboardStats">
+        <template #header>
+          <div class="panel-header">
+            <h2>整体完成率</h2>
+            <span>按当前可见项目计算</span>
           </div>
-          <div v-for="task in pendingTasks" :key="task.id" class="task-item">
-            <span class="task-dot"></span>
-            <div class="task-content">
-              <p class="task-name">{{ task.name }}</p>
-              <p class="task-deadline">{{ task.deadline }}</p>
-            </div>
-          </div>
-        </div>
-      </article>
+        </template>
+      </ProgressCard>
 
-      <article class="dashboard-panel shortcut-panel">
-        <div class="panel-header">
-          <h2>快捷入口</h2>
-          <span>按角色自动展示</span>
-        </div>
-        <div class="shortcut-grid">
-          <button v-for="item in shortcutList" :key="item.id" class="shortcut-item" type="button"
-            @click="jumpTo(item.path)">
-            <el-icon class="shortcut-icon" :style="{ color: item.color }">
-              <component :is="resolveIcon(item.icon)" />
-            </el-icon>
-            <span>{{ item.name }}</span>
-          </button>
-        </div>
-      </article>
+      <TasksPanel :pending-tasks="pendingTasks">
+        <template #header>
+          <div class="panel-header">
+            <h2>待处理任务</h2>
+            <span>项目：{{ focusProjectName }}</span>
+          </div>
+        </template>
+      </TasksPanel>
+
+      <ShortcutPanel :shortcut-list="shortcutList" @navigate="jumpTo">
+        <template #header>
+          <div class="panel-header">
+            <h2>快捷入口</h2>
+            <span>按角色自动展示</span>
+          </div>
+        </template>
+      </ShortcutPanel>
     </section>
   </div>
 </template>
@@ -115,27 +76,35 @@ import { ScoringApi } from '@/api/scoring';
 import { useMessage } from '@/composables/useMessage';
 import { useUserStore } from '@/stores/modules/userStore';
 import { getElementIcon } from '@/utils/elementIcons';
+import { useLoading } from '@/composables/useLodaing';
+import StatCard from '@/components/common/data/StatCard.vue';
+import { formatTime } from '@/utils/format';
+import TrendMap from './components/trendMap.vue';
+import ProgressCard from './components/progressCard.vue';
+import TasksPanel from './components/TasksPanel.vue';
+import ShortcutPanel from './components/ShortcutPanel.vue';
 
-const router = useRouter();
-const userStore = useUserStore();
-const message = useMessage();
+const router = useRouter();                 // 路由实例，用于页面跳转
+const userStore = useUserStore();           // 用户状态存储（角色、用户信息等）
+const message = useMessage();               // 消息提示工具
 
-const loading = ref(false);
-const trendPoints = ref([]);
-const pendingTasks = ref([]);
-const focusProjectName = ref('暂无项目');
+const { isLoading: loading, start: startLoading, end: endLoading } = useLoading('home:dashboard');
+
+const trendPoints = ref([]);                // 最近7天打分趋势数据点 [{ label, count }]
+const pendingTasks = ref([]);               // 待处理任务列表（当前焦点项目未评分的小组）
+const focusProjectName = ref('暂无项目');    // 当前聚焦的项目名称
 
 const dashboardStats = reactive({
-  totalProjects: 0,
-  ongoingProjects: 0,
-  endedProjects: 0,
-  pendingGroups: 0,
-  completionRate: 0,
+  totalProjects: 0,      // 可见项目总数
+  ongoingProjects: 0,    // 进行中的项目数
+  endedProjects: 0,      // 已结束的项目数
+  pendingGroups: 0,      // 待评分小组数（焦点项目内）
+  completionRate: 0,     // 完成率（已结束项目占比）
 });
 
-const PROJECT_PAGE_SIZE = 100;
-const SCORE_RECORD_PAGE_SIZE = 200;
-const roleSet = ['super_admin', 'admin', 'scorer'];
+const PROJECT_PAGE_SIZE = 100;          // 项目列表分页大小
+const SCORE_RECORD_PAGE_SIZE = 200;     // 评分记录分页大小
+const roleSet = ['super_admin', 'admin', 'scorer'];  // 拥有评分权限的角色集合
 
 const userName = computed(() => {
   return userStore.userInfo?.username || userStore.userInfo?.name || '用户';
@@ -151,15 +120,18 @@ const roleLabel = computed(() => {
   return roleMap[userStore.userRole] || '访问用户';
 });
 
+// 趋势数据的最大值（用于柱状图高度比例计算）
 const trendMax = computed(() => {
   if (!trendPoints.value.length) return 1;
   return Math.max(1, ...trendPoints.value.map((item) => Number(item.count) || 0));
 });
 
+// 近7天打分总条数
 const trendTotal = computed(() => {
   return trendPoints.value.reduce((sum, item) => sum + (Number(item.count) || 0), 0);
 });
 
+// 统计卡片配置（展示在页面顶部）
 const statCards = computed(() => {
   return [
     {
@@ -193,26 +165,30 @@ const statCards = computed(() => {
   ];
 });
 
+// 快捷入口列表（根据用户角色动态过滤）
 const shortcutList = computed(() => {
   const role = userStore.userRole;
   const source = [
     { id: 'scoring', name: '打分列表', path: '/scoring', icon: 'Edit', color: '#409eff', roles: roleSet },
-    { id: 'project', name: '项目管理', path: '/project', icon: 'Management', color: '#ffaa00', roles: ['super_admin', 'admin'] },
-    { id: 'projectGroup', name: '受审队伍', path: '/projectGroups', icon: 'User', color: '#66cc66', roles: ['super_admin', 'admin'] },
-    { id: 'statistic', name: '统计分析', path: '/statistic', icon: 'TrendCharts', color: '#f56c6c', roles: ['super_admin', 'admin'] },
-    { id: 'user', name: '用户管理', path: '/user', icon: 'Avatar', color: '#7b89ff', roles: ['super_admin', 'admin'] },
+    { id: 'project', name: '项目管理', path: '/admin/project', icon: 'Management', color: '#ffaa00', roles: ['super_admin', 'admin'] },
+    { id: 'projectGroup', name: '受审队伍', path: '/admin/projectGroups', icon: 'User', color: '#66cc66', roles: ['super_admin', 'admin'] },
+    { id: 'statistic', name: '统计分析', path: '/admin/statistic', icon: 'TrendCharts', color: '#f56c6c', roles: ['super_admin', 'admin'] },
+    { id: 'user', name: '用户管理', path: '/admin/user', icon: 'Avatar', color: '#7b89ff', roles: ['super_admin', 'admin'] },
     { id: 'home', name: '首页', path: '/home', icon: 'HomeFilled', color: '#9ca3af', roles: ['super_admin', 'admin', 'scorer', 'normal'] },
   ];
   return source.filter((item) => item.roles.includes(role));
 });
 
+// 根据图标名称获取 Element Plus 图标组件
 const resolveIcon = (iconName) => getElementIcon(iconName);
 
+// 页面跳转
 const jumpTo = (path) => {
   if (!path) return;
   router.push(path);
 };
 
+// 点击“开始评分”按钮，校验权限后跳转到打分页面
 const handleGoScoring = () => {
   if (!roleSet.includes(userStore.userRole)) {
     message.info('当前角色没有评分权限');
@@ -221,16 +197,20 @@ const handleGoScoring = () => {
   router.push('/scoring');
 };
 
+// 数字补零（月、日）
 const padNumber = (value) => String(value).padStart(2, '0');
 
+// 获取日期对应的 key（YYYY-MM-DD）
 const getDayKey = (date) => {
-  return `${date.getFullYear()}-${padNumber(date.getMonth() + 1)}-${padNumber(date.getDate())}`;
+  return formatTime(date, 'YYYY-MM-DD');
 };
 
+// 获取日期显示的标签（MM/DD）
 const getDayLabel = (date) => {
-  return `${padNumber(date.getMonth() + 1)}/${padNumber(date.getDate())}`;
+  return formatTime(date, 'MM/DD');
 };
 
+// 安全解析日期字符串，支持 "YYYY-MM-DD" 格式
 const parseDate = (value) => {
   if (!value) return null;
   const candidate = new Date(String(value).replace(/-/g, '/'));
@@ -238,6 +218,7 @@ const parseDate = (value) => {
   return candidate;
 };
 
+//  规范化项目接口返回的数据结构
 const normalizeProjectResponse = (response) => {
   const list = Array.isArray(response?.data?.list) ? response.data.list : [];
   const total = Number(response?.data?.total);
@@ -247,22 +228,30 @@ const normalizeProjectResponse = (response) => {
   };
 };
 
+/**
+ * 获取核心数据
+ * 获取当前用户可见的项目列表
+ * 根据是否为管理员，尝试调用不同接口（有权限的接口优先）
+ */
 const fetchProjectList = async () => {
-  const candidates = userStore.isAdmin
-    ? [
-      () => projectApi.getProjectList({ page: 1, size: PROJECT_PAGE_SIZE }),
-      () => projectApi.getAuthorizedProjectList({ page: 1, size: PROJECT_PAGE_SIZE }),
-    ]
-    : [
-      () => projectApi.getAuthorizedProjectList({ page: 1, size: PROJECT_PAGE_SIZE }),
-      () => projectApi.getProjectList({ page: 1, size: PROJECT_PAGE_SIZE }),
-    ];
-
+  // const candidates = userStore.isAdmin
+  //   ? [
+  //     () => projectApi.getProjectList({ page: 1, size: PROJECT_PAGE_SIZE }),
+  //     () => projectApi.getAuthorizedProjectList({ page: 1, size: PROJECT_PAGE_SIZE }),
+  //   ]
+  //   : [
+  //     () => projectApi.getAuthorizedProjectList({ page: 1, size: PROJECT_PAGE_SIZE }),
+  //     () => projectApi.getProjectList({ page: 1, size: PROJECT_PAGE_SIZE }),
+  //   ];
+  const candidates = [
+    () => projectApi.getAuthorizedProjectList({ page: 1, size: PROJECT_PAGE_SIZE })
+  ];
   for (const requester of candidates) {
     try {
       const response = await requester();
       return normalizeProjectResponse(response);
-    } catch (_) {
+    } catch (e) {
+      console.error('init requester error', e)
       // 尝试下一个可用接口，保证首页可回退展示
     }
   }
@@ -270,6 +259,11 @@ const fetchProjectList = async () => {
   return { list: [], total: 0 };
 };
 
+/**
+ * 从项目列表中挑选“焦点项目”
+ * 优先级：进行中 > 未开始 > 第一个项目 > null
+ * @return {Object} 焦点项目
+ */
 const pickFocusProject = (projects) => {
   return (
     projects.find((project) => project?.status === 'ongoing') ||
@@ -279,19 +273,24 @@ const pickFocusProject = (projects) => {
   );
 };
 
+/**
+ * 根据评分记录构建最近7天的趋势数据
+ * @param {Array} records 评分记录列表
+ * @returns {Array} 包含 label 和 count 的数组
+ */
 const buildTrendPoints = (records) => {
   const today = new Date();
   const trendMap = new Map();
 
   for (let i = 6; i >= 0; i -= 1) {
     const date = new Date(today);
-    date.setDate(today.getDate() - i);
+    date.setDate(today.getDate() - i)
     trendMap.set(getDayKey(date), {
       label: getDayLabel(date),
       count: 0,
     });
   }
-
+  // 统计每条记录所属日期的数量
   records.forEach((item) => {
     const recordDate = parseDate(item?.updateTime || item?.createTime);
     if (!recordDate) return;
@@ -304,6 +303,13 @@ const buildTrendPoints = (records) => {
   return Array.from(trendMap.values());
 };
 
+/**
+ * 构建待处理任务列表（未评分的小组）
+ * @param {Array} groups 项目下所有小组
+ * @param {Set} scoredGroupIdSet 已评分的小组ID集合
+ * @param {Object} project 当前项目信息
+ * @returns {Array} 任务列表（最多6条）
+ */
 const buildPendingTasks = (groups, scoredGroupIdSet, project) => {
   const deadline = project?.endDate ? `截止：${project.endDate}` : '截止时间待定';
   const pendingGroups = groups.filter((group) => !scoredGroupIdSet.has(Number(group?.id)));
@@ -315,6 +321,9 @@ const buildPendingTasks = (groups, scoredGroupIdSet, project) => {
   }));
 };
 
+/**
+ * 更新项目统计汇总数据（总项目数、进行中/已结束数量、完成率）
+ */
 const updateSummaryStats = (projects, total) => {
   const ongoingCount = projects.filter((item) => item?.status === 'ongoing').length;
   const endedCount = projects.filter((item) => item?.status === 'ended').length;
@@ -325,6 +334,7 @@ const updateSummaryStats = (projects, total) => {
   dashboardStats.completionRate = total > 0 ? Math.round((endedCount / total) * 100) : 0;
 };
 
+// 重置焦点项目相关的数据（趋势、待办、小组统计、项目名称）
 const resetTaskAndTrend = () => {
   dashboardStats.pendingGroups = 0;
   trendPoints.value = [];
@@ -332,6 +342,10 @@ const resetTaskAndTrend = () => {
   focusProjectName.value = '暂无项目';
 };
 
+/**
+ * 获取焦点项目下的详细信息（小组列表、评分记录），并更新趋势和待办任务
+ * @param {Object} project 焦点项目
+ */
 const fetchProjectDetailData = async (project) => {
   if (!project?.id) {
     resetTaskAndTrend();
@@ -357,16 +371,25 @@ const fetchProjectDetailData = async (project) => {
   pendingTasks.value = buildPendingTasks(groupList, scoredGroupIdSet, project);
 };
 
+/**
+ * 根据计数计算柱状图高度（相对趋势最大值）
+ * @param {number} count 当前日期的评分数量
+ * @returns {string} 高度CSS值
+ */
 const toBarHeight = (count) => {
   const ratio = (Number(count) || 0) / trendMax.value;
   return `${Math.max(10, Math.round(ratio * 120))}px`;
 };
 
+/**
+ * 首页主要数据加载函数：获取项目列表 -> 更新统计 -> 获取焦点项目详情
+ */
 const fetchHomeData = async () => {
-  loading.value = true;
+  startLoading();
 
   try {
     const { list, total } = await fetchProjectList();
+
     updateSummaryStats(list, total);
 
     const focusProject = pickFocusProject(list);
@@ -376,7 +399,7 @@ const fetchHomeData = async () => {
     message.error('首页数据加载失败，请稍后重试');
     console.error('home data load failed:', error);
   } finally {
-    loading.value = false;
+    endLoading();
   }
 };
 
@@ -397,7 +420,6 @@ onMounted(() => {
 }
 
 .hero-panel,
-.stat-card,
 .dashboard-panel {
   animation: fadeUp 0.5s ease both;
 }
@@ -449,54 +471,6 @@ onMounted(() => {
   margin-top: 18px;
 }
 
-.stat-card {
-  border-radius: 16px;
-  padding: 18px;
-  background: rgba(255, 255, 255, 0.82);
-  box-shadow: 0 10px 24px rgba(31, 47, 70, 0.08);
-  backdrop-filter: blur(10px);
-}
-
-.stat-head {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.stat-icon-wrap {
-  width: 34px;
-  height: 34px;
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #ecf5ff;
-}
-
-.stat-icon {
-  color: #409eff;
-  font-size: 18px;
-}
-
-.stat-label {
-  font-size: 13px;
-  color: #66758a;
-}
-
-.stat-value {
-  margin: 16px 0 4px;
-  font-size: 34px;
-  font-weight: 700;
-  color: #1f2f46;
-  line-height: 1;
-}
-
-.stat-sub {
-  margin: 0;
-  font-size: 12px;
-  color: #9aa8bb;
-}
-
 .dashboard-grid {
   display: grid;
   grid-template-columns: 2fr 1fr;
@@ -509,10 +483,6 @@ onMounted(() => {
   padding: 18px;
   background: #ffffff;
   box-shadow: 0 10px 28px rgba(20, 42, 74, 0.08);
-}
-
-.trend-panel {
-  min-height: 320px;
 }
 
 .panel-header {
@@ -584,98 +554,6 @@ onMounted(() => {
   min-height: 220px;
 }
 
-.progress-main {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 160px;
-}
-
-.progress-desc {
-  margin: 0;
-  text-align: center;
-  font-size: 13px;
-  color: #637287;
-}
-
-.task-list {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.task-empty {
-  padding: 28px 12px;
-  text-align: center;
-  color: #8a97aa;
-  font-size: 13px;
-  border: 1px dashed #dce6f4;
-  border-radius: 12px;
-}
-
-.task-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  padding: 10px;
-  border-radius: 10px;
-  background: #f7fbff;
-}
-
-.task-dot {
-  width: 8px;
-  height: 8px;
-  margin-top: 6px;
-  border-radius: 50%;
-  background: #409eff;
-}
-
-.task-content {
-  flex: 1;
-  min-width: 0;
-}
-
-.task-name {
-  margin: 0;
-  font-size: 13px;
-  color: #1f2f46;
-}
-
-.task-deadline {
-  margin: 4px 0 0;
-  font-size: 12px;
-  color: #7d8da2;
-}
-
-.shortcut-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
-}
-
-.shortcut-item {
-  border: none;
-  border-radius: 10px;
-  padding: 12px 10px;
-  cursor: pointer;
-  background: #f6f9fc;
-  color: #45576f;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  transition: all 0.2s ease;
-}
-
-.shortcut-item:hover {
-  transform: translateY(-2px);
-  background: #ebf3ff;
-}
-
-.shortcut-icon {
-  font-size: 18px;
-}
-
 @keyframes fadeUp {
   from {
     opacity: 0;
@@ -726,10 +604,6 @@ onMounted(() => {
 
   .stats-grid {
     grid-template-columns: 1fr;
-  }
-
-  .shortcut-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .trend-chart {
