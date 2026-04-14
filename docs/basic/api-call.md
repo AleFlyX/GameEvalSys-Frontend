@@ -897,6 +897,49 @@
   }
   ```
 
+### 7.1.1 获取项目内指定小组的指标平均得分明细
+
+- **接口地址**：`/projects/{projectId}/statistics/groups/{groupId}`
+- **请求方式**：GET
+- **请求头**：`Authorization: Bearer {token}`
+- **路径参数**：
+  | 参数名 | 类型 | 必填 | 说明 |
+  |--------|------|------|------|
+  | projectId | number | 是 | 项目ID |
+  | groupId | number | 是 | 小组ID |
+- **响应示例**：
+  ```json
+  {
+    "code": 200,
+    "message": "查询成功",
+    "data": {
+      "groupId": 1,
+      "groupName": "第一小组",
+      "indicatorAverage": [
+        {
+          "indicatorId": 1,
+          "indicatorName": "复杂程度",
+          "averageScore": 4.35
+        },
+        {
+          "indicatorId": 2,
+          "indicatorName": "创新性",
+          "averageScore": 3.92
+        }
+      ]
+    }
+  }
+  ```
+- **字段说明**：
+  | 字段名 | 类型 | 说明 |
+  |--------|------|------|
+  | groupId | number | 小组ID |
+  | groupName | string | 小组名称 |
+  | indicatorAverage | array | 当前小组各指标平均得分 |
+  | indicatorAverage[].indicatorId | number | 指标ID |
+  | indicatorAverage[].indicatorName | string | 指标名称 |
+  | indicatorAverage[].averageScore | number | 指标平均得分 |
+
 ### 7.2 获取平台全局统计数据
 
 - **接口地址**：`/statistics/platform`
@@ -952,11 +995,58 @@
 - **请求参数**（Query）：
   | 参数名 | 类型 | 必填 | 说明 |
   |--------|------|------|------|
+  | projectId | string | 是 | 项目唯一标识 ID |
   | format | string | 否 | 导出格式（excel/csv，默认excel） |
 - **响应**：文件流（直接下载）
 - **说明**：
   - 导出文件包含项目的所有打分记录、小组统计、指标统计等数据
   - 文件名格式：`项目名_打分统计_{时间戳}.xlsx`
+
+### 7.4 导出当前项目小组的打分数据
+
+- **接口地址**：`/projects/{projectId}/export/group-indicator-items`
+- **请求方式**：GET
+- **请求参数**（Query）：
+  | 参数名 | 类型 | 必填 | 说明 |
+  |--------|------|------|------|
+  | projectId | string | 是 | 项目唯一标识 ID |
+  | format | string | 否 | 导出格式（excel/csv，默认excel） |
+
+- **响应头**：  
+  `Content-Type` 根据请求格式返回对应 MIME 类型：
+  - `excel` → `application/vnd.openxmlformats-officedocument.spreadsheetml.sheet`
+  - `csv` → `text/csv; charset=utf-8`
+- **响应体**：文件二进制流，客户端需作为文件下载。
+- **说明**：
+  - 导出文件包含项目的所有打分记录、小组统计、指标统计等数据
+  - 文件名格式：`项目名_打分统计_{时间戳}.xlsx`
+
+- **导出数据列说明**
+
+| 列名         | 说明                                         |
+| ------------ | -------------------------------------------- |
+| 项目名称     | 当前项目名称                                 |
+| 评分标准     | 当前项目使用的评分标准名称                   |
+| 小组名称     | 小组名称                                     |
+| 评分项       | 评分项名称                                   |
+| 每项得分明细 | 该小组在该评分项下的所有得分，用英文逗号分隔 |
+| 平均分       | 该小组在该评分项下的得分平均值               |
+| 评分次数     | 该小组在该评分项下被评分的总次数             |
+
+- **错误响应**
+
+| HTTP 状态码 | 错误码                  | 说明                         |
+| ----------- | ----------------------- | ---------------------------- |
+| `400`       | `INVALID_FORMAT`        | `format` 参数值不合法        |
+| `404`       | `PROJECT_NOT_FOUND`     | 指定项目不存在               |
+| `500`       | `INTERNAL_SERVER_ERROR` | 服务器内部错误，生成文件失败 |
+
+- **请求示例**
+  导出为 Excel 文件
+
+```http
+GET /projects/114514/export/group-indicator-items?format=excel
+```
 
 ## 8. 评审组管理模块（管理员）
 
@@ -1184,17 +1274,19 @@ GET /api/v1/statistics/platform
 ```bash
 1. GET /api/v1/projects                           # 列表选择项目
 2. GET /api/v1/projects/{projectId}/statistics    # 获取该项目统计
-3. GET /api/v1/projects/{projectId}/export        # 可选：导出数据
+3. GET /api/v1/projects/{projectId}/statistics/groups/{groupId}  # 可选：查看小组指标平均分明细
+4. GET /api/v1/projects/{projectId}/export        # 可选：导出数据
 ```
 
 ### 前端页面路由对应关系
 
-| 页面功能     | 路由路径                              | 调用 API                               | 说明             |
-| ------------ | ------------------------------------- | -------------------------------------- | ---------------- |
-| 平台统计大盘 | `/admin/statistic`                    | `GET /statistics/platform`             | 全局汇总数据概览 |
-| 项目统计列表 | `/admin/project/statistic`            | `GET /projects`                        | 项目选择界面     |
-| 项目统计详情 | `/admin/project/statistic/:projectId` | `GET /projects/{projectId}/statistics` | 单项目详细统计   |
-| 数据导出     | （在详情页内）                        | `GET /projects/{projectId}/export`     | 导出项目统计数据 |
+| 页面功能     | 路由路径                              | 调用 API                                                | 说明                   |
+| ------------ | ------------------------------------- | ------------------------------------------------------- | ---------------------- |
+| 平台统计大盘 | `/admin/statistic`                    | `GET /statistics/platform`                              | 全局汇总数据概览       |
+| 项目统计列表 | `/admin/project/statistic`            | `GET /projects`                                         | 项目选择界面           |
+| 项目统计详情 | `/admin/project/statistic/:projectId` | `GET /projects/{projectId}/statistics`                  | 单项目详细统计         |
+| 小组得分明细 | （在详情页内弹窗）                    | `GET /projects/{projectId}/statistics/groups/{groupId}` | 查看单小组按指标平均分 |
+| 数据导出     | （在详情页内）                        | `GET /projects/{projectId}/export`                      | 导出项目统计数据       |
 
 ### 实现建议
 
@@ -1208,7 +1300,11 @@ GET /api/v1/statistics/platform
 2. ✅ **项目统计** - `GET /projects/{projectId}/statistics`（已有）
    - 返回小组平均分、指标平均分、评分分布等
 
-3. ✅ **导出功能** - `GET /projects/{projectId}/export`（需完善）
+3. ✅ **小组指标明细统计** - `GET /projects/{projectId}/statistics/groups/{groupId}`
+   - 返回指定小组的指标平均分明细
+   - 用于详情页“查看明细”弹窗
+
+4. ✅ **导出功能** - `GET /projects/{projectId}/export`（需完善）
    - 支持 Excel/CSV 格式
    - 返回文件流供客户端下载
 
