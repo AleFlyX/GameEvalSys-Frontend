@@ -28,6 +28,16 @@ export const getProjectScoringStatistic = (projectId) => {
 };
 
 /**
+ * @description 获取项目内指定小组的指标平均分明细
+ * @param {number} projectId - 项目ID
+ * @param {number} groupId - 小组ID
+ * @returns {Promise} 小组指标平均分数据
+ */
+export const getProjectGroupIndicatorStatistic = (projectId, groupId) => {
+  return service.get(`/projects/${projectId}/statistics/groups/${groupId}`);
+};
+
+/**
  * @description 导出项目打分数据
  * @param {number} projectId - 项目ID
  * @param {string} format - 导出格式（excel/csv，默认excel）
@@ -39,5 +49,14 @@ export const exportProjectStatisticData = (projectId, format = 'excel') => {
       format
     },
     responseType: 'blob' // 返回二进制数据
+  });
+};
+
+export const exportProjectGroupIndicatorsData = (projectId, format = 'excel') => {
+  return service.get(`/projects/${projectId}/export/group-indicator-items`, {
+    params: {
+      format
+    },
+    responseType: 'blob'
   });
 };
