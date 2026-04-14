@@ -20,7 +20,7 @@
 
     <el-form-item label="打分标准" prop="standardId" @click="showInfo($refs)" ref="scoringStdRef">
       <el-select v-model="formData.standardId" filterable placeholder="选择打分标准" :disabled="editMode"
-        :clearable="!editMode" :loading="loadingScoringStd" remote :remote-method="getScoringStdList" debounce="3000"
+        :clearable="!editMode" :loading="loadingScoringStd" remote :remote-method="getScoringStdList" debounce="300"
         remote-show-suffix>
         <el-option v-for="item in scoringStdList" :key="item.id" :value="item.id" :label="item.name"></el-option>
       </el-select>
@@ -132,11 +132,11 @@ const initProjectFormData = async () => {
 }
 
 const { isLoading: loadingScoringStd, start: startLoadingScoringStd, end: endLoadingScoringStd } = useLoading('projectForm:scoringStd')
-const getScoringStdList = async (keyWords) => {
+const getScoringStdList = async (keywords) => {
   startLoadingScoringStd();
   try {
-    const response = await ScoringApi.getScoringStandardsList(keyWords);
-    scoringStdList.value = response.data;
+    const response = await ScoringApi.getScoringStandardsList({ keyWords: keywords });
+    scoringStdList.value = response.data.list;
     console.log('获取项目打分标准', response.data)
   } catch (err) {
     console.log('获取打分标准失败', err)
