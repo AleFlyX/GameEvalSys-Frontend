@@ -2,8 +2,9 @@ import { createRouter, createWebHistory } from "vue-router";
 
 import { pub } from "@/router/modules/publicRoutes";
 import { useUserStore } from "@/stores/modules/userStore";
-import { ElMessage } from "element-plus";
+import { useMessage } from "@/composables/useMessage";
 
+const message = useMessage();
 const routes = [...pub];
 console.log("_RoutesLoaded_", routes);
 const router = createRouter({
@@ -27,7 +28,7 @@ router.beforeEach((to, from, next) => {
           next();
         } else {
           console.log(to.path + "当前角色无权" + userStore.userInfo.role);
-          ElMessage.error("无权访问该页面");
+          message.error("无权访问该页面");
           next("/403");
         }
       } else {
@@ -37,7 +38,7 @@ router.beforeEach((to, from, next) => {
       // next("/login");
     } else {
       //未登录
-      ElMessage.warning("请先登录");
+      message.warning("请先登录");
       next(`/login?redirect=${to.fullPath}`);
     }
   } else {
@@ -49,4 +50,11 @@ router.beforeEach((to, from, next) => {
     }
   }
 });
+// // 全局后置守卫 – 每次路由切换完成后执行
+// router.afterEach(() => {
+//   window.scrollTo({
+//     top: 0,
+//     behavior: 'smooth'   // 平滑滚动
+//   })
+// })
 export default router;
