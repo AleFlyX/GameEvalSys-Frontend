@@ -17,7 +17,7 @@
   </article>
 </template>
 <script setup>
-const props = defineProps({
+defineProps({
   shadow: {
     type: String,
     default: 'always' //shadow: always hover never
@@ -28,7 +28,6 @@ const props = defineProps({
 <style scoped>
 .base-card {
   --card-border: rgba(20, 42, 74, 0.1);
-  min-height: 320px;
   border-radius: 16px;
   padding: 18px;
   background: #ffffff;
