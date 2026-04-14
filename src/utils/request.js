@@ -1,8 +1,10 @@
 import axios from "axios";
 import { useMessage } from "@/composables/useMessage";
+import { useUserStore } from "@/stores/modules/userStore";
 import { showMsgBox } from "./ConfirmBox";
 
 const message = useMessage();
+const userStore = useUserStore();
 
 // 创建axios实例
 const service = axios.create({
@@ -12,12 +14,6 @@ const service = axios.create({
     "Content-Type": "application/json;charset=utf-8", // 默认请求格式
   },
 });
-
-// 路由实例（用于401跳转）
-let router = null;
-export function setRouter(r) {
-  router = r;
-}
 
 // -------------------------- 请求拦截器：添加token、处理请求前逻辑 --------------------------
 service.interceptors.request.use(
@@ -78,12 +74,8 @@ service.interceptors.response.use(
           showDefaultClose: false,
           closeOnClickModal: false,
           type: "warning",
-        }).then(() => {
-          if (router && typeof router.push === "function") {
-            router.push("/login"); // 跳转到登录页
-          } else {
-            window.location.href = "/login";
-          }
+        }).then(async () => {
+          await userStore.logout();
         });
         break;
       case 403:
