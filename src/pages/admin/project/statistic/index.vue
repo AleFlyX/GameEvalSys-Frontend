@@ -11,7 +11,7 @@
       <el-input v-model="searchKeywords" placeholder="搜索项目名称..." clearable class="search-input" @input="handleSearch">
         <template #prefix>
           <el-icon>
-            <Search />
+            <component :is="getElementIcon('Search')" />
           </el-icon>
         </template>
       </el-input>
@@ -24,7 +24,7 @@
 
       <el-button type="primary" @click="handleRefresh">
         <el-icon>
-          <Refresh />
+          <component :is="getElementIcon('Refresh')" />
         </el-icon>
         刷新
       </el-button>
@@ -35,38 +35,9 @@
 
     <!-- 项目列表 -->
     <div v-else class="projects-grid">
-      <div v-for="project in filteredProjects" :key="project.id" class="project-card" @click="selectProject(project)">
-        <div class="card-header">
-          <h3 class="project-name">{{ project.name }}</h3>
-          <el-tag :type="getStatusType(project.status)">
-            {{ getStatusLabel(project.status) }}
-          </el-tag>
-        </div>
 
-        <div class="card-content">
-          <p class="project-description">{{ project.description || "暂无描述" }}</p>
-
-          <div class="project-meta">
-            <span class="meta-item">
-              <el-icon>
-                <Calendar />
-              </el-icon>
-              {{ formatDate(project.startDate) }} ~ {{ formatDate(project.endDate) }}
-            </span>
-            <span class="meta-item">
-              <el-icon>
-                <User />
-              </el-icon>
-              共 {{ project.groupCount || 0 }} 个小组
-            </span>
-          </div>
-        </div>
-
-        <div class="card-footer">
-          <el-button type="primary" size="small" @click.stop="goToDetail(project.id)">
-            查看统计
-          </el-button>
-        </div>
+      <div class="project-cards" v-for="project in filteredProjects" :key="project.id">
+        <ProjectCard :project="project"></ProjectCard>
       </div>
 
       <!-- 空状态 -->
@@ -86,13 +57,11 @@
 
 <script setup>
 import { ref, computed, onMounted } from "vue";
-import { useRouter } from "vue-router";
 import { ElMessage } from "element-plus";
-import { Search, Refresh, Calendar, User } from "@element-plus/icons-vue";
+import { getElementIcon } from "@/utils/elementIcons";
+import ProjectCard from "./components/projectCard.vue";
 import { getProjectList } from "@/api/project";
 import { useElPagination } from "@/composables/useElPagination";
-
-const router = useRouter();
 
 // ==================== 数据定义 ====================
 const projects = ref([]);
@@ -101,7 +70,7 @@ const filterStatus = ref("");
 
 // ==================== 分页控制 ====================
 const {
-  currentPage, pageSize, total, loading, disabled, totalPages, defaultPageSizes,
+  currentPage, pageSize, total, loading, disabled, defaultPageSizes,
   setTotal, setCurrentPage, handleSizeChange, handleCurrentChange
 } = useElPagination({
   initialPage: 1,
@@ -150,41 +119,6 @@ const filteredProjects = computed(() => {
   return projects.value;
 });
 
-/**
- * 获取状态标签
- */
-const getStatusLabel = (status) => {
-  const statusMap = {
-    not_started: "未开始",
-    ongoing: "进行中",
-    ended: "已结束",
-  };
-  return statusMap[status] || "未知";
-};
-
-/**
- * 获取状态标签类型
- */
-const getStatusType = (status) => {
-  const typeMap = {
-    not_started: "info",
-    ongoing: "success",
-    ended: "danger",
-  };
-  return typeMap[status] || "info";
-};
-
-/**
- * 格式化日期
- */
-const formatDate = (dateStr) => {
-  if (!dateStr) return "-";
-  try {
-    return new Date(dateStr).toLocaleDateString("zh-CN");
-  } catch {
-    return dateStr;
-  }
-};
 
 /**
  * 查询首页
@@ -221,22 +155,7 @@ const handleRefresh = () => {
   queryFirstPage(1)
 };
 
-/**
- * 选择项目跳转
- */
-const goToDetail = (projectId) => {
-  router.push({
-    name: "projectStatisticDetail",
-    params: { projectId },
-  });
-};
 
-/**
- * 选择项目（用于其他交互）
- */
-const selectProject = (project) => {
-  goToDetail(project.id);
-};
 
 // ==================== 生命周期 ====================
 onMounted(() => {
@@ -301,85 +220,6 @@ onMounted(() => {
   max-width: 1400px;
   margin-left: auto;
   margin-right: auto;
-}
-
-/* ==================== 项目卡片 ==================== */
-.project-card {
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
-  padding: 20px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-}
-
-.project-card:hover {
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
-  border-color: #d1d5db;
-  transform: translateY(-2px);
-}
-
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 12px;
-  margin-bottom: 16px;
-}
-
-.project-name {
-  font-size: 1.125rem;
-  font-weight: 600;
-  color: #1f2937;
-  margin: 0;
-  flex: 1;
-  word-break: break-word;
-}
-
-.card-content {
-  flex: 1;
-  margin-bottom: 16px;
-}
-
-.project-description {
-  font-size: 0.875rem;
-  color: #6b7280;
-  margin: 0 0 12px 0;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.project-meta {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.meta-item {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 0.875rem;
-  color: #6b7280;
-}
-
-.meta-item :deep(.el-icon) {
-  width: 16px;
-  height: 16px;
-}
-
-.card-footer {
-  display: flex;
-  gap: 8px;
-}
-
-.card-footer :deep(.el-button) {
-  flex: 1;
 }
 
 /* ==================== 空状态 ==================== */
