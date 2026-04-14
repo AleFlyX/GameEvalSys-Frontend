@@ -48,6 +48,11 @@ service.interceptors.request.use(
 // -------------------------- 响应拦截器：统一处理返回结果、错误码 --------------------------
 service.interceptors.response.use(
   (response) => {
+    // 处理文件流（blob）响应 - 直接返回
+    if (response.data instanceof Blob) {
+      return response.data;
+    }
+
     const res = response.data;
     // 1. 接口返回成功（code=200）
     if (res.code === 200) {
