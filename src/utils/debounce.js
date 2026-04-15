@@ -7,7 +7,7 @@
  * @param {boolean} [options.dev=false] - 是否调试（打印出传入的参数）
  * @returns {Function} 防抖后的函数（包含取消防抖的方法 cancel）
  */
-export function debounce(fn, delay, options = {}) {
+export function debounce(fn, delay = 200, options = {}) {
   let timer = null; // 闭包保存定时器ID，避免全局污染
   const { immediate = false, dev = false } = options;
   let isInvoked = false; // 标记是否已立即执行过

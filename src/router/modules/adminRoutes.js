@@ -11,6 +11,13 @@ const Statistic = () => import("@/pages/admin/statistic/StatisticPannel.vue");
 
 export const admin = [
   {
+    path: "admin/statistic",
+    // path: "statistic/:projectId",
+    name: "平台数据",
+    component: Statistic,
+    meta: { title: "平台统计", roles: ["super_admin", "admin"], icon: 'Monitor' },
+  },
+  {
     path: "admin/reviewerGroups",
     name: "评审队伍(班级)",
     component: reviewerGroups,
@@ -76,12 +83,5 @@ export const admin = [
     name: "projectStatisticDetail",
     component: ProjectStatisticDetail,
     meta: { title: "打分统计详情", roles: ["super_admin", "admin"], hidden: true },
-  },
-  {
-    path: "admin/statistic",
-    // path: "statistic/:projectId",
-    name: "得分统计",
-    component: Statistic,
-    meta: { title: "平台统计大盘", roles: ["super_admin", "admin"], icon: 'Monitor' },
   },
 ];

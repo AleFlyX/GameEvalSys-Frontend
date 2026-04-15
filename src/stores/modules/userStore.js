@@ -17,6 +17,7 @@ export const useUserStore = defineStore("userStore", () => {
 
   const userRole = computed(() => userInfo.value.role || "");
   const isAdmin = computed(() => ["admin", "super_admin"].includes(userInfo.value.role));
+  const isSuperAdmin = computed(() => userInfo.value.role === "super_admin");
   const isScorer = computed(() => userInfo.value.role === "scorer");
 
   /**
@@ -74,6 +75,7 @@ export const useUserStore = defineStore("userStore", () => {
     isLogin,
     isScorer,
     isAdmin,
+    isSuperAdmin,
     login,
     logout,
   };

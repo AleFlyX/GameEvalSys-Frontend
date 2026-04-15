@@ -9,6 +9,7 @@ const MainLayout = () => import("@/layouts/MainLayout.vue");
 
 import { admin } from "./adminRoutes";
 import { norm } from "./normalRoutes";
+import { superAdmin } from "./superAdminRoutes";
 export const pub = [
   {
     path: "/login",
@@ -22,7 +23,7 @@ export const pub = [
     component: MainLayout,
     meta: { requireAuth: true },
     redirect: "/home",
-    children: [...norm, ...admin], //主界面的路由
+    children: [...norm, ...admin, ...superAdmin], //主界面的路由
   },
   {
     path: "/about",

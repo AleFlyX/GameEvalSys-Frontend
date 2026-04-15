@@ -21,7 +21,7 @@ export function setRouter(r) {
 
 // -------------------------- 请求拦截器：添加token、处理请求前逻辑 --------------------------
 service.interceptors.request.use(
-  (config) => {
+  async (config) => {
     // 1. 从localStorage获取token（登录后存储的）
     const token = localStorage.getItem("token");
     // 2. 自动添加Authorization请求头
@@ -36,6 +36,7 @@ service.interceptors.request.use(
       };
       // config.params._t = new Date().getTime()
     }
+    if (import.meta.env.VITE_DELAY_REQUEST === 1) await new Promise(resolve => setTimeout(resolve, 5000));
     return config;
   },
   (error) => {

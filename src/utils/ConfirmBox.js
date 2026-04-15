@@ -56,6 +56,7 @@ export const showMsgBox = (title, content, options) => {
         content: content || '确认执行此操作？',
         showConfirmButton: true,
         showCancelButton: true,
+        showDefaultClose: true,
         confirmButtonText: '确认',
         cancelButtonText: '取消',
         visible: isVisible,
@@ -72,7 +73,7 @@ export const showMsgBox = (title, content, options) => {
     // 5. 初始渲染 (visible: false)
     updateVNode()
 
-    // 6. 下一帧开启 (visible: true)，触发入场动画
+    // 6. 因为刚创建的弹窗 visible=false 是看不到的。等下一帧再把它变成 true，组件就会播放“出现”的动画。
     requestAnimationFrame(() => {
       isVisible = true
       updateVNode()

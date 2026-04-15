@@ -28,6 +28,7 @@ export const createProjet = (params) => {
  * @param {number} [params.size=10] - 每页条数（默认10）
  * @param {string} [params.status] - 项目状态 not_started/ongoing/ended
  * @param {boolean} [params.isEnabled] - 是否启用
+ * @param {String} [params.keyWords] - 是否启用
  * @returns {Promise} 响应数据（列表+总数）
  */
 export const getProjectList = (params = {}) => {
@@ -53,15 +54,15 @@ export const editProject = (projectId, params) => {
   return service.put(`/projects/${projectId}`, params);
 };
 
-/**
- * 删除项目
- * @param {*} projectId -要删除的项目id
- * @param {*} params
- * @returns
- */
-export const deleteProject = (projectId, params = {}) => {
-  return service.delete(`/projects/${projectId}`, params);
-};
+// /**
+//  * 删除项目
+//  * @param {*} projectId -要删除的项目id
+//  * @param {*} params
+//  * @returns
+//  */
+// export const deleteProject = (projectId, params = {}) => {
+//   return service.delete(`/projects/${projectId}`, params);
+// };
 
 /**
  * 结束项目
@@ -111,7 +112,6 @@ export const projectApi = {
   createProjet,
   getProjectList,
   editProject,
-  deleteProject,
   endProject,
   getProjectDetail,
   getAuthorizedProjectList,

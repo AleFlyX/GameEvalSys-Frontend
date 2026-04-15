@@ -10,7 +10,15 @@ export const useLoadingStore = defineStore('loadingStore', () => {
   const showLoadingGap = ref(200)
 
   /**
-    * 判断某个 key 是否处于 loading 状态（显示“加载中”）
+    * 相当于一个中继，外部也可以直接访问loadingStore.map[key]来获取
+    *
+    * 此函数判断某个 key 是否处于 loading 状态（显示“加载中”），
+    *
+    * 外部composable函数用computed包裹当前函数，isLoading 的 getter 执行了 loadingStore.isLoading('user')，
+    * 这个函数内部访问了 map.user.showLoading。
+    * Vue 会记录下这个依赖关系：isLoadingComputed 依赖于 map.user.showLoading。
+    * 当 showLoading 变化时（比如 start 中的 item.showLoading = true），
+    * isLoadingComputed 会重新计算，从而触发模板或副作用更新。
     * @param {string} key - 标识符，默认为 'global'
     * @returns {boolean}
     */
@@ -38,32 +46,49 @@ export const useLoadingStore = defineStore('loadingStore', () => {
         startTime: 0,  // 触发时间
         showLoading: false, // 显示加载动画
         showSkeleton: false, // 显示骨架屏
-        timer: null
+        // timer: null
+        loadingTimer: null,      // 加载动画 定时器
+        skeletonTimer: null,     // 骨架屏 定时器
       }
     }
 
     const item = map[key];
     item.count++;
 
-    if (item.count === 1) { //只有存在正在加载的情况下才触发加载
+    if (item.count >= 1) { //只有存在正在加载的情况下才触发加载
       item.startTime = Date.now();
 
-      // 防止timer没在end中被清理
-      if (item.timer) clearTimeout(item.timer)
+      // 清除已有的定时器（防止残留）
+      if (item.loadingTimer) clearTimeout(item.loadingTimer);
+      if (item.skeletonTimer) clearTimeout(item.skeletonTimer);
 
-      item.timer = setTimeout(() => {
-        // 定时器回调中需重新获取当前项，避免 end 已将其删除而导致状态残留
-        const currentItem = map[key]
+      // 200ms 后显示加载动画
+      item.loadingTimer = setTimeout(() => {
+        const current = map[key];
+        if (current) current.showLoading = true;
+      }, 200);
 
-        const duration = Date.now() - currentItem.startTime;
-
-        if (duration >= 200) {
-          currentItem.showLoading = true;
+      // 1200ms 后显示骨架屏
+      item.skeletonTimer = setTimeout(() => {
+        const current = map[key];
+        if (current) {
+          current.showSkeleton = true;
+          current.showLoading = false;
         }
-        if (duration >= 1200) {
-          currentItem.showSkeleton = true;
-        }
-      }, showLoadingGap.value);
+      }, 2000);
+      // item.timer = setTimeout(() => {
+      //   // 定时器回调中需重新获取当前项，避免 end 已将其删除而导致状态残留
+      //   const currentItem = map[key]
+
+      //   const duration = Date.now() - currentItem.startTime;
+
+      //   if (duration >= 200) {
+      //     currentItem.showLoading = true;
+      //   }
+      //   if (duration >= 1200) {
+      //     currentItem.showSkeleton = true;
+      //   }
+      // }, showLoadingGap.value);
     }
   }
 
@@ -78,12 +103,9 @@ export const useLoadingStore = defineStore('loadingStore', () => {
     item.count--;
 
     if (item.count <= 0) {
-      if (item.timer) {
-        clearTimeout(item.timer);
-        item.timer = null;
-      }
-      item.showLoading = false;
-      item.showSkeleton = false;
+      if (item.loadingTimer) clearTimeout(item.loadingTimer);
+      if (item.skeletonTimer) clearTimeout(item.skeletonTimer);
+      delete map[key];
       delete map[key];
     }
 
