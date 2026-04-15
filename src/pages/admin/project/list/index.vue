@@ -6,9 +6,8 @@
       </OverviewCard>
     </template>
 
-    <SearchInput size="middle" @search="handleSearch" @add="handleAdd"></SearchInput>
-
     <template #main-table>
+      <SearchInput size="middle" @search="handleSearch" @add="showAddProjectDialog = true"></SearchInput>
       <el-table :data="projectList" v-loading="loading">
         <DataTableColums :col-rules="PROJECT_LIST_RULES"></DataTableColums>
         <el-table-column>
@@ -48,8 +47,7 @@
     </template>
 
     <template #modals>
-      <ProjectConfirm v-model:visible="showDeleteProjectDialog" :title="modalContent.title"
-        :keywords="modalContent.keywords" :data="handlingProjectStatus" @refresh="handleRefresh">
+      <ProjectConfirm v-model:visible="showDeleteProjectDialog" :data="handlingProjectStatus" @refresh="handleRefresh">
       </ProjectConfirm>
       <ProjectDetails v-model:visible="showDetailDialog" :selected-project="propjectDetail"></ProjectDetails>
       <ProjectAdd v-model:visible="showAddProjectDialog" @refresh="handleRefresh">
@@ -76,6 +74,7 @@ import { PROJECT_LIST_RULES } from '../config/data-table/projectList';
 
 import { projectApi } from '@/api/project';
 import { useLoading } from '@/composables/useLodaing';
+import { debounce } from '@/utils/debounce';
 
 const router = useRouter();
 
@@ -109,19 +108,13 @@ const getProjectsList = async (pageParams) => {
     endLoading();
   }
 }
-
-const showDeleteProjectDialog = ref(false);
+const debouncedLoadProject = debounce(getProjectsList, 300)
 const showAddProjectDialog = ref(false);
 const showDetailDialog = ref(false);
-const handlingProjectStatus = ref({});
 const pagenationDisabled = ref(false);
 const handleSearch = (keywords) => {
-  // 搜索功能待实现
-  console.log('搜索:', keywords);
-}
-
-const handleAdd = () => {
-  showAddProjectDialog.value = true;
+  // console.log('搜索:', keywords);
+  debouncedLoadProject({ ...pageParams, keyWords: keywords })
 }
 
 const handleEdit = (row) => {
@@ -130,41 +123,18 @@ const handleEdit = (row) => {
     params: { id: row.id }
   });
 }
+
 const propjectDetail = ref({})
 const handleViewPrDetails = (row) => {
   showDetailDialog.value = true;
-  console.log(row)
   propjectDetail.value = row;
 }
 
-const handleStartProject = async (index, row) => {
-  try {
-    // const response = await projectApi.updateProject(row.id, { isEnabled: true })
-    // ElMessage.success('项目已启用')
-    ElMessage.success('项目已启用');
-    row.isEnabled = true;
-    // 或者重新获取列表
-    // await getProjectsList(pageParams);
-  } catch (err) {
-    ElMessage.error(`启用项目失败: ${err}`);
-  }
-}
-
-const modalContent = ref({
-  title: '',
-  keywords: '',
-})
-const handleProjectStatus = (enable, index, row) => {
-  if (enable) {
-    modalContent.value.title = '确认启用';
-    modalContent.value.keywords = '启用';
-  }
-  else {
-    modalContent.value.title = '确认停用';
-    modalContent.value.keywords = '停用';
-  }
+const showDeleteProjectDialog = ref(false);
+const handlingProjectStatus = ref({});
+const handleProjectStatus = (enableTogle, index, row) => {
   showDeleteProjectDialog.value = true
-  handlingProjectStatus.value = row;
+  handlingProjectStatus.value = { ...row, isEnabled: enableTogle };
 }
 
 // const handleStopProject = async (index, row) => {
