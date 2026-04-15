@@ -1,0 +1,45 @@
+<svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- 背景渐变（深灰到纯黑） -->
+    <linearGradient id="bg" x1="0" y1="0" x2="64" y2="64">
+      <stop offset="0%" stop-color="#2C2C2E"></stop>
+      <stop offset="100%" stop-color="#000000"></stop>
+    </linearGradient>
+
+    <!-- 玻璃高光 -->
+    <linearGradient id="gloss" x1="0" y1="0" x2="0" y2="64">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.25"></stop>
+      <stop offset="40%" stop-color="#FFFFFF" stop-opacity="0.08"></stop>
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0"></stop>
+    </linearGradient>
+
+    <!-- 星星渐变（金属白） -->
+    <linearGradient id="star" x1="0" y1="0" x2="64" y2="64">
+      <stop offset="0%" stop-color="#FFFFFF"></stop>
+      <stop offset="100%" stop-color="#C7C7CC"></stop>
+    </linearGradient>
+
+    <!-- 内阴影滤镜 -->
+    <filter id="innerShadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feOffset dx="0" dy="1"></feOffset>
+      <feGaussianBlur stdDeviation="1.5" result="offset-blur"></feGaussianBlur>
+      <feComposite operator="out" in="SourceGraphic" in2="offset-blur" result="inverse"></feComposite>
+      <feFlood flood-color="#000000" flood-opacity="0.6" result="color"></feFlood>
+      <feComposite operator="in" in="color" in2="inverse" result="shadow"></feComposite>
+      <feComposite operator="over" in="shadow" in2="SourceGraphic"></feComposite>
+    </filter>
+  </defs>
+
+  <!-- 圆角卡片背景 -->
+  <rect x="4" y="4" width="56" height="56" rx="16" fill="url(#bg)"></rect>
+
+  <!-- 玻璃高光层 -->
+  <rect x="4" y="4" width="56" height="28" rx="16" fill="url(#gloss)"></rect>
+
+  <!-- 中心星（评分核心） -->
+  <polygon points="32,18 35,26 44,26 37,31 40,40 32,35 24,40 27,31 20,26 29,26" fill="url(#star)" filter="url(#innerShadow)"></polygon>
+
+  <!-- 底部微弱反射线 -->
+  <rect x="18" y="46" width="28" height="2" rx="1" fill="#FFFFFF" opacity="0.15"></rect>
+
+</svg>
