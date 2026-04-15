@@ -12,6 +12,7 @@
         </div>
         <div class="content">
           <p>
+            {{ buttonType }}
             <slot name="content">
               <!-- 提示小字 -->
               {{ content }}
@@ -35,7 +36,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { computed } from 'vue';
 import BaseModal from './BaseModal.vue'
 ////我自己控制 $attrs 传给谁，不要vue自动帮我绑到根 DOM。
 defineOptions({
@@ -60,7 +61,7 @@ const emits = defineEmits([
 ])
 
 const BTN_TYPE_MAP = { primary: 'primary-btn', warning: 'warning-btn', danger: 'danger-btn' };
-const buttonType = ref(BTN_TYPE_MAP[props.type]);
+const buttonType = computed(() => BTN_TYPE_MAP[props.type] || 'primary-btn');
 
 // 事件处理
 const handleConfirm = () => {
