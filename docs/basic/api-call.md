@@ -857,6 +857,38 @@
   }
   ```
 
+### 6.4 获取用户打分概览数据统计
+
+- **接口地址**：`/scoring/overview`
+- **请求方式**：GET
+- **请求头**：`Authorization: Bearer {token}`
+- **请求参数**：无
+- **响应示例**：
+  ```json
+  {
+    "code": 200,
+    "message": "获取成功",
+    "data": {
+      "totalProjects": 10,
+      "ongoingProjects": 5,
+      "completedProjects": 3,
+      "pendingProjects": 2
+    }
+  }
+  ```
+- **字段说明**：
+  | 字段名 | 类型 | 说明 |
+  |--------|------|------|
+  | totalProjects | number | 用户有权打分的项目总数 |
+  | ongoingProjects | number | 状态为"进行中"的项目数 |
+  | completedProjects | number | 用户已完成打分的项目数（所有小组都评分过） |
+  | pendingProjects | number | 用户待完成打分的项目数（存在未评的小组） |
+- **业务逻辑说明**：
+  - 基于用户被授权的项目列表
+  - `ongoingProjects` = 状态为ongoing的项目数
+  - `completedProjects` = 用户对所有小组都完成打分的项目数  
+  - `pendingProjects` = 用户对至少有一个小组未打分的项目数
+
 ## 7. 统计与导出模块
 
 ### 7.1 获取项目打分统计
