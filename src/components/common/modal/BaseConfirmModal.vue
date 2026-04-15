@@ -12,7 +12,6 @@
         </div>
         <div class="content">
           <p>
-            {{ buttonType }}
             <slot name="content">
               <!-- 提示小字 -->
               {{ content }}
