@@ -29,15 +29,15 @@
         个人信息
       </template>
       <template #form>
-        <UserForm ref="profileFormRef" :init-data="profileData" :edit-mode="false" :user-self-edit-mode="true"
-          :read-only="true">
+        <UserForm v-loading="submitPwdLoading" ref="profileFormRef" :init-data="profileData" :edit-mode="false"
+          :user-self-edit-mode="true" :read-only="true">
         </UserForm>
       </template>
       <template #operations>
-        <button @click="handleProfileSave" class="primary-btn" :disabled="profileSubmitting">
+        <button @click="handleProfileSave" class="primary-btn" :disabled="submitPwdLoading">
           修改密码
         </button>
-        <button @click="closeProfileModal" class="cancel-btn" :disabled="profileSubmitting">
+        <button @click="closeProfileModal" class="cancel-btn" :disabled="submitPwdLoading">
           关闭
         </button>
       </template>
@@ -51,11 +51,13 @@ import { computed, ref } from "vue";
 // import { comn } from "@/router/testRoutes";
 import { pub } from "@/router/modules/publicRoutes";
 import { useUserStore } from "@/stores/modules/userStore";
+import { useLoading } from "@/composables/useLodaing";
 import { useMessage } from "@/composables/useMessage";
 import { userApi } from "@/api/user";
 
 import BaseFormModal from "@/components/common/modal/BaseFormModal.vue";
 import UserForm from "@/components/business/user/user-form/UserForm.vue";
+import { removeSpacesFromObject } from "@/utils/removeSpacesFromData";
 
 const route = useRoute();
 const router = useRouter();
@@ -79,7 +81,6 @@ const username = computed(() => userStore.userInfo?.username || "");
 
 const showProfileModal = ref(false);
 const profileFormRef = ref(null);
-const profileSubmitting = ref(false);
 const profileData = ref({});
 
 const buildProfileData = () => ({
@@ -102,8 +103,10 @@ const closeProfileModal = () => {
   showProfileModal.value = false;
 };
 
+// 提交loading控制
+const { isLoading: submitPwdLoading, start: submitStart, end: submitEnd } = useLoading('headerForm:submit');
 const handleProfileSave = async () => {
-  if (!profileFormRef.value || profileSubmitting.value) {
+  if (!profileFormRef.value || submitPwdLoading.value) {
     return;
   }
 
@@ -112,15 +115,17 @@ const handleProfileSave = async () => {
     message.error("请完善表单数据");
     return;
   }
-
-  const oldPassword = data?.oldPassword?.trim?.() || "";
-  const newPassword = data?.newPassword?.trim?.() || "";
+  const { oldPassword, newPassword } = removeSpacesFromObject({ oldPassword: data.oldPassword, newPassword: data.newPassword }, true);
+  console.log(oldPassword, newPassword)
+  profileData.value.oldPassword = oldPassword;
+  profileData.value.newPassword = newPassword;
+  // const newPassword = data?.newPassword?.trim?.() || "";
   if (!oldPassword || !newPassword) {
     message.warning("请输入旧密码和新密码");
     return;
   }
 
-  profileSubmitting.value = true;
+  submitStart();
   try {
     const response = await userApi.editPassword({ oldPassword, newPassword });
     message.success(response.message || "密码修改成功");
@@ -128,7 +133,7 @@ const handleProfileSave = async () => {
   } catch (err) {
     message.error(`密码修改失败: ${err?.message || err}`);
   } finally {
-    profileSubmitting.value = false;
+    submitEnd();
   }
 };
 
@@ -137,8 +142,9 @@ const goto = (path) => {
   console.log('jump to ', path)
   router.push(path)
 }
-const logout = () => {
-  userStore.logout();
+const { requestWithLoading: logOutWithLoading } = useLoading()
+const logout = async () => {
+  await logOutWithLoading(userStore.logout);
   console.log("由头像dropdown登出")
 }
 
