@@ -17,7 +17,7 @@
 const props = defineProps({
   type: {
     type: String,
-    default: '', // primary, danger, pro
+    default: '', // primary, danger, pro, link
   },
   size: {
     type: String,
@@ -118,6 +118,17 @@ const handleClick = (e) => {
   transform: scale(0.97);
 }
 
+/* link风格（可用于返回按钮或链接） */
+.btn--link {
+  background-color: #ffffff00;
+  color: #565656;
+  transition: ease-in-out 0.2s;
+}
+
+.btn--link:hover {
+  color: #83868c;
+}
+
 /* pro 风格按钮（拟态/新拟物风格） */
 .btn--pro {
   background-image: linear-gradient(154deg, #f4f6f8, #b6b9ba);
@@ -146,8 +157,17 @@ const handleClick = (e) => {
 }
 
 /* loading 状态：显示旋转图标（纯 CSS） */
-.btn--loading .btn__content {
+.btn__content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  text-align: center;
   position: relative;
+}
+
+.btn--loading .btn__content {
   padding-left: 20px;
 }
 
