@@ -16,13 +16,11 @@
         </OverviewCard>
       </div>
     </template>
-
-    <SearchInput size="middle" placeholder="搜索评审组名称..." @search="handleSearch" @add="handleAdd">
-    </SearchInput>
-
     <template #main-table>
+      <SearchInput size="middle" placeholder="搜索评审组名称..." @search="handleSearch" @add="handleAdd">
+      </SearchInput>
       <div class="data-table">
-        <el-table :data="tableData" stripe style="width: 100%">
+        <el-table :data="tableData" stripe style="width: 100%" v-loading="isLoading">
           <DataTableColums :col-rules="COLUMN_RULES"></DataTableColums>
           <el-table-column label="操作" width="auto" fixed="right">
             <template #default="scope">
@@ -43,15 +41,15 @@
     </template>
 
     <template #footer>
-      <el-pagination v-model:current-page="pageParams.page" v-model:page-size="pageParams.size"
-        :page-sizes="[10, 20, 30]" size="middle" :disabled="paginationDisabled" :total="totalData"
-        @size-change="handleSizeChange" layout="sizes, prev, pager, next" @current-change="handleCurrentChange" />
+      <el-pagination v-model:current-page="currentPage" v-model:page-size="pageSize" :page-sizes="[10, 20, 30]"
+        size="middle" :disabled="paginationDisabled" :total="totalData" @size-change="handleSizeChange"
+        layout="sizes, prev, pager, next" @current-change="handleCurrentChange" />
     </template>
 
     <template #modals>
       <!-- 创建/编辑评审组 -->
-      <ReviewerGroupOperation v-model:visible="showAddDialog" :edit-data="editingData" @refresh="handleRefresh">
-      </ReviewerGroupOperation>
+      <!-- <ReviewerGroupOperation v-model:visible="showAddDialog" :edit-data="editingData" @refresh="handleRefresh">
+      </ReviewerGroupOperation> -->
 
       <!-- 查看详情 -->
       <ReviererGroupDetails v-model:visible="showDetailDialog" :selected-group="selectedGroup">
@@ -61,151 +59,43 @@
 </template>
 
 <script setup>
-import { ref, onMounted, reactive } from 'vue';
 import PagePanel from '@/layouts/PagePanel.vue';
 import OverviewCard from '@/components/common/data/OverviewCard.vue';
 import SearchInput from '@/components/common/data/SearchInput.vue';
 import DataTableColums from '@/components/common/data/DataTableColums.vue';
 import ReviererGroupDetails from './components/ReviererGroupDetails.vue';
-import ReviewerGroupOperation from './components/ReviewerGroupOperation.vue';
+// import ReviewerGroupOperation from './components/ReviewerGroupOperation.vue';
 
 import { COLUMN_RULES } from './config/data-table/reviewerGroupList';
-import { reviewerGroupApi } from '@/api/reviewer-group';
-import { ElMessage } from 'element-plus';
-import { showMsgBox } from '@/utils/ConfirmBox';
+import { useReviewerGroupList } from './composables/useReviewerGroupList';
+import { useReviewerGroupDialogs } from './composables/useReviewerGroupDialogs';
 
-// 统计数据
-const overViewCardsMap = reactive({
-  totalGroups: '0',
-  activeGroups: '0',
-  totalMembers: '0',
-  avgGroupSize: '0'
-});
+// 公用列表和分页逻辑
+const {
+  tableData,
+  totalData,
+  overViewCardsMap,
+  currentPage,
+  pageSize,
+  paginationDisabled,
+  handleSizeChange,
+  handleCurrentChange,
+  isLoading,
+  handleSearch,
+  handleRefresh,
+} = useReviewerGroupList();
 
-// 分页参数
-const pageParams = reactive({
-  page: 1,
-  size: 10,
-});
-
-const totalData = ref(0);
-const paginationDisabled = ref(false);
-const tableData = ref([]);
-const searchKeyword = ref('');
-
-// 模态框相关
-const showAddDialog = ref(false);
-const showDetailDialog = ref(false);
-
-const editingData = ref(null);
-const selectedGroup = ref(null);
-
-// 获取评审组列表
-const fetchGroupList = async () => {
-  try {
-    paginationDisabled.value = true;
-    const response = await reviewerGroupApi.getReviewerGroupList({
-      page: pageParams.page,
-      size: pageParams.size,
-      name: searchKeyword.value || undefined
-    });
-
-    if (response.code === 200 && response.data) {
-      console.log(response.data)
-      tableData.value = response.data || [];
-      console.log(tableData.value)
-      // totalData.value = response.data.total || 0;
-      calculateStats();
-    }
-  } catch (error) {
-    ElMessage.error('获取评审组列表失败: ' + error);
-    console.error('Error fetching group list:', error);
-  } finally {
-    paginationDisabled.value = false;
-  }
-};
-
-// 计算统计数据
-const calculateStats = () => {
-  if (!tableData.value || tableData.value.length === 0) {
-    overViewCardsMap.totalGroups = '0';
-    overViewCardsMap.activeGroups = '0';
-    overViewCardsMap.totalMembers = '0';
-    overViewCardsMap.avgGroupSize = '0';
-    return;
-  }
-
-  const activeCount = tableData.value.filter(g => g.isEnabled).length;
-  const totalMembers = tableData.value.reduce((sum, g) => sum + (g.memberIds?.length || 0), 0);
-  const avgSize = tableData.value.length > 0 ? (totalMembers / tableData.value.length).toFixed(1) : '0';
-
-  overViewCardsMap.totalGroups = String(totalData.value);
-  overViewCardsMap.activeGroups = String(activeCount);
-  overViewCardsMap.totalMembers = String(totalMembers);
-  overViewCardsMap.avgGroupSize = avgSize;
-};
-
-// 搜索处理
-const handleSearch = (keyword) => {
-  searchKeyword.value = keyword;
-  pageParams.page = 1;
-  fetchGroupList();
-};
-
-// 添加评审组
-const handleAdd = () => {
-  editingData.value = null;
-  showAddDialog.value = true;
-};
-
-// 编辑评审组
-const handleEdit = (row) => {
-  editingData.value = row;
-  showAddDialog.value = true;
-};
-
-// 查看详情
-const handleViewDetail = (row) => {
-  selectedGroup.value = row;
-  showDetailDialog.value = true;
-};
-
-// 修改状态
-const handleChangeStatus = async (newStatus, row) => {
-  try {
-    await showMsgBox('提示', (newStatus ? '确认启用 ' : '确认禁用 ') + '评审团' + row.name, { type: 'warning' });
-    await reviewerGroupApi.editReviewerGroup(row.id, { isEnabled: newStatus });
-    ElMessage.success(newStatus ? '启用成功' : '禁用成功');
-    handleRefresh();
-  } catch (error) {
-    if (error === 'cancel') {
-      return
-    }
-    ElMessage.error('操作失败: ' + error);
-  }
-};
-
-// 分页处理
-const handleSizeChange = (newSize) => {
-  pageParams.size = newSize;
-  pageParams.page = 1;
-  fetchGroupList();
-};
-
-const handleCurrentChange = (newPage) => {
-  pageParams.page = newPage;
-  fetchGroupList();
-};
-
-// 刷新列表
-const handleRefresh = () => {
-  fetchGroupList();
-};
-
-// 初始化
-onMounted(() => {
-  fetchGroupList();
-});
+// 对话框和操作逻辑
+const {
+  // showAddDialog,
+  showDetailDialog,
+  editingData,
+  selectedGroup,
+  handleAdd,
+  handleEdit,
+  handleViewDetail,
+  handleChangeStatus,
+} = useReviewerGroupDialogs(handleRefresh);
 </script>
 
 <style scoped>
@@ -214,13 +104,6 @@ onMounted(() => {
   display: flex;
   /* gap: 20px; */
   margin-bottom: 20px;
-}
-
-.data-table {
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
-  padding: 20px;
 }
 
 .pagination {
