@@ -183,11 +183,6 @@ const isDarkMode = computed(() => props.darkMode)
   color: #409eff;
 }
 
-.content {
-  font-size: small;
-  color: gray;
-}
-
 :deep(.operation) {
   padding: 10px 5px;
   display: flex;

@@ -6,18 +6,19 @@
       <BaseModal @update:visible="(val) => emit('update:visible', val)" />
     -->
     <template #layout>
-      <div class="header">
+      <header>
         <h3>
           <slot name="header">
             <!-- 标题 -->
           </slot>
         </h3>
-      </div>
-      <div class="body">
+      </header>
+
+      <body>
         <slot name="body">
 
         </slot>
-      </div>
+      </body>
       <div class="operation">
         <slot name="footer">
 
@@ -43,7 +44,7 @@ defineEmits([
 </script>
 
 <style scoped>
-.body {
+body {
   padding: 5px;
   max-height: 60vh;
   overflow-y: auto;

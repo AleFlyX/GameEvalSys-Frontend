@@ -6,24 +6,27 @@
       <BaseModal @update:visible="(val) => emit('update:visible', val)" />
     -->
     <template #layout>
-      <div class="title">
-        <h3>
-          <slot name="title">
-            <!-- 标题 -->
+      <div class="modal-layout">
+        <div class="title">
+          <h3>
+            <slot name="title">
+              <!-- 标题 -->
+            </slot>
+          </h3>
+        </div>
+        <div class="content">
+          <slot name="form">
+            <!-- 表单具体输入内容 -->
           </slot>
-        </h3>
+        </div>
+        <div class="operation">
+          <slot name="operations">
+            <!-- 操作 -->
+            <!-- button class种类:primary-btn,cancel-btn -->
+          </slot>
+        </div>
       </div>
-      <div class="content">
-        <slot name="form">
-          <!-- 表单具体输入内容 -->
-        </slot>
-      </div>
-      <div class="operation">
-        <slot name="operations">
-          <!-- 操作 -->
-          <!-- button class种类:primary-btn,cancel-btn -->
-        </slot>
-      </div>
+
     </template>
   </BaseModal>
 </template>
@@ -44,54 +47,24 @@ const emits = defineEmits([
 </script>
 
 <style scoped>
-.modal-mask {
-  position: fixed;
-  left: 0;
-  top: 0;
-  width: 100vw;
-  height: 100vh;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 999;
-  transition: opacity 0.3s ease;
-}
-
-.base-form {
-  width: 400px;
-  /* min-height: 200px; */
-  padding: 15px 20px;
-  position: relative;
+.modal-layout {
+  padding: 5 15px;
+  height: 100%;
   display: flex;
   flex-direction: column;
-  background: white;
-  border-radius: 15px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
-}
-
-.default-close {
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 50px;
-  height: 50px;
-  padding: 10px;
-  font-size: 20px;
-  border: none;
-  outline: none;
-  background: transparent;
-  transition: all 0.2s ease-in-out;
-  cursor: pointer;
-}
-
-.default-close:hover {
-  color: #409eff;
+  flex: 1;
 }
 
 .content {
   padding: 5px;
   max-height: 60vh;
   overflow-y: auto;
+}
+
+.operation {
+  margin-top: auto;
+  /* 保证操作区在底部 */
+  display: flex;
+  justify-content: flex-end;
 }
 </style>
