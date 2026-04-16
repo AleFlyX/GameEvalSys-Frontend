@@ -12,14 +12,11 @@
       <el-switch v-model="clonedFormData.isEnabled"></el-switch>
     </el-form-item>
 
+    <!-- 修改流程，先显示出一个确认修改按钮，点击后再弹出窗口进行修改 -->
     <el-form-item label="成员选择" prop="memberIds">
       <div class="member-selector">
-        <el-select v-model="clonedFormData.memberIds" placeholder="选择评审组成员" clearable filterable multiple
-          :loading="loadingUsers" remote :remote-method="fetchAvailableMembers" debounce="300">
-          <el-option v-for="member in availableMembers" :key="member.id" :label="member.labelText" :value="member.id">
-          </el-option>
-        </el-select>
-        <div class="member-count">已选择: {{ clonedFormData.memberIds?.length || 0 }} 人</div>
+        <UserSelectionTable v-model:selectedIds="clonedFormData.memberIds"
+          :allowed-roles="['scorer', 'admin', 'super_admin']" :show-disabled-users="false" />
       </div>
     </el-form-item>
   </BaseForm>
@@ -29,11 +26,9 @@
 import { ref, computed } from 'vue';
 
 import BaseForm from '@/components/common/form/BaseForm.vue';
+import UserSelectionTable from '@/components/business/user/user-selection-modal/UserSelectionTable.vue';
 
-import { userApi } from '@/api/user';
-import { useMessage } from '@/composables/useMessage';
 import { REVIEWER_GROUPS_FORM_RULES } from '../config/form-rules/reviewerGroupForm';
-import { useLoading } from '@/composables/useLodaing';
 
 const props = defineProps({
   initData: {
@@ -47,46 +42,26 @@ const clonedFormData = computed(() => {
   return baseFormRef.value?.formData || {};
 });
 
-const message = useMessage();
-
-const { isLoading: loadingUsers, start: startLoadingUsers, end: endLoadingUsers } = useLoading('reviewerGroupForm:users')
-const availableMembers = ref([]);
-// 获取可用成员列表
-const fetchAvailableMembers = async (kWords) => {
-  startLoadingUsers();
-  try {
-    const templateParam = { page: 1, size: 20 }
-    // if (keyWords) templateParam = { keyWords: keywords };
-    if (kWords) templateParam.keyWords = kWords;
-
-    const response = await userApi.getUserList(templateParam);
-    if (response.code === 200 && response.data?.list) {
-      // 过滤出打分员和管理员
-      availableMembers.value = response.data.list
-        .filter(u => ['scorer', 'admin', 'super_admin'].includes(u.role))
-        .map(u => ({
-          id: u.id,
-          labelText: `${u.name} (${u.username}) - ${u.role}`
-        }));
-    }
-  } catch (error) {
-    message.error('获取成员列表失败: ' + error);
-    console.error('Error fetching members:', error);
-    // 使用mock数据
-    availableMembers.value = [
-      // { id: 2, labelText: '打分员01 (scorer01) - scorer' },
-      // { id: 3, labelText: '打分员02 (scorer02) - scorer' },
-      // { id: 4, labelText: '打分员03 (scorer03) - scorer' },
-      // { id: 5, labelText: '打分员04 (scorer04) - scorer' }
-    ];
-  } finally {
-    endLoadingUsers();
-  }
-};
+const dataChanged = computed(() => {
+  return JSON.stringify(clonedFormData.value) !== JSON.stringify(props.initData);
+})
 
 defineExpose({
   validate: async () => {
     return await baseFormRef.value.validate();
   },
+  dataChanged
 })
 </script>
+
+<style scoped>
+.member-selector {
+  width: 100%;
+  border: 1px solid #dcdfe6;
+  border-radius: 4px;
+  padding: 12px;
+  background-color: #fff;
+  display: flex;
+  flex-direction: column;
+}
+</style>
