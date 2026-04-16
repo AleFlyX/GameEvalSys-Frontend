@@ -1,7 +1,7 @@
 <template>
-  <BaseFormModal v-bind="$attrs" @update:visible="$emit('update:visible', $event)">
+  <BaseFormModal v-bind="$attrs" @update:visible="$emit('update:visible', $event)" width="60%" height="75%">
     <template #title>
-      <span>{{ addMode ? '新增打分标准' : '查看打分标准' }}</span>
+      <span>{{ addMode ? '新增打分标准' : editMode ? '编辑打分标准' : '查看打分标准' }}</span>
     </template>
     <template #form>
       <div v-if="loading" style="text-align: center; padding: 40px;">
@@ -13,18 +13,20 @@
         </el-icon>
         <p>加载中...</p>
       </div>
-      <ScoringStdForm v-else ref="formRef" :initData="addMode ? { name: '', indicators: [] } : initData"
-        :add-mode="addMode" />
+      <ScoringStdForm v-else ref="formRef" :initData="effectiveInitData" :add-mode="addMode"
+        :editable="addMode || editMode" />
     </template>
     <template #operations>
-      <button v-if="addMode" @click="handleConfirm()" class="primary-btn" :disabled="isSubmitting">确认</button>
+      <button v-if="addMode || editMode" @click="handleConfirm()" class="primary-btn" :disabled="isSubmitting">
+        确认
+      </button>
       <button @click="handleClose()">取消</button>
     </template>
   </BaseFormModal>
 </template>
 
 <script setup>
-import { ref, watch } from 'vue';
+import { ref, watch, computed } from 'vue';
 import { ElMessage } from 'element-plus';
 
 import BaseFormModal from '@/components/common/modal/BaseFormModal.vue';
@@ -35,6 +37,10 @@ import { useLoading } from '@/composables/useLodaing';
 
 const props = defineProps({
   addMode: {
+    type: Boolean,
+    default: false
+  },
+  editMode: {
     type: Boolean,
     default: false
   },
@@ -62,7 +68,9 @@ const handleClose = () => {
 };
 
 const { isLoading: loading, start: startLoading, end: endLoading } = useLoading('scoringStd:detail');
-const standardData = ref({ name: '', indicators: [] })
+const standardData = ref({ name: '', indicators: [] });
+const effectiveInitData = computed(() => props.addMode ? { name: '', indicators: [] } : standardData.value);
+
 const loadStandardDetail = async (stdId) => {
   if (!stdId || props.addMode) {
     return;
@@ -91,23 +99,31 @@ const handleConfirm = async () => {
     // 获取表单数据
     const formData = formRef.value.getFormData();
     console.log(formData)
-    // 调用API创建打分标准
-    const response = await ScoringApi.createScoringStandards(formData);
-
-    ElMessage.success('打分标准创建成功');
-    handleClose();
+    if (props.addMode) {
+      await ScoringApi.createScoringStandards(formData);
+      ElMessage.success('打分标准创建成功');
+    } else if (props.editMode) {
+      await ScoringApi.updateScoringStandards(props.standardId, formData);
+      ElMessage.success('打分标准更新成功');
+    }
     emits('refresh', true);
+    handleClose();
+    formRef.value.resetFormData(); // 只在成功后重置
   } catch (err) {
-    ElMessage.error(`创建失败: ${err.message || err}`);
+    const actionName = props.addMode ? '创建' : '更新';
+    ElMessage.error(`${actionName}失败: ${err.message || err}`);
   } finally {
     isSubmitting.value = false;
   }
 };
-watch(() => props.standardId, async (newId) => {
-  console.log(newId)
-  if (!props.initData) {
-    await loadStandardDetail(newId)
-  }
-})
+watch(
+  () => [props.standardId, props.addMode],
+  async ([newId, addMode]) => {
+    if (!addMode) {
+      await loadStandardDetail(newId)
+    }
+  },
+  { immediate: true }
+);
 
 </script>

@@ -6,7 +6,7 @@
     </template>
 
     <template #main-table>
-      <SearchInput size="middle" @add="handleAdd"></SearchInput>
+      <SearchInput size="middle" @add="handleAdd" @search="handleSearch"></SearchInput>
       <el-table :data="tableData" stripe style="width: 100%; margin-top: 16px;" v-loading="loading">
         <DataTableColums :col-rules="COLUMN_RULES"></DataTableColums>
         <el-table-column label="指标数" width="100">
@@ -32,6 +32,9 @@
             <el-button size="small" type="primary" @click="handleView(scope.row)">
               查看
             </el-button>
+            <el-button size="small" @click="handleEdit(scope.row)">
+              编辑
+            </el-button>
             <!-- <el-button size="small" type="danger" @click="handleDelete(scope.row)">
               删除
             </el-button> -->
@@ -50,14 +53,14 @@
     </template>
     <template #modals>
       <ScoringStdOperation v-model:visible="showOperationDialog" :add-mode="createMode" :initData="detailDialogInitData"
-        :standard-id="selectedStandardId" @refresh="handleRefresh">
+        :edit-mode="editMode" :standard-id="selectedStandardId" @refresh="handleRefresh">
       </ScoringStdOperation>
     </template>
   </PagePanel>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, nextTick } from 'vue';
 import { ElMessage } from 'element-plus';
 
 import PagePanel from '@/layouts/PagePanel.vue';
@@ -95,15 +98,32 @@ const enabledCount = ref(0);
 
 const showOperationDialog = ref(false);
 const createMode = ref(false);
+const editMode = ref(false);
 const selectedStandardId = ref(null);
+
+const searchKeywords = ref('')
+const handleSearch = async (keywords) => {
+  searchKeywords.value = keywords;
+  await fetchScoringStandards();
+
+}
+
+// 请求参数构建
+const buildQueryParams = (pageParams = { page: 1, size: 20 }) => {
+  return {
+    ...pageParams,
+    keyWords: searchKeywords.value || undefined
+  }
+}
 
 // 加载打分标准列表
 const fetchScoringStandards = async (params = { page: 1, size: 10 }) => {
   startLoading();
   try {
-    const response = await ScoringApi.getScoringStandardsList(params);
+    const response = await ScoringApi.getScoringStandardsList(buildQueryParams(params));
     console.log('STDS ', response)
     tableData.value = response.data.list || [];
+    console.log(tableData.value)
     totalCount.value = response.data.total;
     enabledCount.value = response.data.length; // 默认全部启用
     setTotal(response.data.total);
@@ -117,21 +137,40 @@ const fetchScoringStandards = async (params = { page: 1, size: 10 }) => {
 };
 
 const detailDialogInitData = ref({});
+
+const resetModalState = () => {
+  createMode.value = false;
+  editMode.value = false;
+  detailDialogInitData.value = { name: '', indicators: [] };
+  selectedStandardId.value = null;
+};
+
 // 新增打分标准
 const handleAdd = () => {
+  resetModalState();
   createMode.value = true;
-  selectedStandardId.value = null;
   showOperationDialog.value = true;
-
 };
 
 // 查看详情
 const handleView = (row) => {
-  createMode.value = false;
+  resetModalState();
   console.log('VIEWING ', row)
   detailDialogInitData.value = row;
-  selectedStandardId.value = row.id;
   showOperationDialog.value = true;
+  nextTick(() => {
+    selectedStandardId.value = row.id;
+  });
+};
+
+const handleEdit = (row) => {
+  resetModalState();
+  editMode.value = true;
+  detailDialogInitData.value = row;
+  showOperationDialog.value = true;
+  nextTick(() => {
+    selectedStandardId.value = row.id;
+  });
 };
 
 // 删除打分标准
@@ -155,9 +194,11 @@ const handleView = (row) => {
 //     });
 // };
 
+
 // 刷新列表
 const handleRefresh = async () => {
-  await fetchScoringStandards();
+  detailDialogInitData.value = {}
+  setTimeout(async () => await fetchScoringStandards(), 500)
 };
 
 onMounted(() => {

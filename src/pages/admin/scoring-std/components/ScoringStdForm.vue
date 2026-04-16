@@ -1,9 +1,9 @@
 <template>
   <div class="scoring-std-form">
-    <el-form ref="formRef" :model="formData" :disabled="!addMode" status-icon label-width="140px">
+    <el-form ref="formRef" :model="formData" :disabled="!editable" status-icon label-width="140px">
       <!-- 指标列表 -->
       <div class="indicators-container">
-        <div v-if="addMode" class="indicators-header">
+        <div v-if="editable" class="indicators-header">
           <h4>评分指标</h4>
           <el-button type="primary" size="small" @click="addIndicator">+ 添加指标</el-button>
         </div>
@@ -12,7 +12,7 @@
           <p>暂无指标</p>
         </div>
 
-        <el-form-item v-show="addMode && formData.indicators.length !== 0" prop="name" label="打分标准名">
+        <el-form-item v-show="formData.indicators.length !== 0" prop="name" label="打分标准名">
           <el-input v-model="formData.name" placeholder="打分标准名称"></el-input>
         </el-form-item>
 
@@ -20,7 +20,7 @@
           <!-- <el-divider /> -->
           <div class="indicator-title">
             <span>指标 {{ index + 1 }}</span>
-            <el-button type="danger" size="small" text @click="removeIndicator(index)" v-if="addMode">删除</el-button>
+            <el-button type="danger" size="small" text @click="removeIndicator(index)" v-if="editable">删除</el-button>
           </div>
 
           <div class="indicator-form">
@@ -51,7 +51,7 @@
 
 <script setup>
 
-import { ref, reactive } from 'vue';
+import { ref, watch } from 'vue';
 import { safeDeepClone } from '@/utils/proxyDataClone';
 const props = defineProps({
   initData: {
@@ -63,24 +63,35 @@ const props = defineProps({
   addMode: {
     type: Boolean,
     default: false
+  },
+  editable: {
+    type: Boolean,
+    default: false
   }
 });
 
 const formRef = ref(null);
-
-const formData = reactive({
+const formData = ref({
   name: props.initData.name,
   indicators: props.initData.indicators && props.initData.indicators.length > 0
-    // ? JSON.parse(JSON.stringify(props.initData.indicators))
     ? safeDeepClone(props.initData.indicators)
     : []
 });
-// const formData = computed(() => {
-//   return { name: props.initData, indicators: safeDeepClone(props.initData.indicators) }
-// });
+
+watch(
+  () => props.initData,
+  (newData) => {
+    formData.value.name = newData?.name || '';
+    formData.value.indicators = newData?.indicators?.length
+      ? safeDeepClone(newData.indicators)
+      : [];
+  },
+  { deep: true }
+);
+
 // 添加指标
 const addIndicator = () => {
-  formData.indicators.push({
+  formData.value.indicators.push({
     name: '',
     description: '',
     minScore: 0,
@@ -90,25 +101,25 @@ const addIndicator = () => {
 
 // 删除指标
 const removeIndicator = (index) => {
-  formData.indicators.splice(index, 1);
+  formData.value.indicators.splice(index, 1);
 };
 
 // 校验方法
 const validate = async () => {
-  console.log('VALIDATIING FORM NAME', formData.name)
-  if (!formData.name || !formData.name.trim()) {
+  console.log('VALIDATIING FORM NAME', formData.value.name)
+  if (!formData.value.name || !formData.value.name.trim()) {
     throw new Error('请输入有效内容');
   }
-  else if (formData.name.length > 30) {
+  else if (formData.value.name.length > 30) {
     throw new Error('评分标准名超出长度限制');
   }
   // 校验指标是否为空
-  if (formData.indicators.length === 0) {
+  if (formData.value.indicators.length === 0) {
     throw new Error('至少需要添加一个指标');
   }
   // 校验每个指标的必填项
-  for (let i = 0; i < formData.indicators.length; i++) {
-    const indicator = formData.indicators[i];
+  for (let i = 0; i < formData.value.indicators.length; i++) {
+    const indicator = formData.value.indicators[i];
     if (!indicator.name) {
       throw new Error(`指标 ${i + 1} 的名称不能为空`);
     }
@@ -122,12 +133,17 @@ const validate = async () => {
 
 // 获取表单数据
 const getFormData = () => {
-  return formData;
+  return formData.value;
 };
+
+const resetFormData = () => {
+  formData.value = { name: '', indicators: [] }
+}
 
 defineExpose({
   validate,
   getFormData,
+  resetFormData,
 });
 </script>
 

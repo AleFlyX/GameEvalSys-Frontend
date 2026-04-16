@@ -423,6 +423,31 @@
 - **路径参数**：`standardId` - 标准ID
 - **响应示例**：同上（单个标准详情）
 
+### 3.4 编辑打分标准
+
+- **接口地址**：`/scoring-standards/{standardId}`
+- **请求方式**：PUT
+- **请求头**：`Authorization: Bearer {token}`
+- **路径参数**：`standardId` - 标准ID
+- **请求参数**：
+  | 参数名 | 类型 | 必填 | 说明 |
+  |--------|------|------|------|
+  | name | string | 否 | 打分标准名 |
+  | indicators | array | 否 | 指标列表 |
+  | indicators[].id | number | 是 | 指标ID |
+  | indicators[].name | string | 是 | 指标名称 |
+  | indicators[].description | string | 否 | 指标说明 |
+  | indicators[].minScore | number | 是 | 分值最小值 |
+  | indicators[].maxScore | number | 是 | 分值最大值 |
+- **响应示例**：
+  ```json
+  {
+    "code": 200,
+    "message": "编辑成功",
+    "data": null
+  }
+  ```
+
 ## 4. 项目管理模块（管理员）
 
 ### 4.1 创建项目
@@ -886,7 +911,7 @@
 - **业务逻辑说明**：
   - 基于用户被授权的项目列表
   - `ongoingProjects` = 状态为ongoing的项目数
-  - `completedProjects` = 用户对所有小组都完成打分的项目数  
+  - `completedProjects` = 用户对所有小组都完成打分的项目数
   - `pendingProjects` = 用户对至少有一个小组未打分的项目数
 
 ## 7. 统计与导出模块
@@ -980,38 +1005,29 @@
 - **权限要求**：仅超级管理员、管理员可调用
 - **请求参数**：无
 - **响应示例**：
+
   ```json
   {
     "code": 200,
     "message": "查询成功",
     "data": {
-      "totalProjects": 1286,
-      "totalScores": 327,
-      "averageScore": 4.86,
-      "projectTrend": [
-        500, 800, 750, 1200, 1100, 1500, 1400, 1800, 2200, 2000, 2500, 2400, 2800, 3000, 2800, 3200,
-        3500, 3300, 3800, 4000, 3800, 4200, 4500, 4300, 4800, 5000, 4800, 6000, 7200, 8000
-      ],
-      "scoreTrend": [
-        3.2, 3.3, 3.5, 3.4, 3.6, 3.8, 3.7, 3.9, 4.0, 4.1, 4.0, 4.2, 4.3, 4.2, 4.4, 4.5, 4.4, 4.6,
-        4.7, 4.6, 4.7, 4.8, 4.75, 4.8, 4.82, 4.83, 4.84, 4.85, 4.86, 4.88
-      ],
-      "rateTrend": [
-        50, 52, 55, 54, 58, 60, 62, 61, 65, 66, 68, 67, 70, 72, 71, 73, 75, 74, 76, 78, 77, 79, 80,
-        81, 80, 81, 82, 82, 82, 83
-      ]
+      "dates": ["2026-03-17", "2026-03-18", "..."],
+      "projectTrend": [500, 800, 750, "..."],
+      "scoreTrend": [12, 8, 15, "..."],
+      "averageScoreTrend": [4.56, 4.61, 4.58, "..."]
     }
   }
   ```
+
 - **字段说明**：
   | 字段名 | 类型 | 说明 |
   |--------|------|------|
   | totalProjects | number | 累计项目总数 |
   | totalScores | number | 本周新增评分数 |
   | averageScore | number | 平台平均得分（具体满分由各项目的打分标准决定） |
-  | projectTrend | array | 过去30天项目数量趋势 |
+  <!-- | projectTrend | array | 过去30天项目数量趋势 |
   | scoreTrend | array | 过去30天平均得分趋势 |
-  | rateTrend | array | 过去30天项目通过率趋势 |
+  | rateTrend | array | 过去30天项目通过率趋势 | -->
 
 - **说明**：
   - `averageScore` 的含义为平台所有已评分项目的平均得分

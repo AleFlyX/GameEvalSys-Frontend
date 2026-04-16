@@ -27,6 +27,23 @@ export const createScoringStandards = (params) => {
 };
 
 /**
+ * @description admin 编辑打分标准
+ * @param {number} standardId 打分标准ID
+ * @param {Object} params
+ * @param {string} params.name -打分标准名
+ * @param {Array} params.indicators[] -指标列表
+ * @param {number} params.indicators[].id -指标ID
+ * @param {string} params.indicators[].name -指标名
+ * @param {string} params.indicators[].description -指标描述
+ * @param {number} params.indicators[].minScore -指标最小分值
+ * @param {number} params.indicators[].maxScore -指标最大分值
+ * @returns {Promise}
+ */
+export const updateScoringStandards = (standardId, params) => {
+  return service.put(`/scoring-standards/${standardId}`, params);
+};
+
+/**
  * admin 获取打分标准列表
  * @param {Object} params
  * @param {Number} params.page
@@ -83,6 +100,7 @@ export const getScoringOverview = () => {
 export const ScoringApi = {
   getScoringStandardsDetails,
   createScoringStandards,
+  updateScoringStandards,
   getScoringStandardsList,
   submitScoring,
   getScoringRecord,

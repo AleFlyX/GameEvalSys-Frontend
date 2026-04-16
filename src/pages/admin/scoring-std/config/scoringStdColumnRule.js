@@ -7,7 +7,7 @@ export const COLUMN_RULES = [
   },
   {
     label: '打分标准',
-    width: '120',
+    width: '300',
     colDataName: 'name',
     icon: 'none',
   },
