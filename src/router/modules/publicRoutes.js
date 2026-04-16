@@ -13,13 +13,13 @@ import { superAdmin } from "./superAdminRoutes";
 export const pub = [
   {
     path: "/login",
-    name: "Login",
+    name: "login",
     component: Login,
     meta: { title: "登录", requireAuth: false },
   },
   {
     path: "/",
-    name: "MainLayout",
+    name: "mainLayout",
     component: MainLayout,
     meta: { requireAuth: true },
     redirect: "/home",
@@ -27,19 +27,19 @@ export const pub = [
   },
   {
     path: "/about",
-    name: "关于",
+    name: "about",
     component: About,
     meta: { title: "关于", requireAuth: false },
   },
   {
     path: "/403",
-    name: "403Forbidden",
+    name: "forbidden",
     component: Forbidden,
     meta: { title: "无权限", requireAuth: false },
   },
   {
     path: "/404",
-    name: "404NotFound",
+    name: "notFound",
     component: NotFound,
     meta: { title: "页面不存在", requireAuth: false },
   },

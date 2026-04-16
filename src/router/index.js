@@ -6,7 +6,6 @@ import { useMessage } from "@/composables/useMessage";
 
 const message = useMessage();
 const routes = [...pub];
-console.log("_RoutesLoaded_", routes);
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes,
@@ -22,12 +21,10 @@ router.beforeEach((to, from, next) => {
     if (userStore.isLogin) {
       //已登录
       if (to.meta.roles && to.meta.roles.length) {
-        console.log(to.path + "有限制访问角色");
         //检查目标页面是否有权限限制
         if (to.meta.roles.includes(userStore.userInfo.role)) {
           next();
         } else {
-          console.log(to.path + "当前角色无权" + userStore.userInfo.role);
           message.error("无权访问该页面");
           next("/403");
         }

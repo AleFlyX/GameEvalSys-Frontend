@@ -10,13 +10,13 @@ export const norm = [
   // normal子路由（打分用户/管理员均可访问）
   {
     path: "home",
-    name: "首页",
+    name: "home",
     component: Home,
     meta: { title: "首页", roles: ["super_admin", "admin", "scorer", "normal"], icon: 'HomeFilled' }, // 可访问角色
   },
   {
     path: "scoring",
-    name: "打分列表",
+    name: "scoringList",
     component: ScoringList,
     meta: { title: "打分项目列表", roles: ["super_admin", "admin", "scorer"], icon: 'Edit' },
   },

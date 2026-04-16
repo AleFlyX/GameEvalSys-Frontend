@@ -5,6 +5,7 @@ const ProjectEdit = () => import("@/pages/admin/project/edit/index.vue");
 const ProjectStatisticList = () => import("@/pages/admin/project/statistic/index.vue");
 const ProjectStatisticDetail = () => import("@/pages/admin/project/statistic/detail/index.vue");
 const reviewerGroups = () => import("@/pages/admin/reviewer-group/ReviewerGroupList.vue")
+const reviewerGroupUpsert = () => import("@/pages/admin/reviewer-group/upsert/index.vue")
 const projectGroupsList = () => import("@/pages/admin/project-group/index.vue")
 const scoringStds = () => import("@/pages/admin/scoring-std/index.vue")
 const Statistic = () => import("@/pages/admin/statistic/StatisticPannel.vue");
@@ -13,19 +14,31 @@ export const admin = [
   {
     path: "admin/statistic",
     // path: "statistic/:projectId",
-    name: "平台数据",
+    name: "adminStatistic",
     component: Statistic,
     meta: { title: "平台统计", roles: ["super_admin", "admin"], icon: 'Monitor' },
   },
   {
-    path: "admin/reviewerGroups",
-    name: "评审队伍(班级)",
+    path: "admin/reviewer-groups",
+    name: "reviewerGroupList",
     component: reviewerGroups,
     meta: { title: "评审队伍管理", roles: ["super_admin", "admin"], icon: 'OfficeBuilding' },
   },
   {
+    path: "admin/reviewer-groups/add",
+    name: "reviewerGroupAdd",
+    component: reviewerGroupUpsert,
+    meta: { title: "评审队伍添加", roles: ["super_admin", "admin"], icon: 'OfficeBuilding', hidden: true },
+  },
+  {
+    path: "admin/reviewer-groups/edit/:id",
+    name: "reviewerGroupEdit",
+    component: reviewerGroupUpsert,
+    meta: { title: "评审队伍编辑", roles: ["super_admin", "admin"], icon: 'OfficeBuilding', hidden: true },
+  },
+  {
     path: "admin/user",
-    name: "用户管理",
+    name: "adminUserList",
     component: UserList,
     meta: { title: "用户管理", roles: ["super_admin", "admin"], icon: 'Avatar' },
   },
@@ -42,20 +55,20 @@ export const admin = [
   //   meta: { title: "编辑用户", roles: ["super_admin", "admin"] },
   // },
   {
-    path: "admin/scoringStds",
-    name: "打分标准",
+    path: "admin/scoring-stds",
+    name: "scoringStdList",
     component: scoringStds,
     meta: { title: "打分标准", roles: ["super_admin", "admin"], icon: 'Checked' },
   },
   {
-    path: "admin/projectGroups",
-    name: "受审队伍",
+    path: "admin/project-groups",
+    name: "projectGroupList",
     component: projectGroupsList,
     meta: { title: "项目受审队伍管理", roles: ["super_admin", "admin"], icon: 'User' },
   },
   {
     path: "admin/project",
-    name: "项目管理",
+    name: "projectList",
     component: ProjectList,
     meta: { title: "项目管理", roles: ["super_admin", "admin"], icon: 'Management' },
   },
