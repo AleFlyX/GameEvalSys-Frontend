@@ -15,7 +15,9 @@
           :type="rule.tagTypeMap[getColVal(scope.row, rule.colDataName)]">
           {{ rule.tagNameMap[getColVal(scope.row, rule.colDataName)] }}
         </el-tag>
-        <span class="cell-text" v-if="!hasTagCols(rule)">{{ getColVal(scope.row, rule.colDataName) }}</span>
+        <span v-if="!hasTagCols(rule)" class="cell-text" :class="{ 'nowrap-text': props.ellipsis }">
+          {{ getColVal(scope.row, rule.colDataName) }}
+        </span>
       </div>
     </template>
   </el-table-column>
@@ -46,8 +48,12 @@ const props = defineProps({
         // },
       }
     ]
+  },
+  //超出的内容显示省略号
+  ellipsis: {
+    type: Boolean,
+    default: false
   }
-
 })
 const hasIcon = (rule) => {
   if (rule.icon !== 'none' || rule.icon) {
@@ -84,6 +90,15 @@ console.log('COLUMNS RUle:', props.colRules)
   /* padding: 0 8px; */
   height: 100%;
   box-sizing: border-box;
+}
+
+.nowrap-text {
+  white-space: nowrap;
+  /* 禁止换行 */
+  overflow: hidden;
+  /* 超出隐藏 */
+  text-overflow: ellipsis;
+  /* 显示省略号 */
 }
 
 /* .table-header-cell {
