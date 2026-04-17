@@ -15,11 +15,15 @@ export const getScoringStandardsDetails = (standardId) => {
 /**
  * @description admin 创建打分标准
  * @param {Object} params
- * @param {Array} indicators[] -指标列表
- * @param {string} indicators[].name -指标名
- * @param {string} indicators[].description -指标描述
- * @param {number} indicators[].minScore -指标最小分值
- * @param {number} indicators[].maxScore -指标最大分值
+ * @param {string} params.name -打分标准名
+ * @param {Array} params.categories -分类列表
+ * @param {string} params.categories[].name -分类名称
+ * @param {string} [params.categories[].description] -分类描述
+ * @param {Array} params.categories[].indicators -分类下指标列表
+ * @param {string} params.categories[].indicators[].name -指标名
+ * @param {string} [params.categories[].indicators[].description] -指标描述
+ * @param {number} params.categories[].indicators[].minScore -指标最小分值
+ * @param {number} params.categories[].indicators[].maxScore -指标最大分值
  * @returns {Promise}
  */
 export const createScoringStandards = (params) => {
@@ -31,12 +35,16 @@ export const createScoringStandards = (params) => {
  * @param {number} standardId 打分标准ID
  * @param {Object} params
  * @param {string} params.name -打分标准名
- * @param {Array} params.indicators[] -指标列表
- * @param {number} params.indicators[].id -指标ID
- * @param {string} params.indicators[].name -指标名
- * @param {string} params.indicators[].description -指标描述
- * @param {number} params.indicators[].minScore -指标最小分值
- * @param {number} params.indicators[].maxScore -指标最大分值
+ * @param {Array} params.categories -分类列表
+ * @param {number} [params.categories[].id] -分类ID
+ * @param {string} params.categories[].name -分类名称
+ * @param {string} [params.categories[].description] -分类描述
+ * @param {Array} params.categories[].indicators -分类下指标列表
+ * @param {number} [params.categories[].indicators[].id] -指标ID
+ * @param {string} params.categories[].indicators[].name -指标名
+ * @param {string} [params.categories[].indicators[].description] -指标描述
+ * @param {number} params.categories[].indicators[].minScore -指标最小分值
+ * @param {number} params.categories[].indicators[].maxScore -指标最大分值
  * @returns {Promise}
  */
 export const updateScoringStandards = (standardId, params) => {
