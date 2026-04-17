@@ -1,10 +1,11 @@
 <template>
   <Transition name="modal">
-    <div class="modal-mask" @click="handleMaskClick" @mousedown="handleMaskMousedown" @mouseup="handleMaskMouseup"
-      @mouseleave="resetMaskState" v-if="visible">
+    <div class="modal-mask" @mousedown="handleMaskMousedown" @mouseup="handleMaskMouseup" @mouseleave="resetMaskState"
+      v-if="visible">
       <!-- 外层也用v-if控制，避免遮罩残留 -->
       <!-- 用v-if，且依赖props传入的visible -->
-      <div class="base-modal" @click.stop v-if="visible" :style="modalSizes" :class="{ 'dark-modal': isDarkMode }">
+      <div class="base-modal" ref="modalContentRef" @click.stop v-if="visible" :style="modalSizes"
+        :class="{ 'dark-modal': isDarkMode }">
         <button class="default-close" @click="closeModal" v-if="showDefaultClose">x</button>
         <slot name="layout"></slot>
       </div>
@@ -140,7 +141,7 @@ const isDarkMode = computed(() => props.darkMode)
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 9998;
+  z-index: var(--z-modal-mask, 2000);
   transition: opacity 0.3s ease;
 }
 
@@ -152,7 +153,7 @@ const isDarkMode = computed(() => props.darkMode)
   background: white;
   border-radius: 15px;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
-  z-index: 9999;
+  z-index: var(--z-modal, 2001);
 }
 
 .dark-modal {
