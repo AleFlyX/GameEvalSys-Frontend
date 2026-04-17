@@ -1,10 +1,13 @@
 <template>
   <Transition name="modal">
     <div class="modal-mask" @mousedown="handleMaskMousedown" @mouseup="handleMaskMouseup" @mouseleave="resetMaskState"
-      v-if="visible">
+      v-if="visible" :style="{
+        'z-index': props.modalZIndex === 'low' ? 'var(--z-modal-mask-low, 2000)' :
+          (props.modalZIndex === 'high' ? 'var(--z-modal-mask-high, 3000)' : 'var(--z-modal-mask, 2000)')
+      }">
       <!-- 外层也用v-if控制，避免遮罩残留 -->
       <!-- 用v-if，且依赖props传入的visible -->
-      <div class="base-modal" ref="modalContentRef" @click.stop v-if="visible" :style="modalSizes"
+      <div class="base-modal" ref="modalContentRef" @click.stop v-if="visible" :style="modalContentStyles"
         :class="{ 'dark-modal': isDarkMode }">
         <button class="default-close" @click="closeModal" v-if="showDefaultClose">x</button>
         <slot name="layout"></slot>
@@ -64,6 +67,14 @@ const props = defineProps({
   allowMaskClose: {
     type: Boolean,
     default: true
+  },
+  modalZIndex: {
+    type: String,// low, normal, high
+    default: 'normal'
+  },
+  contentZIndex: {
+    type: String,// low, normal, high
+    default: 'normal'
   }
 })
 
@@ -112,12 +123,14 @@ const handleMaskMouseup = (e) => {
   resetMaskState()
 }
 
-const modalSizes = computed(() => {
+const modalContentStyles = computed(() => {
   return {
     'min-width': props.width ? props.width : (props.minWidth ? props.minWidth : '400px'),
     'max-width': props.width ? props.width : (props.maxWidth ? props.maxWidth : '700px'),
     'min-height': props.height ? props.height : (props.minHeight ? props.minHeight : '100px'),
     'max-height': props.height ? props.height : (props.maxHeight ? props.maxHeight : '90vh'),
+    'z-index': props.contentZIndex === 'low' ? 'var(--z-modal-content-low, 2001)' :
+      (props.contentZIndex === 'high' ? 'var(--z-modal-content-high, 3001)' : 'var(--z-modal-content, 2001)')
   }
 })
 const isDarkMode = computed(() => props.darkMode)
@@ -131,6 +144,16 @@ const isDarkMode = computed(() => props.darkMode)
 </script>
 
 <style scoped>
+* {
+  box-sizing: border-box;
+  --z-modal-mask-low: 2000;
+  --z-modal-mask: 2000;
+  --z-modal-mask-high: 3000;
+  --z-modal-content-low: 2001;
+  --z-modal-content: 2001;
+  --z-modal-content-high: 3001;
+}
+
 .modal-mask {
   position: fixed;
   left: 0;
