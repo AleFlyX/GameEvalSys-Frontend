@@ -333,11 +333,16 @@
   | 参数名 | 类型 | 必填 | 说明 |
   |--------|------|------|------|
   | name | string | 是 | 打分标准名 |
-  | indicators | array | 是 | 指标列表 |
-  | indicators[].name | string | 是 | 指标名称 |
-  | indicators[].description | string | 否 | 指标说明 |
-  | indicators[].minScore | number | 是 | 分值最小值 |
-  | indicators[].maxScore | number | 是 | 分值最大值 |
+  | categories | array | 是 | 分类列表，至少 1 个分类 |
+  | categories[].name | string | 是 | 分类名称 |
+  | categories[].description | string | 否 | 分类描述 |
+  | categories[].indicators | array | 是 | 分类下指标列表，至少 1 个指标 |
+  | categories[].indicators[].name | string | 是 | 指标名称 |
+  | categories[].indicators[].description | string | 否 | 指标说明 |
+  | categories[].indicators[].minScore | number | 是 | 分值最小值 |
+  | categories[].indicators[].maxScore | number | 是 | 分值最大值 |
+- **兼容说明**：
+  - 创建接口仍兼容旧字段 `indicators`，但前端应优先使用 `categories`。
 - **响应示例**：
   ```json
   {
@@ -346,11 +351,28 @@
     "data": {
       "id": 1,
       "name": "项目1的打分标准",
+      "categories": [
+        {
+          "id": 11,
+          "name": "项目质量",
+          "description": "项目整体质量评价",
+          "indicators": [
+            {
+              "id": 1,
+              "name": "复杂程度",
+              "description": "课题的技术复杂程度",
+              "minScore": 1,
+              "maxScore": 5
+            }
+          ]
+        }
+      ],
       "indicators": [
         {
           "id": 1,
           "name": "复杂程度",
           "description": "课题的技术复杂程度",
+          "categoryId": 11,
           "minScore": 1,
           "maxScore": 5
         }
@@ -382,11 +404,28 @@
         {
           "id": 1,
           "name": "项目1的打分标准",
+          "categories": [
+            {
+              "id": 11,
+              "name": "项目质量",
+              "description": "项目整体质量评价",
+              "indicators": [
+                {
+                  "id": 1,
+                  "name": "复杂程度",
+                  "description": "课题的技术复杂程度",
+                  "minScore": 1,
+                  "maxScore": 5
+                }
+              ]
+            }
+          ],
           "indicators": [
             {
               "id": 1,
               "name": "复杂程度",
               "description": "课题的技术复杂程度",
+              "categoryId": 11,
               "minScore": 1,
               "maxScore": 5
             }
@@ -396,11 +435,28 @@
         {
           "id": 2,
           "name": "项目2的打分标准",
+          "categories": [
+            {
+              "id": 21,
+              "name": "展示表现",
+              "description": "展示和答辩表现",
+              "indicators": [
+                {
+                  "id": 3,
+                  "name": "复杂程度",
+                  "description": "课题的技术复杂程度",
+                  "minScore": 1,
+                  "maxScore": 5
+                }
+              ]
+            }
+          ],
           "indicators": [
             {
               "id": 3,
               "name": "复杂程度",
               "description": "课题的技术复杂程度",
+              "categoryId": 21,
               "minScore": 1,
               "maxScore": 5
             }
@@ -421,6 +477,9 @@
 - **请求方式**：GET
 - **请求头**：`Authorization: Bearer {token}`
 - **路径参数**：`standardId` - 标准ID
+- **响应说明**：
+  - 返回 `categories`（新结构）与 `indicators`（兼容结构）。
+  - 前端渲染应优先读取 `categories`，`indicators` 作为兼容回退字段。
 - **响应示例**：同上（单个标准详情）
 
 ### 3.4 编辑打分标准
@@ -433,12 +492,20 @@
   | 参数名 | 类型 | 必填 | 说明 |
   |--------|------|------|------|
   | name | string | 否 | 打分标准名 |
-  | indicators | array | 否 | 指标列表 |
-  | indicators[].id | number | 是 | 指标ID |
-  | indicators[].name | string | 是 | 指标名称 |
-  | indicators[].description | string | 否 | 指标说明 |
-  | indicators[].minScore | number | 是 | 分值最小值 |
-  | indicators[].maxScore | number | 是 | 分值最大值 |
+  | categories | array | 否 | 分类列表，建议作为主结构传递 |
+  | categories[].id | number | 否 | 分类ID；有值表示更新，无值表示新增 |
+  | categories[].name | string | 是 | 分类名称 |
+  | categories[].description | string | 否 | 分类描述 |
+  | categories[].indicators | array | 是 | 分类下指标列表 |
+  | categories[].indicators[].id | number | 否 | 指标ID；有值表示更新，无值表示新增 |
+  | categories[].indicators[].name | string | 是 | 指标名称 |
+  | categories[].indicators[].description | string | 否 | 指标说明 |
+  | categories[].indicators[].minScore | number | 是 | 分值最小值 |
+  | categories[].indicators[].maxScore | number | 是 | 分值最大值 |
+- **更新策略说明**：
+  - 请求中有且带 `id` 的分类/指标：更新。
+  - 请求中有但不带 `id` 的分类/指标：新增。
+  - 库中存在但请求缺失的分类/指标：删除。
 - **响应示例**：
   ```json
   {
