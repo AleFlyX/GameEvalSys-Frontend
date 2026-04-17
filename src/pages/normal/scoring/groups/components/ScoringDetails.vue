@@ -25,6 +25,7 @@
 </template>
 <script setup>
 import { ref, watch, onMounted } from 'vue';
+import { getIndicatorsFromStandard } from '@/utils/scoringStandard';
 const props = defineProps({
   selectedGroup: {
     type: Object,
@@ -46,21 +47,37 @@ const props = defineProps({
 defineEmits(['update:visible'])
 // todo:将评分标准做个缓存机制？？ 然后按照 kv结构：id-indicatorName 读取
 
-const scoringDetailsRes = ref({})
+const scoringDetailsRes = ref([])
 watch(
   () => [props.scoringDetails, props.scoringStdDetails],
   ([newScoringDetails, newScoringStdDetails]) => {
-    console.error('CHANGED DATA ', newScoringStdDetails, newScoringDetails)
-    if (newScoringStdDetails && newScoringDetails) {
-      scoringDetailsRes.value = newScoringStdDetails.indicators.map((item, index) => {
-        item['score'] = newScoringDetails[index].score;
-        console.log(item, index, newScoringDetails[index].score)
-        return item;
-      })
-      console.log(scoringDetailsRes.value)
+    const scoreItems = Array.isArray(newScoringDetails)
+      ? newScoringDetails
+      : (Array.isArray(newScoringDetails?.scores) ? newScoringDetails.scores : []);
+    const standardIndicators = getIndicatorsFromStandard(newScoringStdDetails);
+
+    if (!standardIndicators.length || !scoreItems.length) {
+      scoringDetailsRes.value = [];
+      return;
     }
+
+    const scoreMap = new Map(
+      scoreItems.map((item) => [Number(item?.indicatorId), Number(item?.score ?? 0)])
+    );
+
+    scoringDetailsRes.value = standardIndicators.map((indicator, index) => {
+      const indicatorId = Number(indicator?.id);
+      const mappedScore = scoreMap.get(indicatorId);
+
+      return {
+        ...indicator,
+        score: Number.isFinite(mappedScore)
+          ? mappedScore
+          : Number(scoreItems[index]?.score ?? 0),
+      };
+    });
   },
-  // { immediate: true }
+  { immediate: true }
 )
 
 onMounted(() => {

@@ -1,7 +1,7 @@
 <template>
   <!-- 此表是动态item，所以表中的数据都可以不用BaseForm安全克隆，拿到直接改就行 -->
-  <el-form v-loading="submitLoading" ref="baseFormRef" :model="formData" :rules="scoringFormRules" label-width="120px"
-    :disabled="disabled">
+  <el-form @submit.prevent v-loading="submitLoading" ref="baseFormRef" :model="formData" :rules="scoringFormRules"
+    label-width="120px" :disabled="disabled">
     <!-- 项目信息显示 -->
     <el-form-item label="小组名称">
       <el-text type="info" passive>{{ groupName }}</el-text>
@@ -17,7 +17,9 @@
           </el-input-number>
           <span class="score-range">/ {{ indicator.maxScore }}</span>
         </div>
-        <span v-if="indicator.description" class="indicator-desc">{{ indicator.description }}</span>
+        <span v-if="formatIndicatorDescription(indicator)" class="indicator-desc">{{
+          formatIndicatorDescription(indicator)
+          }}</span>
       </div>
     </el-form-item>
 
@@ -45,6 +47,7 @@ import { useProjectStore } from '@/stores/modules/projectStore';
 import { useScoreStore } from '@/stores/modules/scoreStore';
 import { ElMessage } from 'element-plus';
 import { useLoading } from '@/composables/useLodaing';
+import { getIndicatorsFromStandard } from '@/utils/scoringStandard';
 
 const props = defineProps({
   disabled: {
@@ -112,6 +115,20 @@ const getIndicatorRules = (indicator) => {
   ];
 };
 
+const formatIndicatorDescription = (indicator) => {
+  const categoryDescription = typeof indicator?.categoryDescription === 'string'
+    ? indicator.categoryDescription.trim()
+    : '';
+  const indicatorDescription = typeof indicator?.description === 'string'
+    ? indicator.description.trim()
+    : '';
+
+  if (categoryDescription && indicatorDescription) {
+    return `${categoryDescription}:${indicatorDescription}`;
+  }
+  return indicatorDescription || categoryDescription;
+};
+
 // 获取打分标准详情
 const fetchScoringStandard = async () => {
   if (!props.projectId) {
@@ -126,9 +143,9 @@ const fetchScoringStandard = async () => {
     if (Number.isFinite(standardId) && standardId > 0) {
       // 2) 再拿标准详情（优先命中缓存）
       const standardDetail = await scoreStore.fetchScoreStandard(standardId);
-      console.log(standardDetail)
-      if (standardDetail?.indicators?.length) {
-        indicators.value = standardDetail.indicators;
+      const standardIndicators = getIndicatorsFromStandard(standardDetail);
+      if (standardIndicators.length) {
+        indicators.value = standardIndicators;
         formData.value.scores = new Array(indicators.value.length).fill(null);
       } else {
         setDefaultIndicators();

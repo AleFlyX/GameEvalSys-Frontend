@@ -29,6 +29,13 @@ export const useScoreStore = defineStore("scoreStore", () => {
     return `${pId}:${gId}`;
   };
 
+  const resolveTtlMs = (ttlMs, defaultTtlMs) => {
+    const normalizedTtl = Number(ttlMs);
+    return Number.isFinite(normalizedTtl) && normalizedTtl > 0
+      ? normalizedTtl
+      : defaultTtlMs;
+  };
+
   const canUseStorage = () =>
     typeof window !== "undefined" && typeof window.localStorage !== "undefined";
 
@@ -141,11 +148,13 @@ export const useScoreStore = defineStore("scoreStore", () => {
     const normalizedStdId = normalizeId(stdId);
     if (!normalizedStdId) return null;
 
+    const effectiveTtlMs = resolveTtlMs(ttlMs, DEFAULT_SCORE_STANDARD_CACHE_TTL);
+
     const fetchedAt = Date.now();
     scoreStdsCache.set(normalizedStdId, {
       data: standardDetail,
       fetchedAt,
-      expiredAt: fetchedAt + ttlMs,
+      expiredAt: fetchedAt + effectiveTtlMs,
     });
     // Sync to L2 persistence
     writeCacheMapToStorage(currentScoreStdStorageKey, scoreStdsCache);
@@ -239,11 +248,13 @@ export const useScoreStore = defineStore("scoreStore", () => {
     const recordKey = makeRecordKey(projectId, groupId);
     if (!recordKey) return null;
 
+    const effectiveTtlMs = resolveTtlMs(ttlMs, DEFAULT_RECORD_CACHE_TTL);
+
     const fetchedAt = Date.now();
     scoringRecordsCache.set(recordKey, {
       data: records,
       fetchedAt,
-      expiredAt: fetchedAt + ttlMs,
+      expiredAt: fetchedAt + effectiveTtlMs,
     });
     // Sync to L2 persistence
     writeCacheMapToStorage(currentScoreRecordStorageKey, scoringRecordsCache);
