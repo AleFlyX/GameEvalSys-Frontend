@@ -1,18 +1,18 @@
 <template>
   <div>
     <header>
-      <span class="title">
+      <span class="title" :title="title">
         {{ title }}
       </span>
 
       <div class="header-right">
         <div class="not-login" v-if="!userStore.isLogin">
-          <button @click="goto('/login')">登录</button>
+          <button class="header-btn" @click="goto('/login')">登录</button>
           <!-- <button>注册</button> -->
         </div>
-        <div class="personnal-info" v-if="userStore.isLogin">
-          <div class="avatar">
-            <p>{{ username[0] }}</p>
+        <div class="personal-info" v-if="userStore.isLogin">
+          <div class="avatar" tabindex="0" aria-label="用户菜单">
+            <p class="avatar-text">{{ avatarText }}</p>
             <ul class="dropdown">
               <li @click="openProfileModal">个人信息</li>
               <li @click="goto('/about')">关于OJ</li>
@@ -48,8 +48,6 @@
 <script setup>
 import { useRoute, useRouter } from "vue-router";
 import { computed, ref } from "vue";
-// import { comn } from "@/router/testRoutes";
-import { pub } from "@/router/modules/publicRoutes";
 import { useUserStore } from "@/stores/modules/userStore";
 import { useLoading } from "@/composables/useLodaing";
 import { useMessage } from "@/composables/useMessage";
@@ -64,20 +62,12 @@ const router = useRouter();
 const userStore = useUserStore();
 const message = useMessage();
 
-function getTitle(routePath) {
-  console.log(pub)
-  const result = pub.find(item => item.name === 'MainLayout').children.find(item => '/' + item.path === routePath)
-  return result ? result.name : ""
-}
-
 const title = computed(() => {
-  // console.log(route.path)
-  console.log("change path to title:", getTitle(route.path));
-
-  return getTitle(route.path)
+  return route.meta?.title || "";
 });
 
 const username = computed(() => userStore.userInfo?.username || "");
+const avatarText = computed(() => (username.value?.[0] || "U").toUpperCase());
 
 const showProfileModal = ref(false);
 const profileFormRef = ref(null);
@@ -137,154 +127,200 @@ const handleProfileSave = async () => {
   }
 };
 
-
 const goto = (path) => {
-  console.log('jump to ', path)
   router.push(path)
 }
 const { requestWithLoading: logOutWithLoading } = useLoading()
 const logout = async () => {
   await logOutWithLoading(userStore.logout);
-  console.log("由头像dropdown登出")
 }
 
 </script>
 <style scoped>
-* {
-  margin: 0;
-  padding: 0;
-}
-
 header {
-  /* width: 100%; */
+  position: relative;
+  z-index: 100;
+  width: 100%;
+  box-sizing: border-box;
   background-color: var(--light-background);
-  padding: 8px;
-  height: 50px;
+  padding: 0 16px;
+  min-height: 56px;
   display: flex;
-  flex-direction: row;
   align-items: center;
   justify-content: space-between;
-  box-shadow: 1px 1px 8px gray;
-  /* margin-bottom: 10px; */
+  gap: 16px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  overflow: visible;
 }
 
-
 .title {
-  /* border: 1px solid; */
-  padding: 5px;
-  text-align: center;
-  font-size: larger;
-  font-weight: bolder;
-
+  padding: 4px 0;
+  font-size: 20px;
+  line-height: 1.2;
+  font-weight: 700;
+  color: #1f2937;
+  letter-spacing: 0.2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .not-login {
   display: flex;
-  gap: 20px;
-
+  align-items: center;
+  gap: 12px;
 }
 
-.not-login button {
+.header-btn {
   width: 80px;
-  /* border: none; */
-  /* 清除默认边框 */
-  outline: none;
-  /* 清除点击聚焦的外边框 */
+  height: 34px;
   background: var(--primary);
   border: none;
-  border-radius: 20px;
-  padding: 5px;
-
-  color: rgba(255, 255, 255, 0.929);
-  /* 清除默认背景色 */
+  border-radius: 999px;
+  color: rgba(255, 255, 255, 0.95);
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.22s ease;
 }
 
-.not-login button:hover {
+.header-btn:hover {
   cursor: pointer;
-  box-shadow: 0px 0px 15px var(--primary-box-shadow);
-  transition: 0.25s;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px var(--primary-box-shadow);
 }
 
 .header-right {
-  height: 40px;
-  /* width: 10%; */
+  min-height: 40px;
   display: flex;
-  /* flex-direction: column; */
-  justify-content: center;
-  align-self: center;
+  align-items: center;
+  justify-content: flex-end;
+  flex: 1;
+  overflow: visible;
 }
 
-.personnal-info {
+.personal-info {
   display: flex;
   gap: 10px;
-  justify-content: center;
   align-items: center;
+  position: relative;
+  overflow: visible;
 }
 
-.personnal-info .username {
-  padding-bottom: 1px;
-  padding-right: 5px;
-  font-size: 15px;
-  font-weight: 500;
-  /* align-self: flex-end; */
+.personal-info .username {
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
+  max-width: 220px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .avatar {
   height: 35px;
   width: 35px;
-  /* margin: 10px; */
+  position: relative;
+  z-index: 120;
   display: flex;
-  flex-direction: column;
-  justify-content: space-around;
+  justify-content: center;
   align-items: center;
   border-radius: 50%;
-  box-shadow: 0px 0px 10px gray;
+  background: linear-gradient(135deg, #36a2ff 0%, #1f7bd7 100%);
+  box-shadow: 0 4px 12px rgba(54, 162, 255, 0.4);
+  color: #fff;
+  cursor: pointer;
+  user-select: none;
+  outline: none;
 }
 
-.avatar:hover {
-  box-shadow: 0px 0px 10px rgba(1, 166, 255, 0.678);
-  transition: 0.3s;
+.avatar-text {
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.avatar:hover,
+.avatar:focus-visible {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px rgba(1, 166, 255, 0.55);
+  transition: all 0.24s ease;
 }
 
 .dropdown {
-  right: 0.1rem;
+  left: 50%;
+  top: 100%;
   width: 140px;
   position: absolute;
-  padding-top: 60px;
+  padding-top: 8px;
   opacity: 0;
-  line-height: 45px;
-  /* transform: translateY(-60px); */
-  transform: translateY(-30%);
-  /* border: 1px solid; */
-  transition: all 0.3s;
-  z-index: 999;
+  transform: translate(-50%, -4px);
+  pointer-events: none;
+  transition: all 0.2s ease;
+  z-index: 2000;
+  margin: 0;
 }
 
+.dropdown::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 10px;
+}
 
 .dropdown li {
   list-style: none;
-  font-weight: bolder;
+  font-weight: 600;
   text-align: center;
-  margin-top: 2px;
-  border-radius: 5px;
+  margin-top: 4px;
+  border-radius: 8px;
+  line-height: 40px;
   background-color: rgb(252, 252, 252);
-  box-shadow: 0px 0px 5px var(--gray-box-shadow);
-
+  box-shadow: 0 4px 12px var(--gray-box-shadow);
+  color: #374151;
 }
 
 .dropdown li:hover {
-  background-color: rgb(158, 234, 255);
-  box-shadow: 0px 0px 10px rgba(1, 166, 255, 0.678);
+  background-color: rgb(214, 244, 255);
+  box-shadow: 0 6px 14px rgba(1, 166, 255, 0.45);
   transition: 0.2s;
 }
 
+.avatar:hover .dropdown,
+.avatar:focus-within .dropdown,
+.personal-info:hover .dropdown,
+.personal-info:focus-within .dropdown,
 .dropdown:hover {
   opacity: 1;
-  /* background: #f5f7fa; */
-  border-top: 0;
-  border-bottom-left-radius: 10px;
-  border-bottom-right-radius: 10px;
-  /* transform: translateY(75px); */
-  transform: translateY(30%);
+  transform: translate(-50%, 0);
+  pointer-events: auto;
+}
+
+@media (max-width: 768px) {
+  header {
+    min-height: 52px;
+    padding: 0 12px;
+    gap: 10px;
+  }
+
+  .title {
+    font-size: 17px;
+    max-width: 56vw;
+  }
+
+  .personal-info .username {
+    display: none;
+  }
+
+  .not-login {
+    gap: 8px;
+  }
+
+  .header-btn {
+    width: 72px;
+    height: 32px;
+    font-size: 13px;
+  }
 }
 </style>
