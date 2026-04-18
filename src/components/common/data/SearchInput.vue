@@ -1,7 +1,7 @@
 <template>
-  <div class="search-bar">
-    <input class="search-input" type="text" v-model="inputContent" @keyup.enter="handleInputSearch"
-      :style="customSearchInputStyle" :placeholder="inputPlaceholder">
+  <form class="search-bar" @submit.prevent="handleInputSearch">
+    <input class="search-input" type="text" v-model="inputContent" :style="customSearchInputStyle"
+      :placeholder="inputPlaceholder">
     <button v-if="showSearchBtn" class="btns search-btn" @click="handleInputSearch" :style="customBtnsStyle">
       {{ searchBtnText || '查找' }}
     </button>
@@ -13,12 +13,13 @@
     <!-- 自定义按钮区域 -->
     <slot name="operations"></slot>
 
-  </div>
+  </form>
 </template>
 
 <script setup>
 import { ref, computed, watch } from 'vue';
 import { debounce } from '@/utils/debounce';
+import { removeSpacesFromObject } from '@/utils/removeSpacesFromData';
 const props = defineProps({
   placeholder: {
     type: String,
@@ -62,8 +63,17 @@ const props = defineProps({
   delay: { //emit search的防抖
     type: [String, Number],
     default: 0
+  },
+  removeAllSpaces: { //是否去除输入内容中的所有空格（不仅仅是首尾）
+    type: Boolean,
+    default: false
   }
 })
+
+const emits = defineEmits([
+  'search',
+  'add'
+])
 
 const inputPlaceholder = ref(props.placeholder);
 
@@ -98,16 +108,6 @@ const customBtnsStyle = ref({
   'font-size': SizeMap[validSizeVal.value].font
 })
 
-// watch(() => bInputFocus.value, (newv) => {
-//   console.log(" INPUT CLICKS", newv);
-// })
-console.log("input custom css", customSearchInputStyle.value)
-
-const emits = defineEmits([
-  'search',
-  'add'
-])
-
 const handleEmitSearch = (content = '') => {
   emits('search', content.trim());
 }
@@ -120,7 +120,7 @@ const debouncedEmitSearch = debounce(handleEmitSearch, delay.value, { dev: true 
 const inputContent = ref('');
 const handleInputSearch = () => {
   console.log('handleInputSearch', inputContent.value)
-  const value = inputContent.value.trim();
+  const value = removeSpacesFromObject(inputContent.value.trim(), props.removeAllSpaces);
   emits('search', value);
 }
 
