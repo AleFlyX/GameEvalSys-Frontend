@@ -1,5 +1,5 @@
 <template>
-  <div class="login-page" :title="effectiveTheme">
+  <div class="login-page">
     <!-- 主题切换按钮 -->
     <div class="theme-toggle" @click="handleThemeToggle" title="切换主题">
       <el-icon v-if="isDarkMode">

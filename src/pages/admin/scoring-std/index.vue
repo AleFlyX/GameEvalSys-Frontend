@@ -1,28 +1,30 @@
 <template>
   <PagePanel>
     <template #header>
-      <OverviewCard icon="DataAnalysis" title="评分标准总数" :data="String(totalCount)"></OverviewCard>
-      <OverviewCard icon="Document" title="已启用标准" :data="String(enabledCount)"></OverviewCard>
+      <StatCard label="评分标准总数" :value="String(totalCount)" icon="DataAnalysis"
+        style="margin-right: 16px; display: inline-block; min-width: 180px;" />
+      <StatCard label="已启用标准" :value="String(enabledCount)" icon="Document"
+        style="display: inline-block; min-width: 180px;" />
     </template>
 
     <template #main-table>
       <SearchInput size="middle" @add="handleAdd" @search="handleSearch"></SearchInput>
       <el-table :data="tableData" stripe style="width: 100%; margin-top: 16px;" v-loading="loading">
-        <DataTableColums :col-rules="COLUMN_RULES"></DataTableColums>
+        <DataTableColums :col-rules="COLUMN_RULES" :ellipsis="true"></DataTableColums>
         <el-table-column label="指标数" width="100">
           <template #default="scope">
-            {{ scope.row.indicators?.length || 0 }}
+            {{ getDisplayIndicators(scope.row).length }}
           </template>
         </el-table-column>
         <el-table-column label="指标详情" min-width="300">
           <template #default="scope">
             <div class="indicators-preview">
-              <el-tag v-for="(indicator, index) in (scope.row.indicators || []).slice(0, 3)" :key="index"
+              <el-tag v-for="(indicator, index) in getDisplayIndicators(scope.row).slice(0, 3)" :key="index"
                 style="margin-right: 8px; margin-bottom: 4px;">
                 {{ indicator.name }}
               </el-tag>
-              <el-tag v-if="(scope.row.indicators || []).length > 3" type="info">
-                +{{ (scope.row.indicators || []).length - 3 }}
+              <el-tag v-if="getDisplayIndicators(scope.row).length > 3" type="info">
+                +{{ getDisplayIndicators(scope.row).length - 3 }}
               </el-tag>
             </div>
           </template>
@@ -64,7 +66,7 @@ import { ref, onMounted, nextTick } from 'vue';
 import { ElMessage } from 'element-plus';
 
 import PagePanel from '@/layouts/PagePanel.vue';
-import OverviewCard from '@/components/common/data/OverviewCard.vue';
+import StatCard from '@/components/common/data/StatCard.vue';
 import DataTableColums from '@/components/common/data/DataTableColums.vue';
 import ScoringStdOperation from './components/ScoringStdOperation.vue';
 
@@ -72,6 +74,7 @@ import { ScoringApi } from '@/api/scoring';
 import { COLUMN_RULES } from './config/scoringStdColumnRule';
 import { useElPagination } from '@/composables/useElPagination';
 import { useLoading } from '@/composables/useLodaing';
+import { getIndicatorsFromStandard } from '@/utils/scoringStandard';
 
 const { isLoading: loading, start: startLoading, end: endLoading } = useLoading('scoringStd:list');
 const {
@@ -108,6 +111,8 @@ const handleSearch = async (keywords) => {
 
 }
 
+const getDisplayIndicators = (standard) => getIndicatorsFromStandard(standard);
+
 // 请求参数构建
 const buildQueryParams = (pageParams = { page: 1, size: 20 }) => {
   return {
@@ -141,7 +146,7 @@ const detailDialogInitData = ref({});
 const resetModalState = () => {
   createMode.value = false;
   editMode.value = false;
-  detailDialogInitData.value = { name: '', indicators: [] };
+  detailDialogInitData.value = { name: '', categories: [] };
   selectedStandardId.value = null;
 };
 

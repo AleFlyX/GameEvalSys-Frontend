@@ -167,7 +167,7 @@ const getReviewerGroupList = async (keywords) => {
   console.log('searching reviewer group list', keywords)
   try {
     const response = await reviewerGroupApi.getReviewerGroupList({ keyWords: keywords })
-    reviewerGroups.value = response.data;
+    reviewerGroups.value = response.data.list;
   } catch (err) {
     console.log(err)
   } finally {

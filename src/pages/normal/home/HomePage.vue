@@ -75,7 +75,6 @@ import { projectGroupApi } from '@/api/project-group';
 import { ScoringApi } from '@/api/scoring';
 import { useMessage } from '@/composables/useMessage';
 import { useUserStore } from '@/stores/modules/userStore';
-import { getElementIcon } from '@/utils/elementIcons';
 import { useLoading } from '@/composables/useLodaing';
 import StatCard from '@/components/common/data/StatCard.vue';
 import { formatTime } from '@/utils/format';
@@ -118,12 +117,6 @@ const roleLabel = computed(() => {
     normal: '普通用户',
   };
   return roleMap[userStore.userRole] || '访问用户';
-});
-
-// 趋势数据的最大值（用于柱状图高度比例计算）
-const trendMax = computed(() => {
-  if (!trendPoints.value.length) return 1;
-  return Math.max(1, ...trendPoints.value.map((item) => Number(item.count) || 0));
 });
 
 // 近7天打分总条数
@@ -171,16 +164,13 @@ const shortcutList = computed(() => {
   const source = [
     { id: 'scoring', name: '打分列表', path: '/scoring', icon: 'Edit', color: '#409eff', roles: roleSet },
     { id: 'project', name: '项目管理', path: '/admin/project', icon: 'Management', color: '#ffaa00', roles: ['super_admin', 'admin'] },
-    { id: 'projectGroup', name: '受审队伍', path: '/admin/projectGroups', icon: 'User', color: '#66cc66', roles: ['super_admin', 'admin'] },
+    { id: 'projectGroup', name: '受审队伍', path: '/admin/project-groups', icon: 'User', color: '#66cc66', roles: ['super_admin', 'admin'] },
     { id: 'statistic', name: '统计分析', path: '/admin/statistic', icon: 'TrendCharts', color: '#f56c6c', roles: ['super_admin', 'admin'] },
     { id: 'user', name: '用户管理', path: '/admin/user', icon: 'Avatar', color: '#7b89ff', roles: ['super_admin', 'admin'] },
     { id: 'home', name: '首页', path: '/home', icon: 'HomeFilled', color: '#9ca3af', roles: ['super_admin', 'admin', 'scorer', 'normal'] },
   ];
   return source.filter((item) => item.roles.includes(role));
 });
-
-// 根据图标名称获取 Element Plus 图标组件
-const resolveIcon = (iconName) => getElementIcon(iconName);
 
 // 页面跳转
 const jumpTo = (path) => {
@@ -196,9 +186,6 @@ const handleGoScoring = () => {
   }
   router.push('/scoring');
 };
-
-// 数字补零（月、日）
-const padNumber = (value) => String(value).padStart(2, '0');
 
 // 获取日期对应的 key（YYYY-MM-DD）
 const getDayKey = (date) => {
@@ -372,16 +359,6 @@ const fetchProjectDetailData = async (project) => {
 };
 
 /**
- * 根据计数计算柱状图高度（相对趋势最大值）
- * @param {number} count 当前日期的评分数量
- * @returns {string} 高度CSS值
- */
-const toBarHeight = (count) => {
-  const ratio = (Number(count) || 0) / trendMax.value;
-  return `${Math.max(10, Math.round(ratio * 120))}px`;
-};
-
-/**
  * 首页主要数据加载函数：获取项目列表 -> 更新统计 -> 获取焦点项目详情
  */
 const fetchHomeData = async () => {
@@ -409,205 +386,5 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.home-page {
-  min-height: 100%;
-  padding: 24px;
-  font-family: "Source Han Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
-  background:
-    radial-gradient(circle at 12% 12%, rgba(64, 158, 255, 0.12) 0, rgba(64, 158, 255, 0) 32%),
-    radial-gradient(circle at 88% 8%, rgba(102, 204, 102, 0.12) 0, rgba(102, 204, 102, 0) 26%),
-    #f6f9fc;
-}
-
-.hero-panel,
-.dashboard-panel {
-  animation: fadeUp 0.5s ease both;
-}
-
-.hero-panel {
-  display: flex;
-  justify-content: space-between;
-  gap: 20px;
-  border-radius: 20px;
-  padding: 24px;
-  background: linear-gradient(120deg, #1f5fa8, #409eff 45%, #70b6ff);
-  box-shadow: 0 14px 36px rgba(64, 158, 255, 0.25);
-  color: #ffffff;
-}
-
-.hero-eyebrow {
-  margin: 0;
-  font-size: 12px;
-  letter-spacing: 1.5px;
-  opacity: 0.82;
-}
-
-.hero-title {
-  margin: 12px 0 8px;
-  font-size: 32px;
-  font-weight: 700;
-}
-
-.hero-title span {
-  color: #d4f1ff;
-}
-
-.hero-desc {
-  margin: 0;
-  color: rgba(255, 255, 255, 0.9);
-  font-size: 14px;
-}
-
-.hero-actions {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 16px;
-  margin-top: 18px;
-}
-
-.dashboard-grid {
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: 16px;
-  margin-top: 16px;
-}
-
-.dashboard-panel {
-  border-radius: 16px;
-  padding: 18px;
-  background: #ffffff;
-  box-shadow: 0 10px 28px rgba(20, 42, 74, 0.08);
-}
-
-.panel-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 14px;
-}
-
-.panel-header h2 {
-  margin: 0;
-  font-size: 16px;
-  color: #1f2f46;
-}
-
-.panel-header span {
-  font-size: 12px;
-  color: #8a97aa;
-}
-
-.trend-chart {
-  height: 235px;
-  display: grid;
-  grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: 10px;
-  align-items: end;
-}
-
-.trend-column {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-}
-
-.trend-bar-bg {
-  width: 100%;
-  max-width: 36px;
-  height: 130px;
-  border-radius: 12px;
-  background: linear-gradient(180deg, #f2f7fe, #e8f1fc);
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  padding-bottom: 4px;
-}
-
-.trend-bar {
-  width: calc(100% - 8px);
-  border-radius: 8px;
-  background: linear-gradient(180deg, #6ab2ff 0%, #409eff 100%);
-  transition: height 0.35s ease;
-}
-
-.trend-date {
-  font-size: 12px;
-  color: #7d8da2;
-}
-
-.trend-count {
-  font-size: 12px;
-  color: #1f2f46;
-  font-weight: 600;
-}
-
-.progress-panel,
-.tasks-panel,
-.shortcut-panel {
-  min-height: 220px;
-}
-
-@keyframes fadeUp {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@media (max-width: 1200px) {
-  .stats-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .dashboard-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .shortcut-grid {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
-}
-
-@media (max-width: 768px) {
-  .home-page {
-    padding: 14px;
-  }
-
-  .hero-panel {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .hero-title {
-    font-size: 26px;
-  }
-
-  .hero-actions {
-    width: 100%;
-  }
-
-  .hero-actions :deep(.el-button) {
-    flex: 1;
-  }
-
-  .stats-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .trend-chart {
-    gap: 6px;
-  }
-}
+@import './styles/HomePage.css';
 </style>

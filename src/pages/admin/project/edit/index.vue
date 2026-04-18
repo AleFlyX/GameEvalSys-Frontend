@@ -1,17 +1,23 @@
 <template>
-  <MyBtn type="primary" @click="handleGoBack">返回</MyBtn>
   <!-- <p>test data:{{ formData }}</p>
   <p>groupsChanged:: {{ isDataAdjusted.groupIdsChanged }}</p>
   <p>scorerIdsChanged:: {{ isDataAdjusted.scorerIdsChanged }}</p>
   <button @click="isDataChanged(formData)">isDataChanged??</button> -->
-  <PagePanel>
-    <template #header>
-      <div class="project-edit-header">
-        <h2>编辑项目: {{ projectName }}</h2>
-        <p class="subtitle">填写项目基本信息、小组分配和评审团配置</p>
+  <div style="height:auto;display: flex;align-items: center;">
+    <MyBtn type="link" @click="handleGoBack" style="font-size: large;">
+      <div style="height: 80px;display: flex;align-items: center; margin-right: 15px;">
+        <el-icon>
+          <ArrowLeft />
+        </el-icon>
+        返回
       </div>
-    </template>
-
+    </MyBtn>
+    <div class="project-edit-header">
+      <h2>编辑项目: {{ projectName }}</h2>
+      <p class="subtitle">填写项目基本信息、小组分配和评审团配置</p>
+    </div>
+  </div>
+  <PagePanel>
     <template #main-table>
       <div class="project-edit-container">
         <el-tabs v-model="activeTab" @tab-click="onTabChange" v-loading="initLoading || isSaving">
@@ -56,6 +62,7 @@ import { useRouter, useRoute } from 'vue-router';
 import { useMessage } from '@/composables/useMessage';
 import { useLoading } from '@/composables/useLodaing';
 
+import { ArrowLeft } from '@element-plus/icons-vue';
 import PagePanel from '@/layouts/PagePanel.vue';
 import MyBtn from '@/components/common/form/MyBtn.vue';
 import ProjectForm from '../components/ProjectForm.vue';
@@ -159,11 +166,11 @@ const handleGoBack = () => {
       .catch(() => {
         message.info('取消保存')
       }).finally(() => {
-        router.push('/project')
+        router.push('/admin/project')
       })
     return;
   }
-  router.push('/project')
+  router.push('/admin/project')
 }
 
 // 小组数据是否被编辑过
@@ -281,8 +288,6 @@ onUnmounted(() => {
 
 <style scoped>
 .project-edit-header {
-  margin-bottom: 24px;
-  padding-bottom: 16px;
   border-bottom: 1px solid var(--el-border-color);
 }
 

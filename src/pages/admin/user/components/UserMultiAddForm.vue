@@ -45,19 +45,21 @@ import MyBtn from '@/components/common/form/MyBtn.vue';
 import { ref, watch } from 'vue';
 
 import { reviewerGroupApi } from '@/api/reviewer-group';
+import { useLoading } from '@/composables/useLodaing';
 
-const loading = ref(false)
+const { isLoading: loading, start: startLoading, end: endLoading } = useLoading('userMultiAdd:reviewerGroups')
 const reviewerGroups = ref([])
 
 const getReviewerGroupList = async (keywords) => {
-  loading.value = true;
+  startLoading();
   console.log('searching reviewer group list', keywords)
   try {
     const response = await reviewerGroupApi.getReviewerGroupList({ keyWords: keywords })
-    reviewerGroups.value = response.data;
-    loading.value = false;
+    reviewerGroups.value = response.data.list;
   } catch (err) {
     console.log(err)
+  } finally {
+    endLoading();
   }
 }
 // // const revirewerGroupList = ref([

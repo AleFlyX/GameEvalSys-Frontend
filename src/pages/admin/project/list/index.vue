@@ -1,15 +1,15 @@
 <template>
   <PagePanel>
     <template #header>
-      <OverviewCard v-for="card in overViewCardsMap" :key="card.title" :title="card.title" :icon="card.icon"
-        :data="card.data" :icon-background="card.iconBackground" :icon-color="card.iconColor">
-      </OverviewCard>
+      <StatCard v-for="card in overViewCardsMap" :key="card.title" :label="card.title" :value="card.data"
+        :icon="card.icon" :iconColor="card.iconColor" :iconBg="card.iconBackground"
+        style="margin-right: 16px; display: inline-block; min-width: 180px;" />
     </template>
 
     <template #main-table>
       <SearchInput size="middle" @search="handleSearch" @add="showAddProjectDialog = true"></SearchInput>
       <el-table :data="projectList" v-loading="loading">
-        <DataTableColums :col-rules="PROJECT_LIST_RULES"></DataTableColums>
+        <DataTableColums :col-rules="PROJECT_LIST_RULES" ellipsis></DataTableColums>
         <el-table-column>
           <template #header>
             <div style="display: flex; justify-content: start;">
@@ -63,7 +63,7 @@ import { useRouter } from 'vue-router';
 import { ElMessage } from 'element-plus';
 
 import PagePanel from '@/layouts/PagePanel.vue';
-import OverviewCard from '@/components/common/data/OverviewCard.vue';
+import StatCard from '@/components/common/data/StatCard.vue';
 import SearchInput from '@/components/common/data/SearchInput.vue';
 import ProjectConfirm from '../components/ProjectConfirm.vue';
 import ProjectAdd from '../components/ProjectAdd.vue';

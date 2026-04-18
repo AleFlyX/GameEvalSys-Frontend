@@ -83,6 +83,7 @@ service.interceptors.response.use(
           showClose: false,
           showDefaultClose: false,
           closeOnClickModal: false,
+          alowDefaultClose: false,
           type: "warning",
         }).then(() => {
           if (router && typeof router.push === "function") {

@@ -2,7 +2,8 @@
   <div class="sidebar">
     <span class="title">项目评分平台</span>
     <ul class="nav-items">
-      <MenuItem v-for="item in visibleNormMenus" :key="item.path" :index="item.path" :label="item.name">
+      <MenuItem v-for="item in visibleNormMenus" :key="item.path" :index="item.path"
+        :label="item.meta?.title || item.name">
       <template #prefix>
         <el-icon>
           <component :is="elementIconMap[item.meta.icon] || null" />
@@ -17,7 +18,8 @@
           </el-icon>
         </template>
 
-        <MenuItem v-for="item in visibleAdminMenus" :key="item.path" :index="item.path" :label="item.name" level="sub">
+        <MenuItem v-for="item in visibleAdminMenus" :key="item.path" :index="item.path"
+          :label="item.meta?.title || item.name" level="sub">
         <template #prefix>
           <el-icon>
             <component :is="elementIconMap[item.meta.icon] || null" />
@@ -27,14 +29,14 @@
 
       </MenuFolder>
 
-      <MenuFolder v-if="userStore.isSuperAdmin" base-index="superAdmin" label="后台管理">
+      <MenuFolder v-if="userStore.isSuperAdmin" base-index="/super-admin" label="后台管理">
         <template #prefix>
           <el-icon>
-            <component :is="elementIconMap.Setting" />
+            <component :is="elementIconMap.Grid" />
           </el-icon>
         </template>
-        <MenuItem v-for="item in visibleSuperAdminMenus" :key="item.path" :index="item.path" :label="item.name"
-          level="sub">
+        <MenuItem v-for="item in visibleSuperAdminMenus" :key="item.path" :index="item.path"
+          :label="item.meta?.title || item.name" level="sub">
         <template #prefix>
           <el-icon>
             <component :is="elementIconMap[item.meta.icon] || null" />

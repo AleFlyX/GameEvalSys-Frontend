@@ -1,5 +1,5 @@
 <template>
-  <div class="project-statistic-list-container">
+  <div class="project-statistic-list-container" v-loading="isListLoading">
     <!-- 页面标题 -->
     <div class="page-header">
       <h1 class="page-title">项目打分统计</h1>
@@ -31,17 +31,17 @@
     </div>
 
     <!-- 加载状态 -->
-    <el-skeleton v-if="loading" :rows="5" animated />
+    <el-skeleton v-if="isListSkeleton" :rows="5" animated />
 
     <!-- 项目列表 -->
-    <div v-else class="projects-grid">
+    <div class="projects-grid">
 
       <div class="project-cards" v-for="project in filteredProjects" :key="project.id">
         <ProjectCard :project="project"></ProjectCard>
       </div>
 
       <!-- 空状态 -->
-      <div v-if="filteredProjects.length === 0" class="empty-state">
+      <div v-if="filteredProjects.length === 0 && !(isListLoading | isListSkeleton)" class="empty-state">
         <el-empty description="暂无项目" />
       </div>
     </div>
@@ -57,11 +57,13 @@
 
 <script setup>
 import { ref, computed, onMounted } from "vue";
+import ProjectCard from "./components/projectCard.vue";
 import { ElMessage } from "element-plus";
 import { getElementIcon } from "@/utils/elementIcons";
-import ProjectCard from "./components/projectCard.vue";
 import { getProjectList } from "@/api/project";
 import { useElPagination } from "@/composables/useElPagination";
+import { useLoading } from "@/composables/useLodaing";
+import { debounce } from "@/utils/debounce";
 
 // ==================== 数据定义 ====================
 const projects = ref([]);
@@ -70,7 +72,7 @@ const filterStatus = ref("");
 
 // ==================== 分页控制 ====================
 const {
-  currentPage, pageSize, total, loading, disabled, defaultPageSizes,
+  currentPage, pageSize, total, disabled, defaultPageSizes,
   setTotal, setCurrentPage, handleSizeChange, handleCurrentChange
 } = useElPagination({
   initialPage: 1,
@@ -89,6 +91,7 @@ const {
  * @param {Number} page 页码
  * @param {Number} size 分页大小
  */
+const { isLoading: isListLoading, isSkeleton: isListSkeleton, requestWithLoading } = useLoading('statisticList:load')
 const loadProjects = async (page, size) => {
   try {
     const params = {
@@ -99,7 +102,7 @@ const loadProjects = async (page, size) => {
       ...(filterStatus.value && { status: filterStatus.value }),
     };
     console.log(params)
-    const response = await getProjectList(params);
+    const response = await requestWithLoading(getProjectList, params);
     if (response.data) {
       projects.value = response.data.list || [];
 
@@ -110,6 +113,11 @@ const loadProjects = async (page, size) => {
     console.error(error);
   }
 };
+
+/**
+ * 防抖处理后的加载项目列表api
+ */
+const debouncedLoadProject = debounce(loadProjects, 300);
 
 // ==================== 计算属性 ====================
 /**
@@ -129,7 +137,7 @@ const queryFirstPage = async () => {
     return
   }
 
-  await loadProjects(1, pageSize.value)
+  await debouncedLoadProject(1, pageSize.value)
 }
 
 /**

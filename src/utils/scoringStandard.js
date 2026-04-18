@@ -3,6 +3,7 @@ const DEFAULT_CATEGORY_NAME = '默认分类';
 const normalizeText = (text) => (typeof text === 'string' ? text.trim() : '');
 
 /**
+ * 参数归一化工具函数
  * 打分标准数据结构映射工具函数
  * @param {number} rawId
  * @returns {number|null}

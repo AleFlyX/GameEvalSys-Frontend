@@ -86,7 +86,7 @@
                     :color="getScoreColor(indicator.averageScore)" />
                   <span class="score-value">{{ indicator.averageScore.toFixed(2) }}/{{
                     getIndicatorMaxScore(indicator.indicatorId)
-                    }}</span>
+                  }}</span>
                 </div>
               </div>
             </div>
@@ -141,6 +141,7 @@ import {
 import { getProjectDetail } from "@/api/project";
 import { useScoreStore } from "@/stores/modules/scoreStore";
 import GroupIndicatorScoreModal from "./components/GroupIndicatorScoreModal.vue";
+import { getIndicatorsFromStandard } from "@/utils/scoringStandard";
 
 const router = useRouter();
 const route = useRoute();
@@ -196,9 +197,10 @@ const loadProjectDetail = async () => {
       if (response.data.standardId) {
         try {
           const standardData = await scoreStore.fetchScoreStandard(response.data.standardId);
-          if (standardData?.indicators) {
+          const standardIndicators = getIndicatorsFromStandard(standardData);
+          if (standardIndicators.length) {
             totalScore.value = 0;
-            maxScores.value = standardData.indicators.reduce((obj, item) => {
+            maxScores.value = standardIndicators.reduce((obj, item) => {
               totalScore.value += item.maxScore; //计算评分标准分数总和
               const { id, ...rest } = item;
               if (id !== undefined && id !== null) {

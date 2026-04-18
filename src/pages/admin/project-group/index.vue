@@ -1,43 +1,41 @@
 <template>
   <PagePanel>
     <template #header>
-      <div class="stats-header">
-        <OverviewCard icon="User" title="总项目组数" :data="overViewCardsMap.totalGroups" icon-color="var(--primary-havy)"
-          icon-background="var(--primary-light)" width="23%">
-        </OverviewCard>
-        <OverviewCard icon="UserFilled" title="活跃小组" :data="overViewCardsMap.activeGroups" icon-color="var(--success)"
-          icon-background="var(--success-light)" width="23%">
-        </OverviewCard>
-        <OverviewCard icon="Users" title="总小组数" :data="overViewCardsMap.totalMembers" icon-color="var(--warning)"
-          icon-background="var(--warning-light)" width="23%">
-        </OverviewCard>
-        <OverviewCard icon="Management" title="平均小组大小" :data="overViewCardsMap.avgGroupSize" icon-color="var(--info)"
-          icon-background="var(--info-light)" width="23%">
-        </OverviewCard>
-      </div>
+      <StatCard label="总项目组数" :value="overViewCardsMap.totalGroups" icon="User" iconColor="var(--primary-havy)"
+        iconBg="var(--primary-light)" width="23%"
+        style="margin-right: 16px; display: inline-block; min-width: 180px;" />
+      <StatCard label="活跃小组" :value="overViewCardsMap.activeGroups" icon="UserFilled" iconColor="var(--success)"
+        iconBg="var(--success-light)" width="23%"
+        style="margin-right: 16px; display: inline-block; min-width: 180px;" />
+      <StatCard label="总小组数" :value="overViewCardsMap.totalMembers" icon="Users" iconColor="var(--warning)"
+        iconBg="var(--warning-light)" width="23%"
+        style="margin-right: 16px; display: inline-block; min-width: 180px;" />
+      <StatCard label="平均小组大小" :value="overViewCardsMap.avgGroupSize" icon="Management" iconColor="var(--info)"
+        iconBg="var(--info-light)" width="23%" style="display: inline-block; min-width: 180px;" />
+
     </template>
     <template #main-table>
       <SearchInput size="middle" placeholder="搜索项目小组名称..." @search="handleSearch" @add="handleAdd">
       </SearchInput>
-      <div class="data-table">
-        <el-table :data="tableData" stripe style="width: 100%">
-          <DataTableColums :col-rules="COLUMN_RULES"></DataTableColums>
-          <el-table-column label="操作" width="auto" fixed="right">
-            <template #default="scope">
-              <el-button size="small" @click="handleEdit(scope.row)">编辑</el-button>
-              <el-button size="small" type="primary" @click="handleViewDetail(scope.row)">查看详情</el-button>
-              <el-button v-if="scope.row.isEnabled" size="small" type="danger"
-                @click="handleChangeStatus(false, scope.row)">
-                禁用
-              </el-button>
-              <el-button v-else size="small" type="success" @click="handleChangeStatus(true, scope.row)">
-                启用
-              </el-button>
-              <!-- <el-button size="small" type="danger" @click="handleDelete(scope.row)">删除</el-button> -->
-            </template>
-          </el-table-column>
-        </el-table>
-      </div>
+
+      <el-table :data="tableData" stripe style="width: 100%">
+        <DataTableColums :col-rules="COLUMN_RULES"></DataTableColums>
+        <el-table-column label="操作" width="auto" fixed="right">
+          <template #default="scope">
+            <el-button size="small" @click="handleEdit(scope.row)">编辑</el-button>
+            <el-button size="small" type="primary" @click="handleViewDetail(scope.row)">查看详情</el-button>
+            <el-button v-if="scope.row.isEnabled" size="small" type="danger"
+              @click="handleChangeStatus(false, scope.row)">
+              禁用
+            </el-button>
+            <el-button v-else size="small" type="success" @click="handleChangeStatus(true, scope.row)">
+              启用
+            </el-button>
+            <!-- <el-button size="small" type="danger" @click="handleDelete(scope.row)">删除</el-button> -->
+          </template>
+        </el-table-column>
+      </el-table>
+
     </template>
 
     <template #footer>
@@ -64,7 +62,7 @@ import { ref, onMounted, onBeforeUnmount } from 'vue';
 import { ElMessage } from 'element-plus';
 
 import PagePanel from '@/layouts/PagePanel.vue';
-import OverviewCard from '@/components/common/data/OverviewCard.vue';
+import StatCard from '@/components/common/data/StatCard.vue';
 import SearchInput from '@/components/common/data/SearchInput.vue';
 import DataTableColums from '@/components/common/data/DataTableColums.vue';
 import ProjectGroupDetails from '../../../components/business/project-group/ProjectGroupDetails.vue';
@@ -154,20 +152,6 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
-.stats-header {
-  width: 100%;
-  display: flex;
-  /* gap: 20px; */
-  margin-bottom: 20px;
-}
-
-.data-table {
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
-  padding: 20px;
-}
-
 .pagination {
   display: flex;
   justify-content: flex-end;

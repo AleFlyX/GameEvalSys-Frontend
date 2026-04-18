@@ -1,20 +1,19 @@
 <template>
   <PagePanel>
     <template #header>
-      <div class="stats-header">
-        <OverviewCard icon="User" title="总评审组数" :data="overViewCardsMap.totalGroups" icon-color="var(--primary-havy)"
-          icon-background="var(--primary-light)" width="23%">
-        </OverviewCard>
-        <OverviewCard icon="UserFilled" title="活跃评审组" :data="overViewCardsMap.activeGroups" icon-color="var(--success)"
-          icon-background="var(--success-light)" width="23%">
-        </OverviewCard>
-        <OverviewCard icon="Users" title="总成员数" :data="overViewCardsMap.totalMembers" icon-color="var(--warning)"
-          icon-background="var(--warning-light)" width="23%">
-        </OverviewCard>
-        <OverviewCard icon="Management" title="平均组规模" :data="overViewCardsMap.avgGroupSize" icon-color="var(--info)"
-          icon-background="var(--info-light)" width="23%">
-        </OverviewCard>
-      </div>
+
+      <StatCard label="总评审组数" :value="overViewCardsMap.totalGroups" icon="User" iconColor="var(--primary-havy)"
+        iconBg="var(--primary-light)" width="23%"
+        style="margin-right: 16px; display: inline-block; min-width: 180px;" />
+      <StatCard label="活跃评审组" :value="overViewCardsMap.activeGroups" icon="UserFilled" iconColor="var(--success)"
+        iconBg="var(--success-light)" width="23%"
+        style="margin-right: 16px; display: inline-block; min-width: 180px;" />
+      <StatCard label="总成员数" :value="overViewCardsMap.totalMembers" icon="Users" iconColor="var(--warning)"
+        iconBg="var(--warning-light)" width="23%"
+        style="margin-right: 16px; display: inline-block; min-width: 180px;" />
+      <StatCard label="平均组规模" :value="overViewCardsMap.avgGroupSize" icon="Management" iconColor="var(--info)"
+        iconBg="var(--info-light)" width="23%" style="display: inline-block; min-width: 180px;" />
+
     </template>
     <template #main-table>
       <SearchInput size="middle" placeholder="搜索评审组名称..." @search="handleSearch" @add="handleAdd">
@@ -60,7 +59,7 @@
 
 <script setup>
 import PagePanel from '@/layouts/PagePanel.vue';
-import OverviewCard from '@/components/common/data/OverviewCard.vue';
+import StatCard from '@/components/common/data/StatCard.vue';
 import SearchInput from '@/components/common/data/SearchInput.vue';
 import DataTableColums from '@/components/common/data/DataTableColums.vue';
 import ReviererGroupDetails from './components/ReviererGroupDetails.vue';
@@ -99,13 +98,6 @@ const {
 </script>
 
 <style scoped>
-.stats-header {
-  width: 100%;
-  display: flex;
-  /* gap: 20px; */
-  margin-bottom: 20px;
-}
-
 .pagination {
   display: flex;
   justify-content: flex-end;

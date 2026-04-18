@@ -36,12 +36,17 @@ const emits = defineEmits(["clicked"]);
 const router = useRouter();
 const route = useRoute();
 
+const normalizePath = (path) => {
+  if (!path) return "";
+  return path.startsWith("/") ? path : `/${path}`;
+};
+
 const itemActive = computed(() => {
-  return route.path == `/${props.index}`;
+  return route.path === normalizePath(props.index);
 })
 
 const handleClick = () => {
-  if (props.index) router.push(`/${props.index}`);
+  if (props.index) router.push(normalizePath(props.index));
   // menuContext?.setActive?.(props.index);
   emits("clicked", props.index);
 };
