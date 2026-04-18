@@ -1,27 +1,27 @@
 <template>
   <div class="admin-panel">
-    <!-- 避免各个管理面板组件的css部分冗余 -->
     <header>
       <slot name="header">
         <!-- 数据预览小卡片区域 -->
       </slot>
     </header>
 
-    <slot>
-      <!-- 其他小组件区域 -->
-    </slot>
-
-    <main class="data-list">
-      <slot name="main-table">
-        <!-- el table组件 -->
+    <section class="panel-content">
+      <slot>
+        <!-- 其他小组件区域 -->
       </slot>
-      <footer>
-        <slot name="footer">
-          <!-- 分页跳转组件等 -->
-        </slot>
-      </footer>
-    </main>
 
+      <main class="data-list">
+        <slot name="main-table">
+          <!-- el table组件 -->
+        </slot>
+        <footer>
+          <slot name="footer">
+            <!-- 分页跳转组件等 -->
+          </slot>
+        </footer>
+      </main>
+    </section>
   </div>
   <slot name="modals">
     <!-- 填写弹窗 -->
@@ -36,37 +36,55 @@
 .admin-panel {
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  gap: 15px;
+  align-items: stretch;
+  min-height: 100vh;
+  background: #f6f8fa;
+  padding: 32px 0 24px 0;
+  box-sizing: border-box;
 }
 
 header {
-  margin: 15px 10px;
+  margin: 0 auto 18px auto;
   display: flex;
-  width: 99%;
-  gap: 10px;
+  width: 92%;
+  gap: 16px;
+  padding: 0 0 0 0;
+  background: none;
 }
 
-/* 保证在header里显示的数据卡片的宽度都一样 */
 header>* {
   flex: 1;
+  min-width: 0;
 }
 
-main {
-  width: 99%;
-  padding: 20px 0;
+.panel-content {
+  width: 92%;
+  margin: 0 auto;
   display: flex;
   flex-direction: column;
-  gap: 20px;
-  box-shadow: 0px 2px 8px gray;
-  border-radius: 15px;
+  gap: 24px;
+}
 
+.data-list {
+  width: 100%;
+  padding: 28px 32px 24px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  background: #fff;
+  box-shadow: 0 4px 24px 0 rgba(0, 0, 0, 0.07), 0 1.5px 6px 0 rgba(0, 0, 0, 0.03);
+  border-radius: 18px;
+  border: 1px solid #ececec;
+  min-height: 320px;
+  box-sizing: border-box;
 }
 
 footer {
-  width: 99%;
+  width: 100%;
   display: flex;
   justify-content: center;
+  background: none;
+  box-shadow: none;
+  padding: 0;
 }
 </style>
