@@ -6,81 +6,59 @@
     <!-- 顶部核心指标卡片组 -->
     <div class="stat-cards-wrapper">
       <!-- 卡片1：总项目数 -->
-      <div class="stat-card">
-        <div class="stat-card-header">
+      <StatCard class="stat-card--metric" :label="`总项目数 ${loading ? '(加载中...)' : ''}`"
+        :value="platformStats.totalProjects.toString()" sub="累计提报项目" label-placement="body" icon-bg="transparent"
+        :icon-size="40" :icon-radius="12">
+        <template #icon>
           <div class="stat-icon indigo-icon"></div>
-          <span class="growth-rate up">+12.5%</span>
-        </div>
-        <p class="stat-label">总项目数</p>
-        <h3 class="stat-value">1,286</h3>
-        <p class="stat-sub-label">累计提报项目</p>
-        <div ref="miniChartRef1" class="mini-chart"></div>
-      </div>
+        </template>
+        <template #head-extra>
+          <span class="growth-rate up">+Nan%</span>
+        </template>
+      </StatCard>
 
       <!-- 卡片2：新增评分 -->
-      <div class="stat-card">
-        <div class="stat-card-header">
+      <StatCard class="stat-card--metric" :label="`新增评分 ${loading ? '(加载中...)' : ''}`"
+        :value="platformStats.totalScores.toString()" sub="本周新增评审" label-placement="body" icon-bg="transparent"
+        :icon-size="40" :icon-radius="12">
+        <template #icon>
           <div class="stat-icon emerald-icon"></div>
-          <span class="growth-rate up">+8.2%</span>
-        </div>
-        <p class="stat-label">新增评分</p>
-        <h3 class="stat-value">327</h3>
-        <p class="stat-sub-label">本周新增评审</p>
-        <div ref="miniChartRef2" class="mini-chart"></div>
-      </div>
+        </template>
+        <template #head-extra>
+          <span class="growth-rate up">+Nan%</span>
+        </template>
+      </StatCard>
 
       <!-- 卡片3：平均项目得分 -->
-      <div class="stat-card">
-        <div class="stat-card-header">
+      <StatCard class="stat-card--metric" label="平均项目得分" :value="platformStats.averageScore.toFixed(2)" sub="满分由打分标准决定"
+        label-placement="body" icon-bg="transparent" :icon-size="40" :icon-radius="12">
+        <template #icon>
           <div class="stat-icon amber-icon"></div>
-          <span class="growth-rate up">+15.7%</span>
-        </div>
-        <p class="stat-label">平均项目得分</p>
-        <h3 class="stat-value">4.86</h3>
-        <p class="stat-sub-label">满分5分制</p>
-        <div ref="miniChartRef3" class="mini-chart"></div>
-      </div>
-
-      <!-- 卡片4：项目驳回率 -->
-      <div class="stat-card">
-        <div class="stat-card-header">
-          <div class="stat-icon rose-icon"></div>
-          <span class="growth-rate down">-3.1%</span>
-        </div>
-        <p class="stat-label">项目驳回率</p>
-        <h3 class="stat-value">18%</h3>
-        <p class="stat-sub-label">评审驳回比例</p>
-        <div ref="miniChartRef4" class="mini-chart"></div>
-      </div>
+        </template>
+        <template #head-extra>
+          <span class="growth-rate up">+Nan%</span>
+        </template>
+      </StatCard>
     </div>
 
     <!-- 下方内容区 -->
     <div class="main-content-wrapper">
-      <!-- 左侧：趋势分析图表 -->
-      <div class="trend-card">
-        <div class="trend-header">
-          <div>
-            <h2 class="trend-title">趋势分析</h2>
-            <p class="trend-sub-title">过去30天的数据变化趋势</p>
-          </div>
-          <!-- Element Plus 按钮组切换 Tab -->
-          <el-button-group class="tab-group">
-            <el-button v-for="tab in trendTabs" :key="tab.key"
-              :type="activeTrendTab === tab.key ? 'primary' : 'default'" @click="activeTrendTab = tab.key" size="small">
-              {{ tab.label }}
-            </el-button>
-          </el-button-group>
+      <!-- 左侧：数据趋势图表 -->
+      <div class="chart-card">
+        <div class="chart-header">
+          <h2 class="chart-title">实时数据概览</h2>
+          <p class="chart-subtitle">项目数和评分数的实时统计</p>
         </div>
-        <div ref="trendChartRef" class="trend-chart"></div>
+        <div ref="trendsChartRef" class="trends-chart"></div>
       </div>
 
-      <!-- 右侧：洞察&建议 -->
-      <div class="side-cards-wrapper">
-        <!-- 关键洞察卡片 -->
-        <div class="side-card">
-          <div class="side-card-header">
-            <div class="side-icon emerald-bg"></div>
-            <h3 class="side-card-title">关键洞察</h3>
+      <!-- 右侧：卡片堆叠 -->
+      <!-- <div class="side-wrapper">
+
+        <div class="summary-card insight-card">
+          <div class="card-header">
+            <div class="card-icon emerald-bg"></div>
+            <h3 class="card-title">关键洞察</h3>
           </div>
           <ul class="insight-list">
             <li class="insight-item">
@@ -98,11 +76,11 @@
           </ul>
         </div>
 
-        <!-- 优化建议卡片 -->
-        <div class="side-card">
-          <div class="side-card-header">
-            <div class="side-icon indigo-bg"></div>
-            <h3 class="side-card-title">优化建议</h3>
+
+        <div class="summary-card suggestion-card">
+          <div class="card-header">
+            <div class="card-icon indigo-bg"></div>
+            <h3 class="card-title">优化建议</h3>
           </div>
           <ul class="suggestion-list">
             <li class="suggestion-item">
@@ -119,88 +97,49 @@
             </li>
           </ul>
         </div>
-      </div>
+      </div> -->
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch, nextTick } from 'vue'
-import { ElButton, ElButtonGroup } from 'element-plus'
+import { ref, computed, onMounted, watch, nextTick, onUnmounted } from 'vue'
 import { ElMessage } from 'element-plus'
-
+import StatCard from '@/components/common/data/StatCard.vue'
+import { getPlatformStatistics } from '@/api/statistic'
 // -------------------------- 1. 响应式数据定义 --------------------------
 // 图表 DOM 引用
-const trendChartRef = ref(null)
-const miniChartRef1 = ref(null)
-const miniChartRef2 = ref(null)
-const miniChartRef3 = ref(null)
-const miniChartRef4 = ref(null)
+const trendsChartRef = ref(null)
 
 // 图表实例
-let trendChart = null
-let miniChart1 = null
-let miniChart2 = null
-let miniChart3 = null
-let miniChart4 = null
+let trendsChart = null
 let echartsLib = null
 
-// 迷你图表数据
-const miniChartData = {
-  data1: [120, 135, 128, 142, 150, 168, 180],
-  data2: [30, 35, 32, 40, 45, 42, 52],
-  data3: [4.2, 4.3, 4.25, 4.4, 4.5, 4.7, 4.86],
-  data4: [25, 23, 24, 22, 20, 21, 18]
-}
-
-// 趋势图 Tab 配置
-const trendTabs = ref([
-  { key: 'project', label: '项目数' },
-  { key: 'score', label: '评分' },
-  { key: 'rate', label: '通过率' }
-])
-const activeTrendTab = ref('project')
-
-// -------------------------- 2. 图表配置函数 --------------------------
-// 迷你图表配置生成
-const getMiniChartOption = (data, color) => ({
-  grid: { left: 0, right: 0, top: 0, bottom: 0 },
-  xAxis: { type: 'category', show: false, data: Array.from({ length: data.length }, (_, i) => i) },
-  yAxis: { type: 'value', show: false },
-  series: [{
-    data,
-    type: 'line',
-    smooth: true,
-    symbol: 'none',
-    lineStyle: { width: 2, color },
-    areaStyle: {
-      color: {
-        type: 'linear',
-        x: 0, y: 0, x2: 0, y2: 1,
-        colorStops: [
-          { offset: 0, color: `${color}20` },
-          { offset: 1, color: `${color}00` }
-        ]
-      }
-    }
-  }]
+// 平台统计数据
+const platformStats = ref({
+  totalProjects: 0,
+  totalScores: 0,
+  averageScore: 0,
+  dates: [],
+  projectTrend: [],
+  scoreTrend: [],
+  averageScoreTrend: []
 })
 
+const loading = ref(false)
+
+// -------------------------- 2. 图表配置函数 --------------------------
 // 趋势图配置（响应式）
-const trendChartOption = computed(() => {
-  const dateList = Array.from({ length: 30 }, (_, i) => `${i + 1}日`)
+const trendsChartOption = computed(() => {
+  // 从API响应中获取日期，格式化为"月-日"
+  const dateList = platformStats.value.dates.map(date => {
+    const d = new Date(date)
+    return `${d.getMonth() + 1}-${d.getDate()}`
+  })
 
-  const dataMap = {
-    project: [500, 800, 750, 1200, 1100, 1500, 1400, 1800, 2200, 2000, 2500, 2400, 2800, 3000, 2800, 3200, 3500, 3300, 3800, 4000, 3800, 4200, 4500, 4300, 4800, 5000, 4800, 6000, 7200, 8000],
-    score: [3.2, 3.3, 3.5, 3.4, 3.6, 3.8, 3.7, 3.9, 4.0, 4.1, 4.0, 4.2, 4.3, 4.2, 4.4, 4.5, 4.4, 4.6, 4.7, 4.6, 4.7, 4.8, 4.75, 4.8, 4.82, 4.83, 4.84, 4.85, 4.86, 4.88],
-    rate: [50, 52, 55, 54, 58, 60, 62, 61, 65, 66, 68, 67, 70, 72, 71, 73, 75, 74, 76, 78, 77, 79, 80, 81, 80, 81, 82, 82, 82, 83]
-  }
-
-  const colorMap = {
-    project: '#6366f1',
-    score: '#10b981',
-    rate: '#f59e0b'
-  }
+  // 使用API返回的真实数据
+  const projectsData = platformStats.value.projectTrend
+  const scoresData = platformStats.value.scoreTrend
 
   return {
     grid: { left: '3%', right: '4%', bottom: '3%', top: '3%', containLabel: true },
@@ -212,13 +151,26 @@ const trendChartOption = computed(() => {
       axisTick: { show: false },
       axisLabel: { color: '#9ca3af', fontSize: 10 }
     },
-    yAxis: {
-      type: 'value',
-      splitLine: { lineStyle: { color: '#f3f4f6' } },
-      axisLine: { show: false },
-      axisTick: { show: false },
-      axisLabel: { color: '#9ca3af', fontSize: 10 }
-    },
+    yAxis: [
+      {
+        type: 'value',
+        name: '项目数',
+        position: 'left',
+        splitLine: { lineStyle: { color: '#f3f4f6' } },
+        axisLine: { show: false },
+        axisTick: { show: false },
+        axisLabel: { color: '#9ca3af', fontSize: 10 }
+      },
+      {
+        type: 'value',
+        name: '评分数',
+        position: 'right',
+        splitLine: { show: false },
+        axisLine: { show: false },
+        axisTick: { show: false },
+        axisLabel: { color: '#9ca3af', fontSize: 10 }
+      }
+    ],
     tooltip: {
       trigger: 'axis',
       backgroundColor: '#fff',
@@ -227,25 +179,55 @@ const trendChartOption = computed(() => {
       textStyle: { color: '#1f2937' },
       padding: [8, 12]
     },
-    series: [{
-      data: dataMap[activeTrendTab.value],
-      type: 'line',
-      smooth: true,
-      symbol: 'circle',
-      symbolSize: 6,
-      itemStyle: { color: colorMap[activeTrendTab.value] },
-      lineStyle: { width: 2, color: colorMap[activeTrendTab.value] },
-      areaStyle: {
-        color: {
-          type: 'linear',
-          x: 0, y: 0, x2: 0, y2: 1,
-          colorStops: [
-            { offset: 0, color: `${colorMap[activeTrendTab.value]}20` },
-            { offset: 1, color: `${colorMap[activeTrendTab.value]}00` }
-          ]
+    legend: {
+      data: ['项目数', '评分数'],
+      top: 10,
+      textStyle: { color: '#6b7280' }
+    },
+    series: [
+      {
+        name: '项目数',
+        data: projectsData,
+        type: 'line',
+        smooth: true,
+        yAxisIndex: 0,
+        symbol: 'circle',
+        symbolSize: 5,
+        itemStyle: { color: '#6366f1' },
+        lineStyle: { width: 2, color: '#6366f1' },
+        areaStyle: {
+          color: {
+            type: 'linear',
+            x: 0, y: 0, x2: 0, y2: 1,
+            colorStops: [
+              { offset: 0, color: '#6366f120' },
+              { offset: 1, color: '#6366f100' }
+            ]
+          }
+        }
+      },
+      {
+        name: '评分数',
+        data: scoresData,
+        type: 'line',
+        smooth: true,
+        yAxisIndex: 1,
+        symbol: 'circle',
+        symbolSize: 5,
+        itemStyle: { color: '#10b981' },
+        lineStyle: { width: 2, color: '#10b981' },
+        areaStyle: {
+          color: {
+            type: 'linear',
+            x: 0, y: 0, x2: 0, y2: 1,
+            colorStops: [
+              { offset: 0, color: '#10b98120' },
+              { offset: 1, color: '#10b98100' }
+            ]
+          }
         }
       }
-    }]
+    ]
   }
 })
 
@@ -273,58 +255,71 @@ const initCharts = async () => {
     return
   }
 
-  // 1. 初始化趋势图
-  if (trendChartRef.value) {
-    trendChart = echarts.init(trendChartRef.value)
-    trendChart.setOption(trendChartOption.value)
+  // 初始化趋势图
+  if (trendsChartRef.value) {
+    trendsChart = echarts.init(trendsChartRef.value)
+    trendsChart.setOption(trendsChartOption.value)
   }
-
-  // 2. 初始化迷你图
-  const miniChartConfigs = [
-    { ref: miniChartRef1, data: miniChartData.data1, color: '#6366f1' },
-    { ref: miniChartRef2, data: miniChartData.data2, color: '#10b981' },
-    { ref: miniChartRef3, data: miniChartData.data3, color: '#f59e0b' },
-    { ref: miniChartRef4, data: miniChartData.data4, color: '#f43f5e' }
-  ]
-
-  miniChartConfigs.forEach((config, index) => {
-    if (config.ref.value) {
-      const chart = echarts.init(config.ref.value)
-      chart.setOption(getMiniChartOption(config.data, config.color))
-      // 保存实例
-      if (index === 0) miniChart1 = chart
-      if (index === 1) miniChart2 = chart
-      if (index === 2) miniChart3 = chart
-      if (index === 3) miniChart4 = chart
-    }
-  })
 }
-
-// 监听 Tab 切换更新趋势图
-watch(activeTrendTab, () => {
-  if (trendChart) {
-    trendChart.setOption(trendChartOption.value)
-  }
-})
 
 // 窗口大小变化时重绘图表
 const handleResize = () => {
-  trendChart && trendChart.resize()
-  miniChart1 && miniChart1.resize()
-  miniChart2 && miniChart2.resize()
-  miniChart3 && miniChart3.resize()
-  miniChart4 && miniChart4.resize()
+  trendsChart && trendsChart.resize()
+}
+
+// 监听图表数据变化
+watch(trendsChartOption, () => {
+  if (trendsChart) {
+    trendsChart.setOption(trendsChartOption.value)
+  }
+})
+
+// ==================== 加载平台统计数据 ====================
+/**
+ * 加载平台统计数据
+ */
+const loadPlatformStatistics = async () => {
+  loading.value = true
+  try {
+    const response = await getPlatformStatistics()
+    console.log('平台统计数据响应:', response)
+    if (response.data) {
+      // 计算统计数据用于顶部卡片
+      const totalProjects = response.data.projectTrend?.[response.data.projectTrend.length - 1] || 0
+      const totalScores = response.data.scoreTrend?.reduce((sum, score) => sum + score, 0) || 0
+      const validScores = response.data.averageScoreTrend?.filter(score => score > 0) || []
+      const averageScore = validScores.length > 0
+        ? (validScores.reduce((sum, score) => sum + score, 0) / validScores.length).toFixed(2)
+        : 0
+
+      platformStats.value = {
+        totalProjects,
+        totalScores,
+        averageScore: Number(averageScore),
+        dates: response.data.dates || [],
+        projectTrend: response.data.projectTrend || [],
+        scoreTrend: response.data.scoreTrend || [],
+        averageScoreTrend: response.data.averageScoreTrend || []
+      }
+      console.log('更新后的平台统计:', platformStats.value)
+    }
+  } catch (error) {
+    ElMessage.error('加载平台统计数据失败')
+    console.error('加载平台统计失败:', error)
+  } finally {
+    loading.value = false
+  }
 }
 
 onMounted(() => {
   nextTick(() => {
+    loadPlatformStatistics()
     initCharts()
     window.addEventListener('resize', handleResize)
   })
 })
 
 // 清理事件监听
-import { onUnmounted } from 'vue'
 onUnmounted(() => {
   window.removeEventListener('resize', handleResize)
 })
@@ -367,28 +362,29 @@ onUnmounted(() => {
 
 @media (min-width: 1024px) {
   .stat-cards-wrapper {
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(3, 1fr);
   }
 }
 
-.stat-card {
-  background: #ffffff;
-  border-radius: 16px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-  padding: 24px;
-  transition: all 0.3s ease;
-}
-
-.stat-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
-}
-
-.stat-card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 16px;
+.stat-card--metric {
+  --stat-card-bg: #ffffff;
+  --stat-card-radius: 16px;
+  --stat-card-padding: 24px;
+  --stat-card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  --stat-card-hover-transform: translateY(-2px);
+  --stat-card-hover-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+  --stat-head-gap: 16px;
+  --stat-label-size: 0.875rem;
+  --stat-label-color: #6b7280;
+  --stat-label-weight: 500;
+  --stat-label-margin: 0 0 4px 0;
+  --stat-value-size: 2rem;
+  --stat-value-color: #1f2937;
+  --stat-value-weight: 700;
+  --stat-value-margin: 0 0 4px 0;
+  --stat-sub-size: 0.875rem;
+  --stat-sub-color: #9ca3af;
+  --stat-sub-margin: 0 0 16px 0;
 }
 
 /* 将原有的 .stat-icon 及相关颜色类替换为以下代码 */
@@ -432,113 +428,157 @@ onUnmounted(() => {
   color: #f43f5e;
 }
 
-.stat-label {
-  font-size: 0.875rem;
-  color: #6b7280;
-  font-weight: 500;
-  margin: 0 0 4px 0;
-}
-
-.stat-value {
-  font-size: 2rem;
-  font-weight: 700;
-  color: #1f2937;
-  margin: 0 0 4px 0;
-}
-
-.stat-sub-label {
-  font-size: 0.875rem;
-  color: #9ca3af;
-  margin: 0 0 16px 0;
-}
-
-.mini-chart {
-  width: 100%;
-  height: 40px;
-}
-
 /* -------------------------- 下方主内容区 -------------------------- */
 .main-content-wrapper {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 24px;
   max-width: 1200px;
   margin: 0 auto;
+  display: grid;
+  /* grid-template-columns: 2fr 1fr; */
+  gap: 24px;
 }
 
-@media (min-width: 1024px) {
+@media (max-width: 1023px) {
   .main-content-wrapper {
-    grid-template-columns: 2fr 1fr;
+    grid-template-columns: 1fr;
   }
 }
 
-/* 趋势分析卡片 */
-.trend-card {
+/* 图表卡片 */
+.chart-card {
   background: #ffffff;
   border-radius: 16px;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
   padding: 24px;
 }
 
-.trend-header {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  align-items: flex-start;
+.chart-header {
   margin-bottom: 24px;
-  gap: 16px;
 }
 
-@media (min-width: 640px) {
-  .trend-header {
-    flex-direction: row;
-    align-items: center;
-  }
-}
-
-.trend-title {
+.chart-title {
   font-size: 1.25rem;
   font-weight: 700;
   color: #1f2937;
   margin: 0 0 4px 0;
 }
 
-.trend-sub-title {
+.chart-subtitle {
   font-size: 0.875rem;
   color: #6b7280;
   margin: 0;
 }
 
-.trend-chart {
+.trends-chart {
   width: 100%;
   height: 400px;
 }
 
 /* 右侧卡片容器 */
-.side-cards-wrapper {
+.side-wrapper {
   display: flex;
   flex-direction: column;
   gap: 24px;
 }
 
-.side-card {
+/* 统计网格布局 - 保留用于其他可能的展示 */
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+  margin: 0 auto;
+}
+
+/* 汇总卡片 */
+.summary-card {
   background: #ffffff;
   border-radius: 16px;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
   padding: 24px;
+  transition: all 0.3s ease;
 }
 
-.side-card-header {
+.summary-card:hover {
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+  transform: translateY(-2px);
+}
+
+.card-header {
   display: flex;
   align-items: center;
   gap: 12px;
   margin-bottom: 20px;
 }
 
-.side-icon {
+.card-icon {
   width: 40px;
   height: 40px;
   border-radius: 12px;
+  flex-shrink: 0;
+}
+
+.card-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin: 0;
+  flex: 1;
+}
+
+.card-badge {
+  display: inline-block;
+  background: #ecfdf5;
+  color: #059669;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+/* 平台数据汇总卡片 - 未使用的样式保留以备后用 */
+.summary-content {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  justify-content: space-around;
+}
+
+.summary-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  flex: 1;
+}
+
+.summary-item .label {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+.summary-item .value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.summary-item .unit {
+  font-size: 0.875rem;
+  color: #9ca3af;
+  margin-top: 4px;
+}
+
+.divider {
+  width: 1px;
+  height: 60px;
+  background: #e5e7eb;
+}
+
+/* 洞察卡片和建议卡片 */
+.insight-card,
+.suggestion-card {
+  width: 100%;
 }
 
 .emerald-bg {
@@ -547,13 +587,6 @@ onUnmounted(() => {
 
 .indigo-bg {
   background-color: #e0e7ff;
-}
-
-.side-card-title {
-  font-size: 1.125rem;
-  font-weight: 700;
-  color: #1f2937;
-  margin: 0;
 }
 
 /* 列表样式 */
