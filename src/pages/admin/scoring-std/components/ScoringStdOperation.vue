@@ -34,6 +34,7 @@ import ScoringStdForm from './ScoringStdForm.vue';
 
 import { ScoringApi } from '@/api/scoring';
 import { useLoading } from '@/composables/useLodaing';
+import { buildScoringStandardPayload } from '@/utils/scoringStandard';
 
 const props = defineProps({
   addMode: {
@@ -50,7 +51,7 @@ const props = defineProps({
   },
   initData: {
     type: Object,
-    default: () => { }
+    default: () => ({})
   }
 })
 
@@ -68,8 +69,8 @@ const handleClose = () => {
 };
 
 const { isLoading: loading, start: startLoading, end: endLoading } = useLoading('scoringStd:detail');
-const standardData = ref({ name: '', indicators: [] });
-const effectiveInitData = computed(() => props.addMode ? { name: '', indicators: [] } : standardData.value);
+const standardData = ref({ name: '', categories: [] });
+const effectiveInitData = computed(() => (props.addMode ? { name: '', categories: [] } : standardData.value));
 
 const loadStandardDetail = async (stdId) => {
   if (!stdId || props.addMode) {
@@ -79,8 +80,6 @@ const loadStandardDetail = async (stdId) => {
   try {
     const response = await ScoringApi.getScoringStandardsDetails(stdId);
     standardData.value = response.data || {};
-    console.log(response.data)
-
   } catch (err) {
     ElMessage.error(`加载打分标准失败: ${err.message || err}`);
   } finally {
@@ -97,8 +96,8 @@ const handleConfirm = async () => {
     isSubmitting.value = true;
 
     // 获取表单数据
-    const formData = formRef.value.getFormData();
-    console.log(formData)
+    const rawFormData = formRef.value.getFormData();
+    const formData = buildScoringStandardPayload(rawFormData);
     if (props.addMode) {
       await ScoringApi.createScoringStandards(formData);
       ElMessage.success('打分标准创建成功');
