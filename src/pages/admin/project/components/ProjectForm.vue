@@ -11,11 +11,14 @@
     </el-form-item>
 
     <el-form-item label="开始日期" prop="startDate">
-      <el-date-picker v-model="formData.startDate" type="date" placeholder="选择项目开始日期" value-format="YYYY-MM-DD" />
+      <el-date-picker v-model="formData.startDate" type="datetime" placeholder="选择项目开始时间"
+        value-format="YYYY-MM-DD HH:mm" format="YYYY-MM-DD HH:mm" :disabled-date="disableBeforeToday"
+        :editable="false" />
     </el-form-item>
 
     <el-form-item label="结束日期" prop="endDate">
-      <el-date-picker v-model="formData.endDate" type="date" placeholder="选择项目结束日期" value-format="YYYY-MM-DD" />
+      <el-date-picker v-model="formData.endDate" type="datetime" placeholder="选择项目结束时间" value-format="YYYY-MM-DD HH:mm"
+        format="YYYY-MM-DD HH:mm" :disabled-date="disableBeforeToday" :editable="false" />
     </el-form-item>
 
     <el-form-item label="打分标准" prop="standardId" @click="showInfo($refs)" ref="scoringStdRef">
@@ -93,8 +96,6 @@ const props = defineProps({
   }
 })
 
-const emits = defineEmits(['update:data'])
-
 const message = useMessage();
 
 const scoringStdRef = ref(null)
@@ -115,6 +116,47 @@ const showInfo = (ref) => {//ref比对
 const baseFormRef = ref(null)
 
 const formData = ref(props.data)
+
+/**
+ * 日期时间选择器的禁用函数，禁止选择今天之前的日期
+ * @param {Date} date 待判断的日期对象
+ * @returns {Boolean} 如果日期在今天之前则返回 true，否则返回 false
+ */
+const disableBeforeToday = (date) => {
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  return date.getTime() < today.getTime()
+}
+
+/**
+ * 将日期时间格式化为分钟级别，去除秒和毫秒部分
+ * @param {String} value 日期时间字符串
+ * @param value
+ */
+const normalizeDateTimeToMinute = (value) => {
+  if (!value || typeof value !== 'string') {
+    return value
+  }
+
+  const matched = value.match(/^(\d{4}-\d{2}-\d{2})(?:[ T](\d{2}):(\d{2}))?/)
+  if (!matched) {
+    return value
+  }
+
+  const [, datePart, hours = '00', minutes = '00'] = matched
+  return `${datePart} ${hours}:${minutes}`
+}
+
+/**
+ * 同步日期时间字段到分钟级别，确保后端接收的格式正确
+ * 主要用于日期时间选择器的值变化时，去除秒和毫秒部分，避免后端验证失败
+ * 在编辑模式下，组件初始化时也会调用一次，确保初始数据格式正确
+ *  @description 目前后端对日期时间的验证比较严格，要求必须是分钟级别的格式（YYYY-MM-DD HH:mm），
+ */
+const syncDateTimeFields = () => {
+  formData.value.startDate = normalizeDateTimeToMinute(formData.value.startDate)
+  formData.value.endDate = normalizeDateTimeToMinute(formData.value.endDate)
+}
 
 const scoringStdList = ref([]);
 const initProjectFormData = async () => {
@@ -199,7 +241,16 @@ watch(
   },
   { deep: true }
 )
+
+watch(
+  () => [props.data?.startDate, props.data?.endDate],
+  () => {
+    syncDateTimeFields()
+  }
+)
+
 onMounted(() => {
+  syncDateTimeFields()
   if (props.editMode) {
     initProjectFormData();
   }

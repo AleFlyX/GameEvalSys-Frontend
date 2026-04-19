@@ -62,7 +62,7 @@ const handleConfirm = async () => {
   console.log('项目添加ADDDDing', data)
   if (valid) {
     try {
-      const response = await projectApi.createProjectWithReviewerGroup(data)
+      const response = await projectApi.createProject(data)
       message.success(`${response.message}`)
       emits('refresh', true)
       handleClose()
