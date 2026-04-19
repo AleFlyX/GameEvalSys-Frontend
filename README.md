@@ -1,145 +1,198 @@
-# GameEvaluate-frontend
+# 课题项目打分系统前端
 
-This template should help get you started developing with Vue 3 in Vite.
+基于 Vue 3 + Vite + Pinia + Element Plus 的课题项目打分管理前端，支持多角色权限控制、项目管理、评审打分与统计分析。
 
-## 项目目录结构
+## 功能概览
 
-```plain text
-├── src/
-│   ├── pages/         # 按角色分层：admin（管理员）/normal（普通用户/打分用户）/public（公共页面）
-│   │   ├── public/    # 所有角色均可访问的公共页面（登录、403、404）
-│   │   │   ├── login/
-│   │   │   │   └── Login.vue
-│   │   │   ├── 403/
-│   │   │   │   └── Forbidden.vue
-│   │   │   └── 404/
-│   │   │       └── NotFound.vue
-│   │   ├── admin/     # 仅超级管理员/管理员可访问的页面（用户/项目/统计管理）
-│   │   │   ├── user/  # 用户管理模块
-│   │   │   │   ├── UserList.vue
-│   │   │   │   ├── UserAdd.vue
-│   │   │   │   └── UserEdit.vue
-│   │   │   ├── project/ # 项目管理模块
-│   │   │   │   ├── ProjectList.vue
-│   │   │   │   ├── ProjectAdd.vue
-│   │   │   │   └── ProjectEdit.vue
-│   │   │   └── statistic/ # 数据统计与导出模块
-│   │   │       └── StatisticPannel.vue
-│   │   └── normal/    # 打分用户/普通用户可访问（仅授权内容，管理员也可访问）
-│   │       ├── home/  # 后台首页
-│   │       │   └── HomePage.vue
-│   │       ├── scoring/ # 打分功能模块
-│   │       │   ├── ScoringList.vue # 授权打分项目列表
-│   │       │   └── GroupScoring.vue # 小组打分详情页
-│   ├── router/
-│   │   └── index.js   # 路由配置（核心：权限路由、角色拦截）
-│   ├── store/         # Pinia状态管理（用户信息、全局状态）
-│   │   ├── modules/
-│   │   │   └── userStore.js # 用户信息/登录态管理
-│   │   └── index.js
-│   ├── utils/
-│   │   ├── request.js # 已封装的Axios（之前优化版）
-│   │   └── format.js  # 新增：格式化工具（时间/数字）
-│   ├── api/           # 接口封装（之前已写user.js，后续补全其他）
-│   │   ├── user.js    # 已封装
-│   │   ├── project.js # 待开发
-│   │   ├── scoring.js # 待开发
-│   │   └── statistic.js # 待开发
-│   ├── layout/        # 布局组件（后台主布局：侧边栏+头部）
-│   │   ├── MainLayout.vue # 核心布局（admin/normal页面共用）
-│   │   ├── components/
-│   │   │   ├── Sidebar.vue # 侧边栏（按角色渲染菜单）
-│   │   │   └── Header.vue  # 头部（退出、用户信息）
-│   └── components/    # 全局公共组件
-│       ├── common/    # 基础公共组件
-│       │   ├── PaginationBar.vue # 分页组件
-│       │   ├── SearchInput.vue # 搜索输入框
-│       │   └── ConfirmDelete.vue # 删除确认弹窗
-│       └── business/  # 业务公共组件
-│           ├── ScoringForm.vue # 打分表单（核心业务组件）
-│           └── ProjectCard.vue # 项目卡片
-```
+- 登录与鉴权：JWT 登录、请求自动携带 `Authorization`、401 自动清理登录态并跳转登录页
+- RBAC 权限控制：基于路由 `meta.roles` 的页面访问控制
+- 角色体系：`super_admin`、`admin`、`scorer`、`normal`
+- 管理功能：用户管理、评审队伍管理、项目管理、项目受审队伍管理、打分标准管理
+- 业务功能：项目打分、项目统计、平台统计
+- 部署支持：本地开发代理、Nginx 历史路由兼容、Docker Compose 一键部署
 
-## 快速启动
+## 技术栈
 
-```sh
+- Vue 3
+- Vue Router 4
+- Pinia
+- Element Plus
+- Axios
+- ECharts
+- Vite 7
+- ESLint 9 + Prettier
+
+## 运行要求
+
+- Node.js: `^20.19.0 || >=22.12.0`
+- npm: 建议与 Node LTS 配套版本
+
+## 快速开始
+
+### 1. 安装依赖
+
+```bash
 npm install
 ```
 
-### Compile and Hot-Reload for Development
+### 2. 启动开发环境
 
-```sh
+```bash
 npm run dev
 ```
 
-### Compile and Minify for Production
+默认端口为 `5173`，并会自动打开浏览器。
 
-```sh
+### 3. 生产构建
+
+```bash
 npm run build
 ```
 
-### Lint with [ESLint](https://eslint.org/)
+当前构建输出目录为 `deploy/dist`（见 `vite.config.js`）。
 
-```sh
+### 4. 预览构建结果
+
+```bash
+npm run preview
+```
+
+### 5. 代码检查与格式化
+
+```bash
 npm run lint
+npm run format
 ```
 
-## Prettierrc自动格式化代码插件
+## 环境变量
 
-```js
-    // 一行最多多少个字符
-    "printWidth": 150,
-    // 指定每个缩进级别的空格数
-    "tabWidth": 2,
-    // 使用制表符而不是空格缩进行
-    "useTabs": true,
-    // 在语句末尾打印分号
-    "semi": true,
-    // 使用单引号而不是双引号
-    "singleQuote": true,
-    // 更改引用对象属性的时间 可选值"<as-needed|consistent|preserve>"
-    "quoteProps": 'as-needed',
-    // 在JSX中使用单引号而不是双引号
-    "jsxSingleQuote": false,
-    // 多行时尽可能打印尾随逗号。（例如，单行数组永远不会出现逗号结尾。） 可选值"<none|es5|all>"，默认none
-    "trailingComma": 'es5',
-    // 在对象文字中的括号之间打印空格
-    "bracketSpacing": true,
-    // jsx 标签的反尖括号需要换行
-    "jsxBracketSameLine": false,
-    // 在jsx中把'>' 是否单独放一行
-    "bracketSameLine": false,
-    // 在单独的箭头函数参数周围包括括号 always：(x) => x \ avoid：x => x
-    "arrowParens": 'always',
-    // 这两个选项可用于格式化以给定字符偏移量（分别包括和不包括）开始和结束的代码
-    "rangeStart": 0,
-    "rangeEnd": Infinity,
-    // 指定要使用的解析器，不需要写文件开头的 @prettier
-    "requirePragma": false,
-    // 不需要自动在文件开头插入 @prettier
-    "insertPragma": false,
-    // 使用默认的折行标准 always\never\preserve
-    "proseWrap": 'preserve',
-    // 指定HTML文件的全局空格敏感度 css\strict\ignore
-    "htmlWhitespaceSensitivity": 'css',
-    // Vue文件脚本和样式标签缩进
-    "vueIndentScriptAndStyle": false,
-    // 换行符使用 lf 结尾是 可选值"<auto|lf|crlf|cr>"
-    "endOfLine": 'lf'
+可在项目根目录按需创建 `.env.development`、`.env.production`。
 
+| 变量名                  | 说明                         | 默认值    |
+| ----------------------- | ---------------------------- | --------- |
+| `VITE_API_BASE_URL`     | 接口基础路径                 | `/api/v1` |
+| `VITE_SHOW_TEST_ROUTES` | 是否显示测试路由（`1` 启用） | `0`       |
+| `VITE_DELAY_REQUEST`    | 是否启用请求延迟（`1` 启用） | `0`       |
+
+示例：
+
+```env
+VITE_API_BASE_URL=/api/v1
+VITE_SHOW_TEST_ROUTES=0
+VITE_DELAY_REQUEST=0
 ```
 
-## git提交规范
+## 路由与权限
 
+### 公共路由
+
+- `/login` 登录页
+- `/about` 关于页
+- `/403` 无权限页
+- `/404` 未找到页
+
+### 业务路由
+
+主框架路由为 `/`，默认重定向到 `/home`，子路由按角色控制：
+
+- 普通业务
+  - `/home`：`super_admin/admin/scorer/normal`
+  - `/scoring`：`super_admin/admin/scorer`
+  - `/scoring/:projectId`：`super_admin/admin/scorer`
+- 管理后台
+  - `/admin/user`
+  - `/admin/project`
+  - `/admin/project/edit/:id`
+  - `/admin/project/statistic`
+  - `/admin/project/statistic/:projectId`
+  - `/admin/scoring-stds`
+  - `/admin/project-groups`
+  - `/admin/reviewer-groups`
+  - `/admin/reviewer-groups/add`
+  - `/admin/reviewer-groups/edit/:id`
+  - `/admin/statistic`
+  - 以上均为：`super_admin/admin`
+- 超级管理员
+  - `/super-admin/monitor/server`
+  - `/super-admin/monitor/online`
+  - 以上均为：`super_admin`
+
+## 接口约定
+
+- 前缀：`/api/v1`
+- 认证头：`Authorization: Bearer <token>`
+- 统一响应结构：
+
+```json
+{
+  "code": 200,
+  "message": "操作成功",
+  "data": {}
+}
 ```
-feat : 新功能
-fix : 修复bug
-docs : 文档改变
-style : 代码格式改变
-refactor : 某个已有功能重构
-perf : 性能优化
-test : 增加测试
-build : 改变了build工具 如 grunt换成了 npm
-revert : 撤销上一次的 commit
-chore : 构建过程或辅助工具的变动
+
+前端已在 `src/utils/request.js` 中完成：
+
+- 请求拦截：自动注入 token、GET 请求附加防缓存参数
+- 响应拦截：统一错误提示
+- 401 处理：清理 token 并跳转登录
+
+## 项目结构
+
+```text
+.
+├─ src
+│  ├─ api                  # 接口模块
+│  ├─ components           # 通用组件与业务组件
+│  ├─ composables          # 组合式函数
+│  ├─ layouts              # 主布局与侧边栏/头部
+│  ├─ pages                # 页面（public/normal/admin/super-admin）
+│  ├─ router               # 路由与权限配置
+│  ├─ stores               # Pinia 状态管理
+│  └─ utils                # 请求、工具函数
+├─ deploy
+│  ├─ Dockerfile
+│  ├─ docker-compose.yml
+│  └─ nginx.conf
+└─ docs                    # 开发文档与规范
 ```
+
+## Docker 部署
+
+在项目根目录执行：
+
+```bash
+docker compose -f deploy/docker-compose.yml up -d --build
+```
+
+默认映射端口：`8999 -> 80`。
+
+说明：
+
+- 镜像构建阶段会执行 `npm ci` 和 `npm run build`
+- Nginx 会将 `/api/v1/*` 转发到 `http://host.docker.internal:8899`
+- Vue Router 使用 history 模式，已通过 `try_files` 处理刷新 404 问题
+
+## 开发约定
+
+- API 调用统一放在 `src/api`，页面中不直接写裸 Axios
+- 角色权限通过路由 `meta.roles` 控制，统一由全局前置守卫拦截
+- 业务公共组件优先沉淀到 `src/components/business`
+- 通用逻辑优先沉淀到 `src/composables`
+
+## 常见问题
+
+1. 接口 401
+   - 检查 token 是否存在且未过期
+   - 检查后端服务是否可用
+2. 刷新页面 404
+   - 检查 Nginx 是否配置 `try_files $uri $uri/ /index.html;`
+3. 本地跨域
+   - 开发环境使用 `vite.config.js` 的 `server.proxy`，无需在组件中处理跨域
+
+## 相关文档
+
+- `docs/basic/课题项目打分系统 - 前端项目说明.md`
+- `docs/basic/api-call.md`
+- `docs/dev/README.md`
+- `deploy/README.md`
