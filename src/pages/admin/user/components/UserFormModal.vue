@@ -1,5 +1,5 @@
 <template>
-  <BaseFormModal :visible="visible" @update:visible="$emit('update:visible', $event)">
+  <BaseFormModal :visible="visible" @update:visible="$emit('update:visible', $event)" width="550px" min-height="65%">
     <template #title>
       <span v-if="isEditMode">{{ title }}</span>
       <el-switch v-else v-model="multiAddMode" active-text="批量添加" inactive-text="单用户添加" size="large"></el-switch>

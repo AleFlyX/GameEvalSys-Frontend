@@ -2,8 +2,10 @@
   <div style="padding: 0 10px;">
     <div class="base-info">
       <el-form-item label="选择评审团">
-        <el-select v-model="revirewerGroup.id" filterable remote clearable :remote-method="getReviewerGroupList"
-          debounce="300" :loading="loading" placeholder="选择这批用户所属评审团/班级">
+        <el-select ref="reviewerGroupsSelectRef" v-model="revirewerGroup.id" filterable remote clearable
+          :remote-method="getReviewerGroupList" debounce="300" :loading="loading" placeholder="选择这批用户所属评审团/班级"
+          :prefix-icon="Search" popper-class="user-multi-reviewer-select-popper"
+          @popup-scroll="handleReviewerGroupsPopupScroll" @visible-change="handleReviewerGroupsVisibleChange">
           <el-option v-for="item in reviewerGroups" :key="item.id" :label="item.name" :value="item.id" />
         </el-select>
       </el-form-item>
@@ -43,19 +45,100 @@
 <script setup>
 import MyBtn from '@/components/common/form/MyBtn.vue';
 import { ref, watch } from 'vue';
+import { Search } from '@element-plus/icons-vue';
 
 import { reviewerGroupApi } from '@/api/reviewer-group';
 import { useLoading } from '@/composables/useLodaing';
 
 const { isLoading: loading, start: startLoading, end: endLoading } = useLoading('userMultiAdd:reviewerGroups')
 const reviewerGroups = ref([])
+const reviewerGroupsSelectRef = ref(null)
+const reviewerGroupsQuery = ref({ keyword: '', page: 1, hasMore: true })
+const PAGE_SIZE = 10
 
-const getReviewerGroupList = async (keywords) => {
+const getReviewerGroupList = async (keywords = '') => {
+  reviewerGroupsQuery.value = {
+    keyword: keywords,
+    page: 1,
+    hasMore: true
+  }
+
   startLoading();
   console.log('searching reviewer group list', keywords)
   try {
-    const response = await reviewerGroupApi.getReviewerGroupList({ keyWords: keywords })
-    reviewerGroups.value = response.data.list;
+    const response = await reviewerGroupApi.getReviewerGroupList({
+      keyWords: keywords,
+      page: 1,
+      size: PAGE_SIZE
+    })
+    const list = response.data.list || []
+    const total = Number(response.data.total || 0)
+
+    reviewerGroups.value = list;
+    reviewerGroupsQuery.value.hasMore = total > 0 ? list.length < total : list.length >= PAGE_SIZE
+  } catch (err) {
+    console.log(err)
+  } finally {
+    endLoading();
+  }
+}
+
+const handleReviewerGroupsVisibleChange = (visible) => {
+  if (visible && !reviewerGroups.value.length) {
+    getReviewerGroupList(reviewerGroupsQuery.value.keyword)
+  }
+}
+
+const handleReviewerGroupsPopupScroll = (event) => {
+  const target = getReviewerGroupsScrollTarget(event)
+  if (!target || loading.value || !reviewerGroupsQuery.value.hasMore) {
+    return
+  }
+
+  const isNearBottom = target.scrollHeight - target.scrollTop - target.clientHeight <= 20
+  if (!isNearBottom) {
+    return
+  }
+
+  loadMoreReviewerGroups()
+}
+
+const getReviewerGroupsScrollTarget = (event) => {
+  if (event?.target) {
+    return event.target
+  }
+
+  const wrapRef = reviewerGroupsSelectRef.value?.popperRef?.contentRef?.querySelector('.el-select-dropdown__wrap')
+  if (wrapRef) {
+    return wrapRef
+  }
+
+  return document.querySelector('.user-multi-reviewer-select-popper .el-select-dropdown__wrap')
+}
+
+const loadMoreReviewerGroups = async () => {
+  if (loading.value || !reviewerGroupsQuery.value.hasMore) {
+    return
+  }
+
+  const nextPage = reviewerGroupsQuery.value.page + 1
+  startLoading();
+  try {
+    const response = await reviewerGroupApi.getReviewerGroupList({
+      keyWords: reviewerGroupsQuery.value.keyword,
+      page: nextPage,
+      size: PAGE_SIZE
+    })
+    const list = response.data.list || []
+    const total = Number(response.data.total || 0)
+    const existingIds = new Set(reviewerGroups.value.map(item => item.id))
+    const uniqueList = list.filter(item => !existingIds.has(item.id))
+
+    reviewerGroups.value = [...reviewerGroups.value, ...uniqueList]
+    reviewerGroupsQuery.value.page = nextPage
+    reviewerGroupsQuery.value.hasMore = total > 0
+      ? reviewerGroups.value.length < total
+      : list.length >= PAGE_SIZE
   } catch (err) {
     console.log(err)
   } finally {
