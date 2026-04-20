@@ -1,5 +1,14 @@
 # 课题项目打分系统前端
 
+![Vue](https://img.shields.io/badge/Vue-3.5.26-42B883?style=flat-square&logo=vuedotjs&logoColor=white)
+![Vite](https://img.shields.io/badge/Vite-7.3.1-646CFF?style=flat-square&logo=vite&logoColor=white)
+![Element Plus](https://img.shields.io/badge/Element%20Plus-2.13.1-409EFF?style=flat-square&logo=element&logoColor=white)
+![Pinia](https://img.shields.io/badge/Pinia-3.0.4-F7DF1E?style=flat-square&logo=pinia&logoColor=black)
+![Node](https://img.shields.io/badge/Node-%5E20.19.0%20%7C%7C%20%3E%3D22.12.0-5FA04E?style=flat-square&logo=nodedotjs&logoColor=white)
+![License](https://img.shields.io/badge/License-MIT-black?style=flat-square)
+
+徽章规范：统一使用 `flat-square` 风格，建议按“框架 > 构建工具 > UI 组件 > 状态管理 > 运行时 > License”顺序排列。
+
 基于 Vue 3 + Vite + Pinia + Element Plus 的课题项目打分管理前端，支持多角色权限控制、项目管理、评审打分与统计分析。
 
 ## 功能概览
