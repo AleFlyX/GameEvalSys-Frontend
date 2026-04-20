@@ -1,10 +1,11 @@
 <template>
-  <li class="menu-item" :class="{ active: props.active || itemActive, 'sub-item': level === 'sub' }"
-    @click="handleClick">
+  <li class="menu-item" :class="{ active: isActive, 'sub-item': level === 'sub', collapsed }"
+    :title="collapsed && showNativeTitle ? label : ''" @click="handleClick">
     <div class="label-context">
-      <slot name="prefix">
-      </slot>
-      {{ label }}
+      <span class="prefix-wrap">
+        <slot name="prefix" />
+      </span>
+      <span v-show="!collapsed" class="menu-text">{{ label }}</span>
     </div>
   </li>
 </template>
@@ -30,6 +31,14 @@ const props = defineProps({
     type: String,
     default: "root",
   },
+  collapsed: {
+    type: Boolean,
+    default: false,
+  },
+  showNativeTitle: {
+    type: Boolean,
+    default: true,
+  },
 });
 
 const emits = defineEmits(["clicked"]);
@@ -43,7 +52,10 @@ const normalizePath = (path) => {
 
 const itemActive = computed(() => {
   return route.path === normalizePath(props.index);
-})
+});
+const isActive = computed(() => {
+  return props.active === null ? itemActive.value : props.active;
+});
 
 const handleClick = () => {
   if (props.index) router.push(normalizePath(props.index));
@@ -54,45 +66,84 @@ const handleClick = () => {
 
 <style scoped>
 .menu-item {
-  position: relative;
-  line-height: 48px;
-  font-size: 16px;
+  min-height: 40px;
+  font-size: 14px;
   font-weight: 500;
-  padding: 0 20px;
+  color: #253041;
+  border-radius: 12px;
+  margin: 2px 4px;
+  padding: 0 12px;
   cursor: pointer;
   transition: all 0.2s ease;
-  border-left: 7px solid transparent;
+  border: 1px solid transparent;
   user-select: none;
   list-style: none;
+  display: flex;
+  align-items: center;
 }
 
 .menu-item:hover {
-  background-color: #34495e;
-  padding-left: 25px;
+  background-color: rgba(15, 23, 42, 0.06);
+  border-color: rgba(15, 23, 42, 0.06);
 }
 
 .menu-item.active {
-  background-color: #1abc9c;
+  background: linear-gradient(135deg, #0a84ff, #0a69d7);
   color: #fff;
-  border-left-color: #0f997d;
-  padding-left: 25px;
+  border-color: rgba(10, 132, 255, 0.4);
+  box-shadow: 0 10px 18px rgba(10, 132, 255, 0.3);
 }
 
 .label-context {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 10px;
+  width: 100%;
+}
+
+.prefix-wrap {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.menu-text {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .menu-item.sub-item {
-  font-weight: 400;
-  padding-left: 35px;
+  margin-left: 20px;
+  font-size: 13px;
+  font-weight: 450;
+  color: #4b5565;
 }
 
-.menu-item.sub-item:hover,
 .menu-item.sub-item.active {
-  padding-left: 40px;
-  background-color: #1abc9c79;
-  border-left-color: #0f997d;
+  color: #fff;
+}
+
+.menu-item.collapsed {
+  width: 48px;
+  min-height: 46px;
+  justify-content: center;
+  padding: 0;
+}
+
+.menu-item.collapsed.sub-item {
+  margin-left: 4px;
+}
+
+.menu-item.collapsed .label-context {
+  width: auto;
+  gap: 0;
+}
+
+.menu-item :deep(.el-icon) {
+  font-size: 18px;
 }
 </style>

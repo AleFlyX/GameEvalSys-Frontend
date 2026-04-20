@@ -1,11 +1,15 @@
 <template>
-  <li class="fold-menu-group">
-    <div class="fold-menu-header" :class="{ active: opened || childMenuItemActive }" @click="handleToggle">
+  <li class="fold-menu-group" :class="{ collapsed }">
+    <div class="fold-menu-header" :class="{ active: opened || childMenuItemActive }" :title="collapsed ? label : ''"
+      @click="handleToggle">
       <div class="label-prefix">
-        <slot name="prefix" />
-        {{ label }}
+        <span class="prefix-wrap">
+          <slot name="prefix" />
+        </span>
+        <span v-show="!collapsed">{{ label }}</span>
       </div>
-      <span class="arrow" :class="{ active: opened, hidden: alwaysOpen }">
+
+      <span v-show="!collapsed" class="arrow" :class="{ active: opened, hidden: alwaysOpen }">
         <el-icon>
           <ArrowUpBold />
         </el-icon>
@@ -13,7 +17,7 @@
     </div>
 
     <transition name="submenu-collapse">
-      <ul v-show="opened" class="fold-submenu">
+      <ul v-show="opened && !collapsed" class="fold-submenu">
         <slot />
       </ul>
     </transition>
@@ -42,30 +46,46 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  collapsed: {
+    type: Boolean,
+    default: false,
+  },
 });
 
-const emits = defineEmits(['update:active']);
+const emits = defineEmits(["update:active"]);
 
 const route = useRoute();
 
-const childMenuItemActive = computed(() => route.path.startsWith(props.baseIndex)) // fold的子item被点击或进入子item的path
-const opened = ref(false);
+const childMenuItemActive = computed(() => route.path.startsWith(props.baseIndex));
+const opened = ref(props.alwaysOpen || props.active || childMenuItemActive.value);
 
 const handleToggle = () => {
-  if (props.alwaysOpen) {
+  if (props.alwaysOpen || props.collapsed) {
     return;
   }
   opened.value = !opened.value;
-  console.log('update:active', opened.value)
-  emits('update:active', opened.value);
+  emits("update:active", opened.value);
 };
 watch(
   () => childMenuItemActive.value,
   (nv) => {
-    if (!nv) { //点击folder外部路径时关闭正在展开的folder
+    if (nv) {
+      opened.value = true;
+      return;
+    }
+    if (!props.alwaysOpen) {
       opened.value = false;
     }
-  })
+  }
+);
+watch(
+  () => props.collapsed,
+  (nv) => {
+    if (nv && !props.alwaysOpen) {
+      opened.value = false;
+    }
+  }
+);
 </script>
 
 <style scoped>
@@ -76,38 +96,51 @@ watch(
 .label-prefix {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 10px;
+}
+
+.prefix-wrap {
+  width: 20px;
+  height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
 .fold-menu-header {
-  line-height: 48px;
-  font-size: 16px;
-  font-weight: 700;
-  padding: 0 20px;
+  min-height: 40px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #253041;
+  border-radius: 12px;
+  margin: 2px 4px;
+  padding: 0 12px;
   cursor: pointer;
   transition: all 0.2s ease;
-  border-left: 7px solid transparent;
+  border: 1px solid transparent;
   user-select: none;
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
-.fold-menu-header:hover,
-.fold-menu-header.active {
-  background-color: #34495e;
-  padding-left: 25px;
+.fold-menu-header:hover {
+  background-color: rgba(15, 23, 42, 0.06);
+  border-color: rgba(15, 23, 42, 0.06);
 }
 
 .fold-menu-header.active {
-  background-color: #1abc9c;
-  border-left-color: #0f997d;
+  background: linear-gradient(135deg, #0a84ff, #0a69d7);
+  border-color: rgba(10, 132, 255, 0.4);
+  box-shadow: 0 10px 18px rgba(10, 132, 255, 0.3);
   color: #fff;
 }
 
 .arrow {
-  font-size: 14px;
+  font-size: 13px;
   transition: all 0.2s ease;
+  color: inherit;
 }
 
 .arrow.active {
@@ -120,10 +153,23 @@ watch(
 
 .fold-submenu {
   list-style: none;
-  margin: 0;
-  padding: 0;
-  background-color: #1a2533;
+  margin: 2px 0 4px;
+  padding: 2px 0;
+  border-left: 1px solid rgba(148, 163, 184, 0.26);
+  background-color: transparent;
   overflow: hidden;
+}
+
+.fold-menu-group.collapsed .fold-menu-header {
+  width: 48px;
+  justify-content: center;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 0;
+}
+
+.fold-menu-group.collapsed .label-prefix {
+  gap: 0;
 }
 
 .submenu-collapse-enter-active,
