@@ -39,8 +39,8 @@
       </div>
     </el-popover>
     <BaseConfirmModal :dark-mode="darkMode" v-model:visible="showClearConfirm" type="danger"
-      @cancel="showClearConfirm = false" @confirm="confirmClearHistory" title="清空历史账号" content="确定要清空所有已保存的账号吗？"
-      confirmButtonText="确定清空">
+      @cancel="showClearConfirm = false" modal-zindex="high" content-zindex="high" @confirm="confirmClearHistory"
+      title="清空历史账号" content="确定要清空所有已保存的账号吗？" confirmButtonText="确定清空">
     </BaseConfirmModal>
   </div>
 </template>
