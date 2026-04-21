@@ -14,6 +14,14 @@ export const getGroupList = (params = {}) => {
 };
 
 /**
+ * 获取小组概览统计
+ * @returns {Promise}
+ */
+export const getGroupOverview = () => {
+  return service.get('/groups/overview')
+}
+
+/**
  * 创建项目小组
  * @param {Object} params
  * @param {String} params.name
@@ -64,6 +72,7 @@ export const groupAddToProject = (groupId, projectId) => {
 
 export const projectGroupApi = {
   getGroupList,
+  getGroupOverview,
   createGroups,
   getProjectGroups,
   getGroupDetail,

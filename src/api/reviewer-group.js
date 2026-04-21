@@ -28,9 +28,17 @@ export const createReviewerGroup = (params) => {
  * @returns {Promise} 响应数据（列表+总数）
  */
 export const getReviewerGroupList = (params = {}) => {
-  const defaultParams = { page: 1, size: 10, isEnabled: true, ...params };
+  const defaultParams = { page: 1, size: 10, ...params };
   // console.log(defaultParams)
   return service.get("/reviewer-groups", { params: defaultParams });
+};
+
+/**
+ * 获取评审组概览统计
+ * @returns {Promise}
+ */
+export const getReviewerGroupOverview = () => {
+  return service.get('/reviewer-groups/overview');
 };
 
 /**
@@ -68,6 +76,7 @@ export const deleteReviewerGroup = (groupId) => {
 export const reviewerGroupApi = {
   createReviewerGroup,
   getReviewerGroupList,
+  getReviewerGroupOverview,
   getReviewerGroupDetail,
   editReviewerGroup,
   deleteReviewerGroup

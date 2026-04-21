@@ -14,10 +14,10 @@ import service from "@/utils/request";
  * @param {boolean} [data.isEnabled=true] - 是否启用（可选，默认true）
  * @param {number} data.standardId - 关联打分标准ID（必填）
  * @param {number[]} data.groupIds - 关联小组ID列表（必填）
- * @param {number[]} data.scorerIds - 可参与打分的用户ID列表（必填）
+ * @param {number} data.reviewerGroupIds - 关联评审组ID（必填）
  * @returns {Promise} 响应数据（包含项目id等信息）
  */
-export const createProjet = (params) => {
+export const createProject = (params) => {
   return service.post("/projects", params);
 };
 
@@ -34,6 +34,14 @@ export const createProjet = (params) => {
 export const getProjectList = (params = {}) => {
   const defaultParams = { page: 1, size: 10, ...params };
   return service.get("/projects", { params: defaultParams });
+};
+
+/**
+ * 获取项目概览统计（用于管理端状态卡）
+ * @returns {Promise}
+ */
+export const getProjectOverview = () => {
+  return service.get('/projects/overview');
 };
 
 /**
@@ -91,29 +99,30 @@ export const getAuthorizedProjectList = (params) => {
 };
 
 
-/**
- * 通过评审团创建项目
- * @param {Object} data - 请求体参数
- * @param {string} data.name - 项目名称（必填）
- * @param {string} [data.description=''] - 项目描述（可选）
- * @param {string} data.startDate - 起始日期 YYYY-MM-DD（必填）
- * @param {string} data.endDate - 结束日期 YYYY-MM-DD（必填）
- * @param {boolean} [data.isEnabled=true] - 是否启用（可选，默认true）
- * @param {number} data.standardId - 关联打分标准ID（必填）
- * @param {number[]} data.groupIds - 关联小组ID列表（必填）
- * @param {number} data.reviewerGroupIds - 关联评审组ID（必填）
- * @returns {Promise} 响应数据（包含项目id等信息）
- */
-export const createProjectWithReviewerGroup = (data) => {
-  return service.post("/projects/with-group", data);
-};
+// /**
+//  * 通过评审团创建项目
+//  * @param {Object} data - 请求体参数
+//  * @param {string} data.name - 项目名称（必填）
+//  * @param {string} [data.description=''] - 项目描述（可选）
+//  * @param {string} data.startDate - 起始日期 YYYY-MM-DD（必填）
+//  * @param {string} data.endDate - 结束日期 YYYY-MM-DD（必填）
+//  * @param {boolean} [data.isEnabled=true] - 是否启用（可选，默认true）
+//  * @param {number} data.standardId - 关联打分标准ID（必填）
+//  * @param {number[]} data.groupIds - 关联小组ID列表（必填）
+//  * @param {number} data.reviewerGroupIds - 关联评审组ID（必填）
+//  * @returns {Promise} 响应数据（包含项目id等信息）
+//  */
+// export const createProjectWithReviewerGroup = (data) => {
+//   return service.post("/projects/with-group", data);
+// };
 
 export const projectApi = {
-  createProjet,
+  createProject,
   getProjectList,
+  getProjectOverview,
   editProject,
   endProject,
   getProjectDetail,
   getAuthorizedProjectList,
-  createProjectWithReviewerGroup,
+  // createProjectWithReviewerGroup,
 };

@@ -65,6 +65,14 @@ export const getScoringStandardsList = (params = {}) => {
 };
 
 /**
+ * 获取打分标准概览统计
+ * @returns {Promise}
+ */
+export const getScoringStandardsOverview = () => {
+  return service.get('/scoring-standards/overview');
+};
+
+/**
  * @description 提交/修改打分
  * @param {number} projectId 项目id
  * @param {number} groupId 被打分组id
@@ -93,7 +101,7 @@ export const getScoringRecord = (groupId, projectId) => {
  * @param {*} params
  * @returns
  */
-export const getProjectSrocingRecds = (projectId, params = { page: 1, size: 10 }) => {
+export const getProjectScoringRecds = (projectId, params = { page: 1, size: 10 }) => {
   return service.get(`/projects/${projectId}/records`, { params })
 }
 
@@ -110,9 +118,10 @@ export const ScoringApi = {
   createScoringStandards,
   updateScoringStandards,
   getScoringStandardsList,
+  getScoringStandardsOverview,
   submitScoring,
   getScoringRecord,
-  getProjectSrocingRecds,
+  getProjectScoringRecds,
   getScoringOverview,
 };
 // export const adminScoringApi = {

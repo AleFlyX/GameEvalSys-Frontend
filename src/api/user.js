@@ -42,6 +42,14 @@ export const userApi = {
   },
 
   /**
+   * 获取用户概览统计（用于管理端状态卡）
+   * @returns {Promise}
+   */
+  getUserOverview: () => {
+    return service.get('/users/overview');
+  },
+
+  /**
    * 按照用户id数组批量获取用户信息
    * @param {Object} params
    * @param {Boolean} params.includeDisabled -是否显示被禁用的用户
