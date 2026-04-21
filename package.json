@@ -8,6 +8,10 @@
     "build": "vite build",
     "preview": "vite preview",
     "lint": "eslint . --fix --cache",
+    "lint:check": "eslint . --cache",
+    "lint:check:base": "eslint . --cache --rule \"no-unused-vars: off\" --rule \"vue/multi-word-component-names: off\"",
+    "test:gate": "npm run test:unit --if-present",
+    "quality:check": "npm run lint:check:base && npm run test:gate && npm run build",
     "format": "prettier --write --experimental-cli src/"
   },
   "dependencies": {
@@ -15,6 +19,7 @@
     "axios": "^1.13.4",
     "echarts": "^6.0.0",
     "element-plus": "^2.13.1",
+    "page-agent": "^1.6.2",
     "pinia": "^3.0.4",
     "vue": "^3.5.26",
     "vue-router": "^4.6.4",
