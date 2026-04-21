@@ -7,7 +7,7 @@
       <StatCard label="活跃小组" :value="overViewCardsMap.activeGroups" icon="UserFilled" iconColor="var(--success)"
         iconBg="var(--success-light)" width="23%"
         style="margin-right: 16px; display: inline-block; min-width: 180px;" />
-      <StatCard label="总小组数" :value="overViewCardsMap.totalMembers" icon="Users" iconColor="var(--warning)"
+      <StatCard label="总成员数" :value="overViewCardsMap.totalMembers" icon="Users" iconColor="var(--warning)"
         iconBg="var(--warning-light)" width="23%"
         style="margin-right: 16px; display: inline-block; min-width: 180px;" />
       <StatCard label="平均小组大小" :value="overViewCardsMap.avgGroupSize" icon="Management" iconColor="var(--info)"
@@ -86,6 +86,7 @@ const {
   handleSizeChange,
   handleCurrentChange,
   fetchGroupList,
+  loadOverview,
   cancelRequest
 } = useProjectGroupData();
 
@@ -137,10 +138,13 @@ const handleChangeStatus = async (newStatus, row) => {
 // 初始化
 onMounted(async () => {
   try {
-    await fetchGroupList({
-      page: currentPage.value,
-      size: pageSize.value
-    });
+    await Promise.all([
+      fetchGroupList({
+        page: currentPage.value,
+        size: pageSize.value
+      }),
+      loadOverview()
+    ]);
   } catch (error) {
     console.error('Error fetching group list:', error);
   }

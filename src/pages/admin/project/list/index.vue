@@ -57,7 +57,7 @@
 </template>
 
 <script setup>
-import { reactive, ref, onMounted } from 'vue';
+import { computed, reactive, ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 
 import { ElMessage } from 'element-plus';
@@ -73,16 +73,23 @@ import DataTableColums from '@/components/common/data/DataTableColums.vue';
 import { PROJECT_LIST_RULES } from '../config/data-table/projectList';
 
 import { projectApi } from '@/api/project';
-import { useLoading } from '@/composables/useLodaing';
+import { useLoading } from '@/composables/useLoading';
 import { debounce } from '@/utils/debounce';
 
 const router = useRouter();
 
-const overViewCardsMap = ref([
-  { title: '总项目数', data: '23', icon: 'Document', iconBackground: '', iconColor: '' },
-  { title: '尚未开始的项目', data: '12', icon: 'FolderOpened', iconBackground: 'var(--warning-light)', iconColor: 'var(--warning)' },
-  { title: '进行中的项目', data: '2', icon: 'Checked', iconBackground: 'var(--success-light)', iconColor: 'var(--success)' },
-  { title: '已截止的项目', data: '3', icon: 'Failed', iconBackground: 'var(--danger-light)', iconColor: 'var(--danger)' },
+const overViewStats = ref({
+  totalProjects: 0,
+  notStartedProjects: 0,
+  ongoingProjects: 0,
+  endedProjects: 0
+})
+
+const overViewCardsMap = computed(() => [
+  { title: '总项目数', data: String(overViewStats.value.totalProjects), icon: 'Document', iconBackground: '', iconColor: '' },
+  { title: '尚未开始的项目', data: String(overViewStats.value.notStartedProjects), icon: 'FolderOpened', iconBackground: 'var(--warning-light)', iconColor: 'var(--warning)' },
+  { title: '进行中的项目', data: String(overViewStats.value.ongoingProjects), icon: 'Checked', iconBackground: 'var(--success-light)', iconColor: 'var(--success)' },
+  { title: '已截止的项目', data: String(overViewStats.value.endedProjects), icon: 'Failed', iconBackground: 'var(--danger-light)', iconColor: 'var(--danger)' },
 ])
 
 const totalData = ref(0)
@@ -93,6 +100,56 @@ const pageParams = reactive({
 
 const projectList = ref([])
 
+// const normalizeStatus = (status) => {
+//   if (status === 'not_started' || status === 'ongoing' || status === 'ended') {
+//     return status
+//   }
+//   return ''
+// }
+
+// const applyOverviewFromList = (list = [], total = 0) => {
+//   const notStartedProjects = list.filter((item) => normalizeStatus(item?.status) === 'not_started').length
+//   const ongoingProjects = list.filter((item) => normalizeStatus(item?.status) === 'ongoing').length
+//   const endedProjects = list.filter((item) => normalizeStatus(item?.status) === 'ended').length
+
+//   overViewStats.value = {
+//     totalProjects: Number(total) || 0,
+//     notStartedProjects,
+//     ongoingProjects,
+//     endedProjects
+//   }
+// }
+
+const fetchProjectOverview = async () => {
+  try {
+    const response = await projectApi.getProjectOverview();
+    const data = response?.data || {}
+    overViewStats.value = {
+      totalProjects: Number(data.totalProjects) || 0,
+      notStartedProjects: Number(data.notStartedProjects) || 0,
+      ongoingProjects: Number(data.ongoingProjects) || 0,
+      endedProjects: Number(data.endedProjects) || 0
+    }
+  } catch (err) {
+    console.log('获取项目概览数据失败', err)
+  }
+
+  // const pageSizeForOverview = 200
+  // const firstPageResponse = await projectApi.getProjectList({ page: 1, size: pageSizeForOverview })
+  // const firstPageData = firstPageResponse?.data || {}
+  // const firstList = firstPageData.list || []
+  // const total = Number(firstPageData.total) || 0
+
+  // const allProjects = [...firstList]
+  // const totalPages = Math.max(1, Math.ceil(total / pageSizeForOverview))
+  // for (let page = 2; page <= totalPages; page += 1) {
+  //   const pageResponse = await projectApi.getProjectList({ page, size: pageSizeForOverview })
+  //   allProjects.push(...(pageResponse?.data?.list || []))
+  // }
+
+  // applyOverviewFromList(allProjects, total)
+}
+
 const { isLoading: loading, start: startLoading, end: endLoading } = useLoading('adminProject:list')
 const getProjectsList = async (pageParams) => {
   startLoading();
@@ -100,6 +157,7 @@ const getProjectsList = async (pageParams) => {
     const response = await projectApi.getProjectList(pageParams);
     projectList.value = response.data.list;
     totalData.value = response.data.total
+    // applyOverviewFromList(response.data.list || [], response.data.total)
     console.log(projectList.value)
   } catch (err) {
     ElMessage.error('netWorkERROR', err)
@@ -151,7 +209,10 @@ const handleProjectStatus = (enableTogle, index, row) => {
 // }
 
 const handleRefresh = async () => {
-  await getProjectsList(pageParams);
+  await Promise.all([
+    getProjectsList(pageParams),
+    fetchProjectOverview()
+  ]);
   ElMessage.success('数据已刷新');
 }
 
@@ -167,7 +228,10 @@ const handleSizeChange = (size) => {
 }
 
 onMounted(() => {
-  getProjectsList(pageParams);
+  Promise.all([
+    getProjectsList(pageParams),
+    fetchProjectOverview()
+  ]);
 })
 
 </script>

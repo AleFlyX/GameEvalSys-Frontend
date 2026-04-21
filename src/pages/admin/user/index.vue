@@ -1,10 +1,10 @@
 <template>
   <PagePanel>
     <template #header>
-      <StatCard label="总用户数" :value="total" sub="平台用户总数" icon="User" />
-      <StatCard label="管理员" :value="total" sub="管理员和超级管理员总数" icon="Avatar" />
-      <StatCard label="打分用户" :value="total" sub="运行打分用户数" icon="Edit" icon-color="#66cc66" icon-bg="#e6ffe6" />
-      <StatCard label="普通用户" :value="total" sub="普通不参与打分用户" icon="Collection" icon-color="#ffaa00" icon-bg="#ffeecc" />
+      <StatCard label="总用户数" :value="userOverview.totalUsers" sub="平台用户总数" icon="User" />
+      <StatCard label="管理员" :value="userOverview.adminUsers" sub="管理员和超级管理员总数" icon="Avatar" />
+      <StatCard label="打分用户" :value="userOverview.scorerUsers" sub="运行打分用户数" icon="Edit" icon-color="#66cc66" icon-bg="#e6ffe6" />
+      <StatCard label="普通用户" :value="userOverview.normalUsers" sub="普通不参与打分用户" icon="Collection" icon-color="#ffaa00" icon-bg="#ffeecc" />
     </template>
 
     <template #main-table>
@@ -95,6 +95,7 @@ import { useUserModal } from './composables/useUserModal'
 import { useMessage } from '@/composables/useMessage'
 import { showMsgBox } from '@/utils/ConfirmBox'
 import { columnsRules } from './config/data-table/dataTableColumnsRule'
+import { userApi } from '@/api/user'
 
 defineOptions({
   name: 'AdminUserPage'
@@ -120,7 +121,7 @@ const {
   filterParams,
   handleSearch,
   handleFilterChange,
-  handleRefresh,
+  handleRefresh: handleListRefresh,
   handleSizeChange,
   handleCurrentChange,
   cancelRequest
@@ -137,6 +138,39 @@ const {
 
 const userTableRef = ref(null)
 const selectedRows = ref([])
+const userOverview = ref({
+  totalUsers: 0,
+  adminUsers: 0,
+  scorerUsers: 0,
+  normalUsers: 0
+})
+
+const toNumber = (value, fallback = 0) => {
+  const parsed = Number(value)
+  return Number.isFinite(parsed) ? parsed : fallback
+}
+
+const loadUserOverview = async () => {
+  try {
+    const response = await userApi.getUserOverview()
+    const data = response?.data || {}
+    userOverview.value = {
+      totalUsers: toNumber(data.totalUsers ?? data.total),
+      adminUsers: toNumber(data.adminUsers ?? data.adminCount),
+      scorerUsers: toNumber(data.scorerUsers ?? data.scorerCount),
+      normalUsers: toNumber(data.normalUsers ?? data.normalCount)
+    }
+  } catch (error) {
+    console.error('Failed to load user overview:', error)
+  }
+}
+
+const handleRefresh = async () => {
+  await Promise.all([
+    handleListRefresh(),
+    loadUserOverview()
+  ])
+}
 
 // 被选中的行
 const hasSelection = computed(() => selectedRows.value.length > 0)

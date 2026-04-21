@@ -15,28 +15,106 @@ export const useProjectGroupData = () => {
     avgGroupSize: '0'
   });
 
+  const toNumber = (value, fallback = 0) => {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : fallback;
+  };
+
+  const toEnabled = (value) => value === true || value === 1 || value === '1';
+
+  const getMemberCount = (group = {}) => {
+    if (Array.isArray(group.memberIds)) return group.memberIds.length;
+    if (Array.isArray(group.members)) return group.members.length;
+
+    const numeric = toNumber(
+      group.memberCount ?? group.membersCount ?? group.totalMembers,
+      0
+    );
+    return Math.max(0, numeric);
+  };
+
+  const applyOverview = ({
+    totalGroups = 0,
+    activeGroups = 0,
+    totalMembers = 0,
+    avgGroupSize = 0
+  }) => {
+    overViewCardsMap.totalGroups = String(Math.max(0, toNumber(totalGroups)));
+    overViewCardsMap.activeGroups = String(Math.max(0, toNumber(activeGroups)));
+    overViewCardsMap.totalMembers = String(Math.max(0, toNumber(totalMembers)));
+    overViewCardsMap.avgGroupSize = toNumber(avgGroupSize).toFixed(1);
+  };
+
   const buildQueryParams = (pageParams = DEFAULT_PAGE_PARAMS) => ({
     ...pageParams,
     keyWords: searchKeyword.value || undefined
   });
 
-  const calculateStats = (total = 0) => {
-    if (!tableData.value?.length) {
-      overViewCardsMap.totalGroups = '0';
-      overViewCardsMap.activeGroups = '0';
-      overViewCardsMap.totalMembers = '0';
-      overViewCardsMap.avgGroupSize = '0';
-      return;
+  const extractListPage = (response) => {
+    const payload = response?.data || {};
+    return {
+      list: payload.list || [],
+      total: toNumber(payload.total)
+    };
+  };
+
+  const fetchAllGroupsForOverview = async () => {
+    const pageSizeForOverview = 200;
+    const firstResponse = await projectGroupApi.getGroupList({ page: 1, size: pageSizeForOverview });
+    const firstPage = extractListPage(firstResponse);
+
+    const total = firstPage.total;
+    const allGroups = [...firstPage.list];
+    const totalPages = Math.max(1, Math.ceil(total / pageSizeForOverview));
+
+    for (let page = 2; page <= totalPages; page += 1) {
+      const pageResponse = await projectGroupApi.getGroupList({ page, size: pageSizeForOverview });
+      const pageData = extractListPage(pageResponse);
+      allGroups.push(...pageData.list);
     }
 
-    const activeCount = tableData.value.filter(group => group.isEnabled).length;
-    const totalMembers = tableData.value.reduce((sum, group) => sum + (group.memberIds?.length || 0), 0);
-    const avgSize = (totalMembers / tableData.value.length).toFixed(1);
+    return {
+      groups: allGroups,
+      total
+    };
+  };
 
-    overViewCardsMap.totalGroups = String(total);
-    overViewCardsMap.activeGroups = String(activeCount);
-    overViewCardsMap.totalMembers = String(totalMembers);
-    overViewCardsMap.avgGroupSize = avgSize;
+  const buildOverviewFromListFallback = async () => {
+    const { groups, total } = await fetchAllGroupsForOverview();
+    const activeGroups = groups.filter((group) => toEnabled(group?.isEnabled)).length;
+    const totalMembers = groups.reduce((sum, group) => sum + getMemberCount(group), 0);
+    const avgGroupSize = total > 0 ? totalMembers / total : 0;
+
+    applyOverview({
+      totalGroups: total,
+      activeGroups,
+      totalMembers,
+      avgGroupSize
+    });
+  };
+
+  const loadOverview = async () => {
+    try {
+      const response = await projectGroupApi.getGroupOverview();
+      const data = response?.data;
+      if (data) {
+        applyOverview({
+          totalGroups: data.totalGroups ?? data.total,
+          activeGroups: data.activeGroups ?? data.enabledGroups,
+          totalMembers: data.totalMembers,
+          avgGroupSize: data.avgGroupSize
+        });
+        return; // 成功获取概览数据后直接返回，不再执行后续的列表聚合逻辑
+      }
+    } catch {
+      // overview 接口未就绪时回退到列表聚合
+    }
+
+    try {
+      await buildOverviewFromListFallback();
+    } catch (error) {
+      console.error('Error loading group overview:', error);
+    }
   };
 
   const {
@@ -62,13 +140,10 @@ export const useProjectGroupData = () => {
 
   async function fetchGroupList(pageParams = DEFAULT_PAGE_PARAMS) {
     const response = await projectGroupApi.getGroupList(buildQueryParams(pageParams));
-    const data = response?.data || {};
-    const list = data?.list || [];
-    const totalCount = Number(data?.total) || 0;
+    const pageData = extractListPage(response);
 
-    tableData.value = list;
-    setTotal(totalCount);
-    calculateStats(totalCount);
+    tableData.value = pageData.list;
+    setTotal(pageData.total);
 
     return response;
   }
@@ -91,10 +166,13 @@ export const useProjectGroupData = () => {
   };
 
   const handleRefresh = async () => {
-    await fetchGroupList({
-      page: currentPage.value,
-      size: pageSize.value
-    });
+    await Promise.all([
+      fetchGroupList({
+        page: currentPage.value,
+        size: pageSize.value
+      }),
+      loadOverview()
+    ]);
   };
 
   return {
@@ -112,6 +190,7 @@ export const useProjectGroupData = () => {
     handleSizeChange,
     handleCurrentChange,
     fetchGroupList,
+    loadOverview,
     cancelRequest
   };
 };

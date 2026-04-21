@@ -73,12 +73,13 @@ import ScoringStdOperation from './components/ScoringStdOperation.vue';
 import { ScoringApi } from '@/api/scoring';
 import { COLUMN_RULES } from './config/scoringStdColumnRule';
 import { useElPagination } from '@/composables/useElPagination';
-import { useLoading } from '@/composables/useLodaing';
+import { useLoading } from '@/composables/useLoading';
 import { getIndicatorsFromStandard } from '@/utils/scoringStandard';
 
 const { isLoading: loading, start: startLoading, end: endLoading } = useLoading('scoringStd:list');
 const {
   currentPage,
+  pageSize,
   defaultPageSizes,
   total,
   disabled,
@@ -113,6 +114,79 @@ const handleSearch = async (keywords) => {
 
 const getDisplayIndicators = (standard) => getIndicatorsFromStandard(standard);
 
+const toNumber = (value, fallback = 0) => {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : fallback;
+};
+
+const toEnabled = (value) => {
+  if (value === true || value === 1 || value === '1') return true;
+  if (value === false || value === 0 || value === '0') return false;
+  if (typeof value === 'string') {
+    const normalized = value.toLowerCase();
+    if (normalized === 'enabled') return true;
+    if (normalized === 'disabled') return false;
+  }
+  return null;
+};
+
+const applyOverview = ({ totalStandards = 0, enabledStandards = 0 }) => {
+  totalCount.value = Math.max(0, toNumber(totalStandards));
+  enabledCount.value = Math.max(0, toNumber(enabledStandards));
+};
+
+const fetchAllStandardsForOverview = async () => {
+  const pageSizeForOverview = 200;
+  const firstResponse = await ScoringApi.getScoringStandardsList({ page: 1, size: pageSizeForOverview });
+  const firstData = firstResponse?.data || {};
+  const firstList = firstData.list || [];
+  const total = toNumber(firstData.total);
+
+  const allList = [...firstList];
+  const totalPages = Math.max(1, Math.ceil(total / pageSizeForOverview));
+  for (let page = 2; page <= totalPages; page += 1) {
+    const pageResponse = await ScoringApi.getScoringStandardsList({ page, size: pageSizeForOverview });
+    allList.push(...(pageResponse?.data?.list || []));
+  }
+
+  return {
+    list: allList,
+    total
+  };
+};
+
+const loadOverview = async () => {
+  try {
+    const response = await ScoringApi.getScoringStandardsOverview();
+    const data = response?.data;
+    if (data) {
+      applyOverview({
+        totalStandards: data.totalStandards ?? data.total,
+        enabledStandards: data.enabledStandards ?? data.activeStandards
+      });
+      return;
+    }
+  } catch {
+    // overview 接口未就绪时回退列表聚合
+  }
+
+  try {
+    const { list, total } = await fetchAllStandardsForOverview();
+    const enabledFlags = list.map((item) => toEnabled(item?.isEnabled));
+    const hasEnabledFlag = enabledFlags.some((flag) => flag !== null);
+    const enabledTotal = hasEnabledFlag
+      ? enabledFlags.filter((flag) => flag === true).length
+      : total;
+
+    applyOverview({
+      totalStandards: total,
+      enabledStandards: enabledTotal
+    });
+  } catch (error) {
+    console.error('Failed to load scoring standards overview:', error);
+  }
+};
+
 // 请求参数构建
 const buildQueryParams = (pageParams = { page: 1, size: 20 }) => {
   return {
@@ -129,8 +203,6 @@ const fetchScoringStandards = async (params = { page: 1, size: 10 }) => {
     console.log('STDS ', response)
     tableData.value = response.data.list || [];
     console.log(tableData.value)
-    totalCount.value = response.data.total;
-    enabledCount.value = response.data.length; // 默认全部启用
     setTotal(response.data.total);
 
     console.log('打分标准列表:', tableData.value);
@@ -203,11 +275,19 @@ const handleEdit = (row) => {
 // 刷新列表
 const handleRefresh = async () => {
   detailDialogInitData.value = {}
-  setTimeout(async () => await fetchScoringStandards(), 500)
+  setTimeout(async () => {
+    await Promise.all([
+      fetchScoringStandards({ page: currentPage.value, size: pageSize.value }),
+      loadOverview()
+    ])
+  }, 500)
 };
 
 onMounted(() => {
-  fetchScoringStandards();
+  Promise.all([
+    fetchScoringStandards(),
+    loadOverview()
+  ]);
 });
 </script>
 
