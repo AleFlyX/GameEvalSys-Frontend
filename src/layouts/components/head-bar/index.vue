@@ -49,7 +49,7 @@
 import { useRoute, useRouter } from "vue-router";
 import { computed, ref } from "vue";
 import { useUserStore } from "@/stores/modules/userStore";
-import { useLoading } from "@/composables/useLodaing";
+import { useLoading } from "@/composables/useLoading";
 import { useMessage } from "@/composables/useMessage";
 import { userApi } from "@/api/user";
 

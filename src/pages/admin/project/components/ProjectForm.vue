@@ -78,7 +78,7 @@ import { projectGroupApi } from '@/api/project-group';
 import { reviewerGroupApi } from '@/api/reviewer-group';
 import { projectFormRules } from '../config/form-rules/projectForm';
 import { useMessage } from '@/composables/useMessage';
-import { useLoading } from '@/composables/useLodaing';
+import { useLoading } from '@/composables/useLoading';
 
 const props = defineProps({
   data: {

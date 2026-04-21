@@ -13,7 +13,7 @@
           <div class="stat-icon indigo-icon"></div>
         </template>
         <template #head-extra>
-          <span class="growth-rate up">+Nan%</span>
+          <!-- <span class="growth-rate up">+Nan%</span> -->
         </template>
       </StatCard>
 
@@ -25,7 +25,7 @@
           <div class="stat-icon emerald-icon"></div>
         </template>
         <template #head-extra>
-          <span class="growth-rate up">+Nan%</span>
+          <!-- <span class="growth-rate up">+Nan%</span> -->
         </template>
       </StatCard>
 
@@ -36,7 +36,7 @@
           <div class="stat-icon amber-icon"></div>
         </template>
         <template #head-extra>
-          <span class="growth-rate up">+Nan%</span>
+          <!-- <span class="growth-rate up">+Nan%</span> -->
         </template>
       </StatCard>
     </div>

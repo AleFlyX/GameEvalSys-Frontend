@@ -27,7 +27,9 @@
                   </el-input-number>
                   <span class="score-range">/ {{ indicator.maxScore }}</span>
                 </div>
-                <span v-if="indicator.description" class="indicator-desc">{{ indicator.description }}</span>
+                <span v-if="formatIndicatorDescription(indicator)" class="indicator-desc">{{
+                  formatIndicatorDescription(indicator)
+                  }}</span>
               </div>
             </el-form-item>
 
@@ -58,6 +60,7 @@ import BaseModal from '@/components/common/modal/BaseModal.vue';
 import { ScoringApi } from '@/api/scoring';
 import { projectApi } from '@/api/project';
 import { ElMessage } from 'element-plus';
+import { getIndicatorsFromStandard } from '@/utils/scoringStandard';
 
 const props = defineProps({
   visible: {
@@ -127,6 +130,20 @@ const getIndicatorRules = (indicator) => {
   ];
 };
 
+const formatIndicatorDescription = (indicator) => {
+  const categoryDescription = typeof indicator?.categoryDescription === 'string'
+    ? indicator.categoryDescription.trim()
+    : '';
+  const indicatorDescription = typeof indicator?.description === 'string'
+    ? indicator.description.trim()
+    : '';
+
+  if (categoryDescription && indicatorDescription) {
+    return `${categoryDescription}:${indicatorDescription}`;
+  }
+  return indicatorDescription || categoryDescription;
+};
+
 // 获取打分标准详情
 const fetchScoringStandard = async () => {
   if (!props.projectId) {
@@ -139,8 +156,9 @@ const fetchScoringStandard = async () => {
     const projectDetail = await projectApi.getProjectDetail(props.projectId);
     if (projectDetail?.code === 200 && projectDetail.data?.standardId) {
       const response = await ScoringApi.getScoringStandardsDetails(projectDetail.data.standardId);
-      if (response.code === 200 && response.data?.indicators) {
-        indicators.value = response.data.indicators;
+      const standardIndicators = getIndicatorsFromStandard(response?.data || {});
+      if (response.code === 200 && standardIndicators.length) {
+        indicators.value = standardIndicators;
         formData.value.scores = new Array(indicators.value.length).fill(null);
       } else {
         setDefaultIndicators();

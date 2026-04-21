@@ -19,7 +19,7 @@
         </div>
         <span v-if="formatIndicatorDescription(indicator)" class="indicator-desc">{{
           formatIndicatorDescription(indicator)
-          }}</span>
+        }}</span>
       </div>
     </el-form-item>
 
@@ -46,7 +46,7 @@ import { ScoringApi } from '@/api/scoring';
 import { useProjectStore } from '@/stores/modules/projectStore';
 import { useScoreStore } from '@/stores/modules/scoreStore';
 import { ElMessage } from 'element-plus';
-import { useLoading } from '@/composables/useLodaing';
+import { useLoading } from '@/composables/useLoading';
 import { getIndicatorsFromStandard } from '@/utils/scoringStandard';
 
 const props = defineProps({

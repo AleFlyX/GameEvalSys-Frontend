@@ -28,7 +28,7 @@ import PagePanel from '@/layouts/PagePanel.vue';
 import ReviewerGroupForm from '../components/ReviewerGroupForm.vue';
 import { showMsgBox } from '@/utils/ConfirmBox';
 import { useRoute, useRouter } from 'vue-router';
-import { useLoading } from '@/composables/useLodaing';
+import { useLoading } from '@/composables/useLoading';
 import { useMessage } from '@/composables/useMessage';
 
 defineOptions({

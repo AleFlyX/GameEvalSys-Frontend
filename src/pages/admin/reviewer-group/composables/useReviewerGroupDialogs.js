@@ -1,7 +1,7 @@
 import { ref } from 'vue';
 import { reviewerGroupApi } from '@/api/reviewer-group';
 import { useMessage } from '@/composables/useMessage';
-import { useLoading } from '@/composables/useLodaing';
+import { useLoading } from '@/composables/useLoading';
 import { showMsgBox } from '@/utils/ConfirmBox';
 import { useRouter } from 'vue-router';
 /**

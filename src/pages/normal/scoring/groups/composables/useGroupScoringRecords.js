@@ -2,7 +2,7 @@ import { ref } from 'vue';
 import { ElMessage } from 'element-plus';
 
 import { getProjectGroups } from '@/api/project-group';
-import { getProjectSrocingRecds, ScoringApi } from '@/api/scoring';
+import { getProjectScoringRecds, ScoringApi } from '@/api/scoring';
 
 /**
  * 页面数据流：小组列表、评分记录缓存、详情弹窗和刷新行为。
@@ -69,7 +69,7 @@ export const useGroupScoringRecords = ({ projectId, projectStore, scoreStore }) 
     if (!projectId.value) return;
 
     try {
-      const response = await getProjectSrocingRecds(projectId.value, { page: 1, size: 100 });
+      const response = await getProjectScoringRecds(projectId.value, { page: 1, size: 100 });
       const recordList = response?.data?.list || [];
       scoredGroups.value = recordList.filter((item) => groupIds.value.includes(item.groupId));
 

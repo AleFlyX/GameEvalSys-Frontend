@@ -14,7 +14,7 @@
 
   </div>
 
-  <div class="modal-body">
+  <body>
     <!-- 搜索框 -->
     <div class="search-section">
       <SearchInput ref="searchBarRef" @search="handleSearch" :showAddBtn="false" size="middle" immediate :delay="200">
@@ -66,7 +66,7 @@
         </el-table-column>
       </el-table>
     </div>
-  </div>
+  </body>
 
 
 
@@ -159,8 +159,8 @@ onMounted(() => {
   color: #303133;
 }
 
-.modal-body {
-  max-height: 500px;
+body {
+  height: auto;
   overflow-y: auto;
   padding: 0 8px;
 }

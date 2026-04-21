@@ -49,7 +49,7 @@ import { showMsgBox } from '@/utils/ConfirmBox';
 import { ElMessage } from 'element-plus';
 
 import { userApi } from '@/api/user'
-import { useLoading } from '@/composables/useLodaing';
+import { useLoading } from '@/composables/useLoading';
 
 import { REVIEWER_LIST_RULES } from '../config/data-table/projectReviewerList';
 

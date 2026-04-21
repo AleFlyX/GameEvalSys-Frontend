@@ -1,6 +1,9 @@
 <template>
-  <BaseFormModal v-bind="$attrs" @update:visible="$emit('update:visible', $event)" :allow-mask-close="false">
+  <BaseFormModal v-bind="$attrs" @update:visible="$emit('update:visible', $event)" :allow-mask-close="false"
+    width="60vw">
     <template #title>
+      <button v-if="props.editData" @click="$router.push(`/admin/reviewer-groups/edit/${props.editData.id}`)">页面模式{{
+        props.editData.id }}</button>
       <div class="form-modal">
         <div class="modal-header">
           <h3>{{ isEdit ? '编辑评审组' : '创建评审组' }}</h3>
@@ -9,7 +12,8 @@
     </template>
 
     <template #form>
-      <ReviewerGroupForm ref="formRef" :init-data="formData" label-width="100px" style="width:600px;">
+      <ReviewerGroupForm ref="formRef" :init-data="formData" label-width="100px"
+        style="width:800px;max-width:90vw; height: 100%;">
       </ReviewerGroupForm>
     </template>
 
@@ -31,8 +35,8 @@ import { reviewerGroupApi } from '@/api/reviewer-group';
 import { ElMessage } from 'element-plus';
 import BaseFormModal from '@/components/common/modal/BaseFormModal.vue';
 import ReviewerGroupForm from './ReviewerGroupForm.vue';
-import { useLoading } from '@/composables/useLodaing';
-
+import { useLoading } from '@/composables/useLoading';
+import { showMsgBox } from '@/utils/ConfirmBox';
 const props = defineProps({
   editData: {
     type: Object,
@@ -81,11 +85,26 @@ const handleSubmit = async () => {
 // 处理取消
 const handleCancel = () => {
   emit('update:visible', false);
+  if (formRef.value?.dataChanged) {
+    showMsgBox('是否放弃修改？', '提示', {
+      confirmButtonText: '放弃',
+      cancelButtonText: '继续编辑',
+      type: 'warning'
+    }).then(() => {
+      emit('update:visible', false);
+    }).catch(() => {
+      // 取消操作，继续编辑
+    });
+  }
   // formRef.value?.resetFields();
 };
 </script>
 
 <style scoped>
+.modal-footer {
+  margin-bottom: 0px;
+}
+
 :deep(.el-form-item) {
   margin-bottom: 16px;
 }

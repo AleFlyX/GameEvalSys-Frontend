@@ -1,5 +1,6 @@
 import {
   Avatar,
+  Calendar,
   Check,
   Checked,
   Clock,
@@ -30,6 +31,7 @@ import {
 
 export const elementIconMap = {
   Avatar,
+  Calendar,
   Check,
   Checked,
   Clock,

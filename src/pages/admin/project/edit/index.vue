@@ -60,7 +60,7 @@
 import { ref, reactive, watch, computed, onMounted, onUnmounted, nextTick } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useMessage } from '@/composables/useMessage';
-import { useLoading } from '@/composables/useLodaing';
+import { useLoading } from '@/composables/useLoading';
 
 import { ArrowLeft } from '@element-plus/icons-vue';
 import PagePanel from '@/layouts/PagePanel.vue';

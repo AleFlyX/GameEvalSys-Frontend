@@ -1,5 +1,5 @@
 import { ref, computed, watch, unref } from 'vue'
-import { useLoading } from '@/composables/useLodaing'
+import { useLoading } from '@/composables/useLoading'
 
 /**
  * 基于El pagination的组合式函数

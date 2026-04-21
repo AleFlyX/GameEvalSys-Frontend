@@ -62,7 +62,7 @@ import { ElMessage } from "element-plus";
 import { getElementIcon } from "@/utils/elementIcons";
 import { getProjectList } from "@/api/project";
 import { useElPagination } from "@/composables/useElPagination";
-import { useLoading } from "@/composables/useLodaing";
+import { useLoading } from "@/composables/useLoading";
 import { debounce } from "@/utils/debounce";
 
 // ==================== 数据定义 ====================

@@ -45,7 +45,7 @@ import { showMsgBox } from '@/utils/ConfirmBox';
 import { ElMessage } from 'element-plus';
 
 import { projectGroupApi } from '@/api/project-group';
-import { useLoading } from '@/composables/useLodaing';
+import { useLoading } from '@/composables/useLoading';
 
 import { PROJECT_GROUP_LIST_RULES } from '../config/data-table/projectGroupList';
 

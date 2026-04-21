@@ -1,6 +1,6 @@
 <template>
   <BaseCard class="project-card" shadow="hover" @click="selectProject(project)">
-
+    <!-- {{ project }} -->
     <div class="card-header">
       <h3 class="project-name">{{ project.name }}</h3>
       <el-tag :type="getStatusType(project.status)">
@@ -14,30 +14,29 @@
       <div class="project-meta">
         <span class="meta-item">
           <el-icon>
-            <Calendar />
+            <component :is="getElementIcon('Calendar')" />
           </el-icon>
           {{ formatDate(project.startDate) }} ~ {{ formatDate(project.endDate) }}
         </span>
         <span class="meta-item">
           <el-icon>
-            <User />
+            <component :is="getElementIcon('User')" />
           </el-icon>
-          共 {{ project.groupCount || 0 }} 个小组
+          共 {{ project.groupIds.length || 0 }} 个小组,
+          评审团共{{ project.scorerIds.length || 0 }}个人
         </span>
       </div>
     </div>
 
     <div class="card-footer">
-      <MyBtn type="pro" size="large" @click.stop="goToDetail(project.id)" style="width: 100%;">查看统计</MyBtn>
-      <!-- <el-button type="primary" size="small" @click.stop="goToDetail(project.id)">
-            查看统计
-          </el-button> -->
+      <MyBtn type="pro" size="large" style="width: 100%;">查看统计</MyBtn>
     </div>
 
   </BaseCard>
 </template>
 <script setup>
 import { useRouter } from "vue-router";
+import { getElementIcon } from "@/utils/elementIcons";
 defineProps({
   project: {
     type: Object,
@@ -83,26 +82,20 @@ const formatDate = (dateStr) => {
 };
 
 /**
- * 选择项目跳转
- */
-const goToDetail = (projectId) => {
-  router.push({
-    name: "projectStatisticDetail",
-    params: { projectId },
-  });
-};
-
-/**
  * 选择项目（用于其他交互）
  */
 const selectProject = (project) => {
-  goToDetail(project.id);
+  router.push({
+    name: "projectStatisticDetail",
+    params: { projectId: project.id },
+  });
+
 };
 </script>
 <style scoped>
 /* ==================== 项目卡片 ==================== */
 .project-card {
-  background-color: #e4e8efe1;
+  background-color: #ffffffe1;
   padding: 20px;
   cursor: pointer;
   min-height: 260px;

@@ -33,7 +33,7 @@ import BaseFormModal from '@/components/common/modal/BaseFormModal.vue';
 import ScoringStdForm from './ScoringStdForm.vue';
 
 import { ScoringApi } from '@/api/scoring';
-import { useLoading } from '@/composables/useLodaing';
+import { useLoading } from '@/composables/useLoading';
 import { buildScoringStandardPayload } from '@/utils/scoringStandard';
 
 const props = defineProps({

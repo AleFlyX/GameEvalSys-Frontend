@@ -17,7 +17,7 @@
 <script setup>
 import { ref, watch, nextTick } from 'vue';
 import { useRoute, RouterView } from 'vue-router';
-import { useLoading } from '@/composables/useLodaing';
+import { useLoading } from '@/composables/useLoading';
 import { usePageAgent } from '@/composables/usePageAgent';
 import HeadBar from '@/layouts/components/head-bar/index.vue';
 import SideBar from '@/layouts/components/side-bar/index.vue';
