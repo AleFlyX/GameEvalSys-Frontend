@@ -2,7 +2,7 @@ import { userApi } from '@/api/user'
 
 import { showDisableUserConfirm } from './userConfirm'
 
-import { useLoading } from '@/composables/useLodaing'
+import { useLoading } from '@/composables/useLoading'
 /**
  * 用户状态切换、创建、编辑这类业务动作api封装
  * @returns {Object}
@@ -66,7 +66,7 @@ export function useUserActions() {
       }
     }
 
-    try { // 优先调用批量接口，若失败再尝试逐个单一删除
+    try { // 优先调用批量状态更新接口，若失败再尝试逐个单一更新
       const response = await userBatchRequest(userApi.batchUpdateUserStatus, {
         userIds: targetIds,
         isEnabled: status

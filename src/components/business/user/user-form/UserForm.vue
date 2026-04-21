@@ -64,7 +64,8 @@ import { reviewerGroupApi } from '@/api/reviewer-group';
 
 import { userFormRules } from '@/components/business/user/user-form/userFormRules';
 import { useMessage } from '@/composables/useMessage';
-import { useLoading } from '@/composables/useLodaing';
+import { useLoading } from '@/composables/useLoading';
+import { removeSpacesFromObject } from '@/utils/removeSpacesFromData';
 const props = defineProps({
   initData: {
     type: Object,
@@ -184,12 +185,52 @@ const getReviewerGroupList = async (keywords) => {
     endLoading();
   }
 }
+
+const removeEmptyFields = (input) => {
+  if (Array.isArray(input)) {
+    return input
+      .map((item) => removeEmptyFields(item))
+      .filter((item) => item !== undefined);
+  }
+
+  if (input !== null && typeof input === 'object') {
+    const result = {};
+    Object.keys(input).forEach((key) => {
+      const cleanedValue = removeEmptyFields(input[key]);
+      if (cleanedValue === undefined) {
+        return;
+      }
+      result[key] = cleanedValue;
+    });
+    return result;
+  }
+
+  if (input === null || input === undefined) {
+    return undefined;
+  }
+
+  if (typeof input === 'string' && input === '') {
+    return undefined;
+  }
+
+  return input;
+}
+
 defineExpose({
   validate: async () => {
-    if (isNormal.value) {
-      formData.value.reviewerGroupIds = [];
+    const validationResult = await baseFormRef.value.validate();
+    if (!validationResult.valid || !validationResult.data) {
+      return validationResult;
     }
-    return await baseFormRef.value.validate();
+
+    const payload = { ...validationResult.data };
+    if (isNormal.value) {
+      payload.reviewerGroupIds = [];
+    }
+
+    const noSpacesData = removeSpacesFromObject(payload, true);
+    const cleanedData = removeEmptyFields(noSpacesData) || {};
+    return { valid: true, data: cleanedData };
   }
 })
 // watch(props.initData?.reviewerGroupIds, (newval) => {

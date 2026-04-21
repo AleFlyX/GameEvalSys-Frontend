@@ -48,7 +48,8 @@ import { ref, watch } from 'vue';
 import { Search } from '@element-plus/icons-vue';
 
 import { reviewerGroupApi } from '@/api/reviewer-group';
-import { useLoading } from '@/composables/useLodaing';
+import { useLoading } from '@/composables/useLoading';
+import { removeSpacesFromObject } from '@/utils/removeSpacesFromData';
 
 const { isLoading: loading, start: startLoading, end: endLoading } = useLoading('userMultiAdd:reviewerGroups')
 const reviewerGroups = ref([])
@@ -286,7 +287,7 @@ const parseExcelData = (excelData) => {
 
     // 转换为指定格式的对象
     const userObj = {
-      username: studentId, // 学号作为 username
+      username: removeSpacesFromObject(studentId, true),
       password: "ytu123456",
       name: name,          // 姓名
       role: revirewerGroup.value.groupMemberRole,//每个用户的身份
