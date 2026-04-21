@@ -386,5 +386,5 @@ onMounted(() => {
 </script>
 
 <style scoped>
-@import './styles/HomePage.css';
+@import './styles/homePage.css';
 </style>
