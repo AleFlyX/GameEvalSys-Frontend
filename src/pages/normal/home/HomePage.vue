@@ -75,7 +75,7 @@ import { projectGroupApi } from '@/api/project-group';
 import { ScoringApi } from '@/api/scoring';
 import { useMessage } from '@/composables/useMessage';
 import { useUserStore } from '@/stores/modules/userStore';
-import { useLoading } from '@/composables/useLodaing';
+import { useLoading } from '@/composables/useLoading';
 import StatCard from '@/components/common/data/StatCard.vue';
 import { formatTime } from '@/utils/format';
 import TrendMap from './components/trendMap.vue';
@@ -343,7 +343,7 @@ const fetchProjectDetailData = async (project) => {
 
   const [groupResponse, recordResponse] = await Promise.all([
     projectGroupApi.getProjectGroups(project.id),
-    ScoringApi.getProjectSrocingRecds(project.id, { page: 1, size: SCORE_RECORD_PAGE_SIZE }),
+    ScoringApi.getProjectScoringRecds(project.id, { page: 1, size: SCORE_RECORD_PAGE_SIZE }),
   ]);
 
   const groupList = Array.isArray(groupResponse?.data) ? groupResponse.data : [];
