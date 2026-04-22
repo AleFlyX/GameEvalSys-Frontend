@@ -165,14 +165,21 @@ export const useProjectGroupData = () => {
     await queryFirstPage();
   };
 
-  const handleRefresh = async () => {
-    await Promise.all([
-      fetchGroupList({
-        page: currentPage.value,
-        size: pageSize.value
-      }),
-      loadOverview()
-    ]);
+  const handleRefresh = async (responseData) => {
+    if (responseData) {
+      Array.isArray(responseData) ? tableData.value.unshift(...responseData) : tableData.value.unshift(responseData);
+      loadOverview();
+    }
+    else {
+      await Promise.all([
+        fetchGroupList({
+          page: currentPage.value,
+          size: pageSize.value
+        }),
+        loadOverview()
+      ]);
+    }
+
   };
 
   return {

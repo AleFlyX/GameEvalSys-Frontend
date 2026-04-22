@@ -33,6 +33,19 @@ export const createGroups = (params) => {
 };
 
 /**
+ * 批量创建小组
+ * @param {String} params.prefixName 批量创建小组前缀
+ * @param {String} params.name 小组名
+ * @param {String} params.startIndex 小组数字开始下标
+ * @param {String} params.endIndex 小组数字结束下标
+ * @param {String} params.description 小组描述
+ * @param {String} params.isEnabled 小组状态
+ */
+export const batchCreateGroups = (params) => {
+  return service.post('/groups/batch-create', params)
+}
+
+/**
  * 获取项目受评分的小组列表
  * @param {number} projectId - 项目ID
  * @returns {Promise} 响应数据（小组列表）
@@ -74,6 +87,7 @@ export const projectGroupApi = {
   getGroupList,
   getGroupOverview,
   createGroups,
+  batchCreateGroups,
   getProjectGroups,
   getGroupDetail,
   editGroup,
