@@ -1,70 +1,88 @@
 <template>
-  <el-form ref="baseFormRef" :rules="projectFormRules" :model="formData" style="width: 600px" status-icon
-    label-width="auto">
+  <div class="project-form-wrapper">
+    <el-form ref="baseFormRef" :rules="projectFormRules" :model="formData" style="width: 600px" status-icon
+      label-width="auto">
 
-    <el-form-item label="项目名称" prop="name">
-      <el-input v-model="formData.name" type="text" placeholder="请输入项目名称" />
-    </el-form-item>
+      <el-form-item label="项目名称" prop="name">
+        <el-input v-model="formData.name" type="text" placeholder="请输入项目名称" />
+      </el-form-item>
 
-    <el-form-item label="项目描述" prop="description">
-      <el-input v-model="formData.description" type="textarea" :rows="4" placeholder="请输入项目描述" />
-    </el-form-item>
+      <el-form-item label="项目描述" prop="description">
+        <el-input v-model="formData.description" type="textarea" :rows="4" placeholder="请输入项目描述" />
+      </el-form-item>
 
-    <el-form-item label="开始日期" prop="startDate">
-      <el-date-picker v-model="formData.startDate" type="datetime" placeholder="选择项目开始时间"
-        value-format="YYYY-MM-DD HH:mm" format="YYYY-MM-DD HH:mm" :disabled-date="disableBeforeToday"
-        :editable="false" />
-    </el-form-item>
+      <el-form-item label="开始日期" prop="startDate">
+        <el-date-picker v-model="formData.startDate" type="datetime" placeholder="选择项目开始时间"
+          value-format="YYYY-MM-DD HH:mm" format="YYYY-MM-DD HH:mm" :disabled-date="disableBeforeToday"
+          :editable="false" />
+      </el-form-item>
 
-    <el-form-item label="结束日期" prop="endDate">
-      <el-date-picker v-model="formData.endDate" type="datetime" placeholder="选择项目结束时间" value-format="YYYY-MM-DD HH:mm"
-        format="YYYY-MM-DD HH:mm" :disabled-date="disableBeforeToday" :editable="false" />
-    </el-form-item>
+      <el-form-item label="结束日期" prop="endDate">
+        <el-date-picker v-model="formData.endDate" type="datetime" placeholder="选择项目结束时间"
+          value-format="YYYY-MM-DD HH:mm" format="YYYY-MM-DD HH:mm" :disabled-date="disableBeforeToday"
+          :editable="false" />
+      </el-form-item>
 
-    <el-form-item label="打分标准" prop="standardId" @click="showInfo($refs)" ref="scoringStdRef">
-      <el-select ref="scoringStdSelectRef" v-model="formData.standardId" filterable placeholder="选择打分标准"
-        :disabled="editMode" :clearable="!editMode" :loading="loadingScoringStd" remote
-        :remote-method="getScoringStdList" debounce="300" remote-show-suffix :prefix-icon="Search"
-        popper-class="scoring-std-select-popper" @popup-scroll="handleScoringStdPopupScroll"
-        @visible-change="handleScoringStdVisibleChange">
-        <el-option v-for="item in scoringStdList" :key="item.id" :value="item.id" :label="item.name"></el-option>
-      </el-select>
-    </el-form-item>
+      <el-form-item label="打分标准" prop="standardId" @click="showInfo($refs)" ref="scoringStdRef">
+        <el-select ref="scoringStdSelectRef" v-model="formData.standardId" filterable placeholder="选择打分标准"
+          :disabled="editMode" :clearable="!editMode" :loading="loadingScoringStd" remote
+          :remote-method="getScoringStdList" debounce="300" remote-show-suffix :prefix-icon="Search"
+          popper-class="scoring-std-select-popper" @popup-scroll="handleScoringStdPopupScroll"
+          @visible-change="handleScoringStdVisibleChange">
+          <el-option v-for="item in scoringStdList" :key="item.id" :value="item.id" :label="item.name"></el-option>
+        </el-select>
+      </el-form-item>
 
-    <el-form-item v-if="!editMode" label="项目内受评分的小组" prop="groups">
-      <el-select ref="commonGroupsSelectRef" v-model="formData.groupIds" placeholder="选择被打分小组"
-        :loading="loadingCommonGroups" multiple filterable clearable remote :remote-method="getCommonGroups"
-        debounce="500" remote-show-suffix :prefix-icon="Search" popper-class="common-groups-select-popper"
-        @popup-scroll="handleCommonGroupsPopupScroll" @visible-change="handleCommonGroupsVisibleChange">
-        <el-option v-for="item in commonGroups" :key="item.id" :value="item.id" :label="item.name">
-        </el-option>
-      </el-select>
+      <el-form-item v-if="!editMode" label="项目内受评分的小组" prop="groupIds">
+        <div class="group-selector-field">
+          <div class="group-selector-actions">
+            <el-button type="primary" plain @click="groupSelectionVisible = true">
+              选择项目小组
+            </el-button>
+            <span class="group-selector-summary">
+              已选择 {{ selectedGroupDetails.length }} 个小组
+            </span>
+          </div>
 
-    </el-form-item>
+          <div v-if="selectedGroupDetails.length" class="selected-group-list">
+            <el-tag v-for="group in selectedGroupDetails" :key="group.id" closable
+              @close="removeSelectedGroup(group.id)">
+              {{ group.name }}
+            </el-tag>
+          </div>
 
-    <!-- <el-form-item v-if="!editMode" label="评审团" prop="reviewerGroupId">
+          <el-empty v-else :image-size="70" description="暂未选择项目小组" style="height:40px;" />
+        </div>
+      </el-form-item>
+
+      <!-- <el-form-item v-if="!editMode" label="评审团" prop="reviewerGroupId">
       <el-select v-model="formData.reviewerGroupId" placeholder="选择评审团" clearable>
         <el-option label="中期答辩评审组" :value="1" />
         <el-option label="期末答辩评审组" :value="2" />
       </el-select>
     </el-form-item> -->
 
-    <el-form-item v-if="!editMode" ref="reviewerGroupChoiceRef" label="评审团" prop="reviewerGroupId" @click="showInfo">
-      <el-select ref="reviewerGroupsSelectRef" v-model="formData.reviewerGroupId" placeholder="选择参与评分该项目的评审团"
-        :loading="loadingReviewerGps" filterable remote :remote-method="getReviewerGroupList" debounce="500"
-        :prefix-icon="Search" popper-class="reviewer-groups-select-popper"
-        @popup-scroll="handleReviewerGroupsPopupScroll" @visible-change="handleReviewerGroupsVisibleChange">
-        <el-option v-for="item in reviewerGroups" :key="item.id" :label="item.name" :value="item.id" />
-      </el-select>
-    </el-form-item>
+      <el-form-item v-if="!editMode" ref="reviewerGroupChoiceRef" label="评审团" prop="reviewerGroupId" @click="showInfo">
+        <el-select ref="reviewerGroupsSelectRef" v-model="formData.reviewerGroupId" placeholder="选择参与评分该项目的评审团"
+          :loading="loadingReviewerGps" filterable remote :remote-method="getReviewerGroupList" debounce="500"
+          :prefix-icon="Search" popper-class="reviewer-groups-select-popper"
+          @popup-scroll="handleReviewerGroupsPopupScroll" @visible-change="handleReviewerGroupsVisibleChange">
+          <el-option v-for="item in reviewerGroups" :key="item.id" :label="item.name" :value="item.id" />
+        </el-select>
+      </el-form-item>
 
-    <el-form-item label="启用状态" v-if="editMode">
-      <el-switch v-model="formData.isEnabled" size="large"
-        style="--el-switch-on-color: #13ce66; --el-switch-off-color: #ff4949" inline-prompt active-text="启用"
-        inactive-text="停用" />
-    </el-form-item>
+      <el-form-item label="启用状态" v-if="editMode">
+        <el-switch v-model="formData.isEnabled" size="large"
+          style="--el-switch-on-color: #13ce66; --el-switch-off-color: #ff4949" inline-prompt active-text="启用"
+          inactive-text="停用" />
+      </el-form-item>
 
-  </el-form>
+    </el-form>
+
+    <ProjectGroupSelectionModal v-if="!editMode" :visible="groupSelectionVisible" :selected-ids="formData.groupIds"
+      :selected-groups="selectedGroupDetails" @update:visible="groupSelectionVisible = $event"
+      @confirm="handleGroupSelectionConfirm" />
+  </div>
 </template>
 
 <script setup>
@@ -74,11 +92,11 @@ import { Search } from '@element-plus/icons-vue';
 // import BaseForm from '@/components/common/form/BaseForm.vue';
 
 import { ScoringApi } from '@/api/scoring';
-import { projectGroupApi } from '@/api/project-group';
 import { reviewerGroupApi } from '@/api/reviewer-group';
 import { projectFormRules } from '../config/form-rules/projectForm';
 import { useMessage } from '@/composables/useMessage';
 import { useLoading } from '@/composables/useLoading';
+import ProjectGroupSelectionModal from './ProjectGroupSelectionModal.vue';
 
 const props = defineProps({
   data: {
@@ -125,6 +143,8 @@ const showInfo = (ref) => {//ref比对
 const baseFormRef = ref(null)
 
 const formData = ref(props.data)
+const groupSelectionVisible = ref(false)
+const selectedGroupDetails = ref([])
 
 /**
  * 日期时间选择器的禁用函数，禁止选择今天之前的日期
@@ -274,98 +294,15 @@ const loadMoreScoringStandards = async () => {
   }
 }
 
-const commonGroups = ref([])
-const commonGroupsSelectRef = ref(null)
-const commonGroupsQuery = ref({ keyword: '', page: 1, hasMore: true })
-const { isLoading: loadingCommonGroups, start: startLoadingCommonGroups, end: endLoadingCommonGroups } = useLoading('projectForm:commonGroups')
-const getCommonGroups = async (keywords = '') => {
-  commonGroupsQuery.value = {
-    keyword: keywords,
-    page: 1,
-    hasMore: true
-  }
+const handleGroupSelectionConfirm = ({ ids, groups }) => {
+  formData.value.groupIds = ids;
+  selectedGroupDetails.value = groups;
+};
 
-  startLoadingCommonGroups();
-  try {
-    const response = await projectGroupApi.getGroupList({
-      keyWords: keywords,
-      page: 1,
-      size: PAGE_SIZE
-    });
-    const list = response.data.list || []
-    const total = Number(response.data.total || 0)
-    commonGroups.value = list;
-    commonGroupsQuery.value.hasMore = total > 0 ? list.length < total : list.length >= PAGE_SIZE
-    console.log(response.data)
-  } catch (err) {
-    console.log(err)
-  } finally {
-    endLoadingCommonGroups();
-  }
-}
-
-const handleCommonGroupsVisibleChange = (visible) => {
-  if (visible && !commonGroups.value.length) {
-    getCommonGroups(commonGroupsQuery.value.keyword)
-  }
-}
-
-const handleCommonGroupsPopupScroll = (event) => {
-  const target = getCommonGroupsScrollTarget(event)
-  if (!target || loadingCommonGroups.value || !commonGroupsQuery.value.hasMore) {
-    return
-  }
-
-  const isNearBottom = target.scrollHeight - target.scrollTop - target.clientHeight <= 20
-  if (!isNearBottom) {
-    return
-  }
-
-  loadMoreCommonGroups()
-}
-
-const getCommonGroupsScrollTarget = (event) => {
-  if (event?.target) {
-    return event.target
-  }
-
-  const wrapRef = commonGroupsSelectRef.value?.popperRef?.contentRef?.querySelector('.el-select-dropdown__wrap')
-  if (wrapRef) {
-    return wrapRef
-  }
-
-  return document.querySelector('.common-groups-select-popper .el-select-dropdown__wrap')
-}
-
-const loadMoreCommonGroups = async () => {
-  if (loadingCommonGroups.value || !commonGroupsQuery.value.hasMore) {
-    return
-  }
-
-  const nextPage = commonGroupsQuery.value.page + 1
-  startLoadingCommonGroups();
-  try {
-    const response = await projectGroupApi.getGroupList({
-      keyWords: commonGroupsQuery.value.keyword,
-      page: nextPage,
-      size: PAGE_SIZE
-    });
-    const list = response.data.list || []
-    const total = Number(response.data.total || 0)
-    const existingIds = new Set(commonGroups.value.map(item => item.id))
-    const uniqueList = list.filter(item => !existingIds.has(item.id))
-
-    commonGroups.value = [...commonGroups.value, ...uniqueList]
-    commonGroupsQuery.value.page = nextPage
-    commonGroupsQuery.value.hasMore = total > 0
-      ? commonGroups.value.length < total
-      : list.length >= PAGE_SIZE
-  } catch (err) {
-    console.log(err)
-  } finally {
-    endLoadingCommonGroups();
-  }
-}
+const removeSelectedGroup = (groupId) => {
+  formData.value.groupIds = formData.value.groupIds.filter(id => id !== groupId);
+  selectedGroupDetails.value = selectedGroupDetails.value.filter(group => group.id !== groupId);
+};
 
 const reviewerGroups = ref([])
 const reviewerGroupsQuery = ref({ keyword: '', page: 1, hasMore: true })
@@ -492,6 +429,19 @@ watch(
   }
 )
 
+watch(
+  () => props.data?.groupIds,
+  (newGroupIds) => {
+    if (!Array.isArray(newGroupIds)) {
+      selectedGroupDetails.value = [];
+      return;
+    }
+
+    selectedGroupDetails.value = selectedGroupDetails.value.filter(group => newGroupIds.includes(group.id));
+  },
+  { deep: true, immediate: true }
+)
+
 onMounted(() => {
   syncDateTimeFields()
   if (props.editMode) {
@@ -499,3 +449,38 @@ onMounted(() => {
   }
 })
 </script>
+
+<style scoped>
+.project-form-wrapper {
+  width: 100%;
+}
+
+.group-selector-field {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.group-selector-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.group-selector-summary {
+  color: var(--el-text-color-regular);
+  font-size: 14px;
+}
+
+.selected-group-list {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 12px;
+  border: 1px solid var(--el-border-color-lighter);
+  border-radius: 8px;
+  background: var(--el-fill-color-lighter);
+}
+</style>
