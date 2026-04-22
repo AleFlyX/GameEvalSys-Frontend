@@ -1,6 +1,6 @@
 const testDialog = () => import('@/test/pages/testDialog.vue')
 const testAgent = () => import('@/test/pages/agent.vue')
-const loginTest = () => import("@/pages/public/login/test/LoginTest.vue")
+const loginTest = () => import("@/test/pages/LoginTest.vue")
 export const test = [
   {
     path: 'test',
