@@ -2,8 +2,12 @@ FROM node:20-alpine AS build
 
 WORKDIR /app
 
+# 换淘宝源
+RUN npm config set registry https://registry.npmmirror.com
+
+# 分离依赖和源码，利用 Docker 缓存
 COPY package*.json ./
-RUN npm ci
+RUN npm ci && npm cache clean --force
 
 COPY . .
 RUN npm run build
