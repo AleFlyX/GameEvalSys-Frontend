@@ -21,7 +21,15 @@
 
     <div class="reviewer-members">
       <h4>评审团成员</h4>
-      <el-table :data="reviewerGroupMembers" stripe style="width: 100%">
+      <div class="table-operations">
+        <span class="selected-count">已选择 {{ selectedMembers.length }} 位成员</span>
+        <el-button type="danger" plain :disabled="selectedMembers.length === 0" @click="handleBatchDeleteMembers">
+          批量删除
+        </el-button>
+      </div>
+      <el-table ref="reviewerTableRef" :data="reviewerGroupMembers" stripe style="width: 100%"
+        @selection-change="handleMemberSelectionChange">
+        <el-table-column type="selection" width="55" />
         <DataTableColums :col-rules="REVIEWER_LIST_RULES"></DataTableColums>
         <el-table-column label="操作" width="200" fixed="right">
           <template #default="scope">
@@ -51,7 +59,7 @@ import { ElMessage } from 'element-plus';
 import { userApi } from '@/api/user'
 import { useLoading } from '@/composables/useLoading';
 
-import { REVIEWER_LIST_RULES } from '../config/data-table/projectReviewerList';
+import { REVIEWER_LIST_RULES } from '../../config/data-table/projectReviewerList';
 
 const props = defineProps({
   projectId: {
@@ -80,6 +88,8 @@ const emits = defineEmits([
 
 // 获取评审团成员列表
 const reviewerGroupMembers = ref([])
+const reviewerTableRef = ref(null)
+const selectedMembers = ref([])
 
 // 成员选择相关
 const selectedMemberId = ref(null)
@@ -167,22 +177,52 @@ const handleAddMember = async () => {
   usersOptions.value = [];
 };
 
+const handleMemberSelectionChange = (selection) => {
+  selectedMembers.value = selection;
+};
+
+const removeMembersByIds = (targetIds) => {
+  const targetIdSet = new Set(targetIds);
+  const filteredScorers = reviewerGroupMembers.value.filter(item => !targetIdSet.has(item.id));
+  const filteredScorerIds = filteredScorers.map(item => item.id);
+  reviewerGroupMembers.value = filteredScorers;
+  selectedMembers.value = [];
+  reviewerTableRef.value?.clearSelection();
+  emits('edited', { edited: true, cache: filteredScorers });
+  emits('update:scorerIds', filteredScorerIds);
+};
+
 const handleDeleteMember = (row) => {
   showMsgBox('提示', '确定要将用户 ' + row.name + ' 移出该项目', {
     type: 'danger',
   })
     .then(() => {
-      const scorerId = row.id;
-      const filteredScorers = reviewerGroupMembers.value.filter(item => item.id !== scorerId);
-      const filteredScorerIds = filteredScorers.map(item => item.id);
-      reviewerGroupMembers.value = filteredScorers;
-      emits('edited', { edited: true, cache: filteredScorers });
-      console.log(filteredScorers)
-      emits('update:scorerIds', filteredScorerIds);
+      removeMembersByIds([row.id]);
+      emits('successNotice', '删除 ' + row.name + ' 成功');
     }).catch(() => {
       console.log('取消')
     })
 }
+
+const handleBatchDeleteMembers = () => {
+  if (selectedMembers.value.length === 0) {
+    ElMessage.warning('请先勾选要删除的成员');
+    return;
+  }
+
+  const selectedIds = selectedMembers.value.map(item => item.id);
+  showMsgBox('提示', `确定要批量移除 ${selectedIds.length} 位评审成员吗?`, {
+    type: 'danger',
+    confirmButtonText: '批量移除',
+  })
+    .then(() => {
+      removeMembersByIds(selectedIds);
+      emits('successNotice', `批量删除 ${selectedIds.length} 位成员成功`);
+    })
+    .catch(() => {
+      console.log('取消')
+    });
+};
 
 onMounted(() => {
   fetchReviewerGroupMembers()
@@ -226,5 +266,17 @@ onMounted(() => {
   font-size: 14px;
   font-weight: 600;
   color: var(--el-text-color-primary);
+}
+
+.table-operations {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.selected-count {
+  color: var(--el-text-color-regular);
+  font-size: 14px;
 }
 </style>

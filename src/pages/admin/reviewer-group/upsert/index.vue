@@ -44,7 +44,8 @@ const defaultFormData = () => ({
   name: '',
   description: '',
   isEnabled: true,
-  memberIds: []
+  memberIds: [],
+  members: []
 });
 
 const formData = ref(defaultFormData());
@@ -64,9 +65,15 @@ const loadDetail = async () => {
       () => reviewerGroupApi.getReviewerGroupDetail(route.params.id)
     );
     if (response?.code === 200 && response.data) {
+      const normalizedMemberIds = Array.isArray(response.data.memberIds)
+        ? response.data.memberIds
+        : (Array.isArray(response.data.members) ? response.data.members.map(item => item.id) : []);
+
       formData.value = {
         ...defaultFormData(),
-        ...response.data
+        ...response.data,
+        memberIds: normalizedMemberIds,
+        members: Array.isArray(response.data.members) ? response.data.members : []
       };
     } else {
       message.error('获取评审组详情失败');
@@ -85,10 +92,16 @@ const handleSubmit = async () => {
 
   try {
     await requestSubmit(async () => {
+      const submitData = {
+        name: data.name,
+        description: data.description,
+        isEnabled: data.isEnabled,
+        memberIds: data.memberIds
+      };
       if (isEdit.value) {
-        await reviewerGroupApi.editReviewerGroup(route.params.id, data);
+        await reviewerGroupApi.editReviewerGroup(route.params.id, submitData);
       } else {
-        await reviewerGroupApi.createReviewerGroup(data);
+        await reviewerGroupApi.createReviewerGroup(submitData);
       }
     });
 

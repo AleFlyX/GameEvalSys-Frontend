@@ -110,6 +110,7 @@ const showDisabled = ref(props.showDisabledUsers)
 const selectedRows = ref([])
 const requestPending = ref(false)  // 防止重复请求
 const isRestoringSelection = ref(false)  // 防止恢复选中时的无限循环
+const isSwitchingData = ref(false)  // 切页/换筛选时，暂时屏蔽表格内部的瞬时 selection-change
 
 // 角色映射
 const roleMap = {
@@ -145,8 +146,7 @@ const {
   loading,
   handleSizeChange,
   handleCurrentChange,
-  setTotal,
-  cancelRequest
+  setTotal
 } = useElPagination({
   initialPage: 1,
   initialPageSize: 10,
@@ -166,6 +166,7 @@ const fetchUserList = async (pageParams = { page: 1, size: 10 }) => {
   }
 
   requestPending.value = true
+  isSwitchingData.value = true
   try {
     const queryParams = {
       ...pageParams,
@@ -189,6 +190,7 @@ const fetchUserList = async (pageParams = { page: 1, size: 10 }) => {
     message.error('获取用户列表失败')
     console.error('Error fetching users:', error)
   } finally {
+    isSwitchingData.value = false
     requestPending.value = false
   }
 }
@@ -234,7 +236,7 @@ const handleShowDisabledChange = () => {
 // 表格选中变化
 const handleSelectionChange = (rows) => {
   // 恢复选中状态时不触发 emit，避免无限循环
-  if (isRestoringSelection.value) {
+  if (isRestoringSelection.value || isSwitchingData.value) {
     selectedRows.value = rows
     return
   }

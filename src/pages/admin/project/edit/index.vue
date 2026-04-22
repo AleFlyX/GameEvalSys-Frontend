@@ -39,7 +39,8 @@
             <ProjectReviewGroups v-if="activeTab === 'reviewer'" :project-id="formData.id"
               :scorer-ids="formData.scorerIds" @edited="projectScorerCache = $event"
               :scorer-cache="projectScorerCache.cache" :edited-at-local="projectScorerCache.edited"
-              @update:scorer-ids="handleNewScorerIds" />
+              @update:scorer-ids="handleNewScorerIds" @error-notice="message.error($event)"
+              @success-notice="message.success($event)" />
           </el-tab-pane>
         </el-tabs>
       </div>
@@ -66,8 +67,8 @@ import { ArrowLeft } from '@element-plus/icons-vue';
 import PagePanel from '@/layouts/PagePanel.vue';
 import MyBtn from '@/components/common/form/MyBtn.vue';
 import ProjectForm from '../components/ProjectForm.vue';
-import ProjectGroups from '../components/ProjectGroups.vue';
-import ProjectReviewGroups from '../components/ProjectReviewGroups.vue';
+import ProjectGroups from './components/ProjectGroups.vue';
+import ProjectReviewGroups from './components/ProjectReviewGroups.vue';
 
 import { projectApi } from '@/api/project';
 

@@ -22,7 +22,16 @@
       </el-button>
     </div>
 
-    <el-table :data="groupsList" stripe style="margin-top: 20px; width: 100%">
+    <div class="table-operations">
+      <span class="selected-count">已选择 {{ selectedGroups.length }} 个小组</span>
+      <el-button type="danger" plain :disabled="selectedGroups.length === 0" @click="handleBatchDeleteGroups">
+        批量删除
+      </el-button>
+    </div>
+
+    <el-table ref="groupsTableRef" :data="groupsList" stripe style="margin-top: 20px; width: 100%"
+      @selection-change="handleGroupSelectionChange">
+      <el-table-column type="selection" width="55" />
       <DataTableColums :col-rules="PROJECT_GROUP_LIST_RULES"></DataTableColums>
       <el-table-column label="操作" width="200" fixed="right">
         <template #default="scope">
@@ -47,7 +56,7 @@ import { ElMessage } from 'element-plus';
 import { projectGroupApi } from '@/api/project-group';
 import { useLoading } from '@/composables/useLoading';
 
-import { PROJECT_GROUP_LIST_RULES } from '../config/data-table/projectGroupList';
+import { PROJECT_GROUP_LIST_RULES } from '../../config/data-table/projectGroupList';
 
 const props = defineProps({
   projectId: {
@@ -72,6 +81,8 @@ const emits = defineEmits([
 
 // 获取项目关联的小组列表
 const groupsList = ref([])
+const groupsTableRef = ref(null)
+const selectedGroups = ref([])
 
 // 小组选择相关
 const selectedGroupId = ref(null)
@@ -158,6 +169,20 @@ const handleAddGroup = async () => {
   groupsOptions.value = [];
 };
 
+const handleGroupSelectionChange = (selection) => {
+  selectedGroups.value = selection;
+};
+
+const removeGroupsByIds = (targetIds) => {
+  const targetIdSet = new Set(targetIds);
+  const filteredGroupInfos = groupsList.value.filter(item => !targetIdSet.has(item.id));
+  groupsList.value = filteredGroupInfos;
+  selectedGroups.value = [];
+  groupsTableRef.value?.clearSelection();
+  emits('update:groupIds', filteredGroupInfos.map(item => item.id));
+  emits('edited', { edited: true, cache: filteredGroupInfos });
+};
+
 // 删除小组
 const handleDeleteGroup = (row) => {
   showMsgBox('', '确认要将 ' + row.name + ' 从此项目移除吗?', {
@@ -165,20 +190,34 @@ const handleDeleteGroup = (row) => {
     confirmButtonText: '移除',
   })
     .then(() => {
-      console.log(row)
-      const goroupId = row.id;
-      const filteredGroupInfos = groupsList.value.filter(item => item.id !== goroupId);
-      groupsList.value = filteredGroupInfos;
-      // console.log('DELETING GROUP', filteredGroupInfos)
-      emits('update:groupIds', filteredGroupInfos.map(item => item.id))
+      removeGroupsByIds([row.id]);
       emits('successNotice', '删除 ' + row.name + ' 成功')
-      emits('edited', { edited: true, cache: filteredGroupInfos })
     })
     .catch(() => {
       // 用户取消
       console.log('取消')
     });
 
+};
+
+const handleBatchDeleteGroups = () => {
+  if (selectedGroups.value.length === 0) {
+    ElMessage.warning('请先勾选要删除的小组');
+    return;
+  }
+
+  const selectedIds = selectedGroups.value.map(item => item.id);
+  showMsgBox('提示', `确定要批量移除 ${selectedIds.length} 个小组吗?`, {
+    type: 'danger',
+    confirmButtonText: '批量移除',
+  })
+    .then(() => {
+      removeGroupsByIds(selectedIds);
+      emits('successNotice', `批量删除 ${selectedIds.length} 个小组成功`);
+    })
+    .catch(() => {
+      console.log('取消')
+    });
 };
 
 onMounted(() => {
@@ -197,5 +236,17 @@ onMounted(() => {
   background-color: var(--el-fill-color-light);
   border-radius: 4px;
   margin-top: 15px;
+}
+
+.table-operations {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 16px;
+}
+
+.selected-count {
+  color: var(--el-text-color-regular);
+  font-size: 14px;
 }
 </style>
