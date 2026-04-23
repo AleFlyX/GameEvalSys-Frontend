@@ -21,6 +21,12 @@
         </el-icon>
         导出小组得分状态
       </el-button>
+      <el-button type="primary" @click="handleExport(false, true)" :loading="exporting">
+        <el-icon>
+          <Download />
+        </el-icon>
+        导出恶意评分记录
+      </el-button>
     </div>
 
     <!-- 加载状态 -->
@@ -39,6 +45,16 @@
         <span class="last-update">最后更新: {{ lastUpdateTime }}</span>
       </div>
 
+      <div class="rule-summary">
+        <div class="rule-summary-title">恶意判定规则</div>
+        <div class="rule-summary-content">
+          <el-tag :type="maliciousRuleType === 'THRESHOLD' ? 'warning' : 'info'" effect="dark">
+            {{ maliciousRuleType === 'THRESHOLD' ? '阈值区间模式' : '默认算法模式（MAD）' }}
+          </el-tag>
+          <span class="rule-summary-desc">{{ maliciousRuleDesc }}</span>
+        </div>
+      </div>
+
       <!-- Tab 切换 -->
       <el-tabs v-model="activeTab" class="statistic-tabs">
         <!-- Tab 1: 小组统计 -->
@@ -53,9 +69,18 @@
                     <span class="group-id">#{{ group.groupId }}</span>
                   </div>
                   <div class="group-score">
-                    <el-progress :percentage="getProgressPercentage(group.averageScore, totalScoreAwait)"
-                      :color="getScoreColor(group.averageScore)" />
-                    <span class="score-value">{{ group.averageScore.toFixed(2) }}/{{ totalScoreAwait }}</span>
+                    <el-progress :percentage="getProgressPercentage(getDisplayScore(group), totalScoreAwait)"
+                      :color="getScoreColor(getDisplayScore(group))" />
+                    <span class="score-value">{{ formatScore(getDisplayScore(group)) }}/{{ totalScoreAwait }}</span>
+                  </div>
+                  <div class="score-meta">
+                    <span class="score-meta-item">原始: {{ formatScore(group.rawAverageScore) }}</span>
+                    <span class="score-meta-item">标准化: {{ formatScore(group.normalizedAverageScore) }}</span>
+                    <span class="score-meta-item">处理后: {{ formatScore(group.processedAverageScore || group.averageScore)
+                      }}</span>
+                    <span class="score-meta-item">恶意: {{ group.abnormalCount ?? 0 }}</span>
+                    <span class="score-meta-item">样本: {{ group.sampleSize ?? 0 }}</span>
+                    <span class="score-meta-item">有效: {{ group.validSampleSize ?? 0 }}</span>
                   </div>
                   <div class="group-actions">
                     <el-button type="primary" link @click="openGroupScoreDetailModal(group)">
@@ -82,11 +107,21 @@
                 </div>
                 <div class="indicator-score">
                   <el-progress
-                    :percentage="getProgressPercentage(indicator.averageScore, getIndicatorMaxScore(indicator.indicatorId))"
-                    :color="getScoreColor(indicator.averageScore)" />
-                  <span class="score-value">{{ indicator.averageScore.toFixed(2) }}/{{
-                    getIndicatorMaxScore(indicator.indicatorId)
-                  }}</span>
+                    :percentage="getProgressPercentage(getDisplayScore(indicator), getIndicatorMaxScore(indicator.indicatorId))"
+                    :color="getScoreColor(getDisplayScore(indicator))" />
+                  <span class="score-value">
+                    {{ formatScore(getDisplayScore(indicator)) }}/
+                    {{ getIndicatorMaxScore(indicator.indicatorId) }}
+                  </span>
+                </div>
+                <div class="score-meta">
+                  <span class="score-meta-item">原始: {{ formatScore(indicator.rawAverageScore) }}</span>
+                  <span class="score-meta-item">标准化: {{ formatScore(indicator.normalizedAverageScore) }}</span>
+                  <span class="score-meta-item">处理后: {{ formatScore(indicator.processedAverageScore ||
+                    indicator.averageScore) }}</span>
+                  <span class="score-meta-item">恶意: {{ indicator.abnormalCount ?? 0 }}</span>
+                  <span class="score-meta-item">样本: {{ indicator.sampleSize ?? 0 }}</span>
+                  <span class="score-meta-item">有效: {{ indicator.validSampleSize ?? 0 }}</span>
                 </div>
               </div>
             </div>
@@ -137,11 +172,16 @@ import {
   exportProjectStatisticData,
   getProjectGroupIndicatorStatistic,
   exportProjectGroupIndicatorsData,
+  exportProjectAbnormalScores,
 } from "@/api/statistic";
 import { getProjectDetail } from "@/api/project";
 import { useScoreStore } from "@/stores/modules/scoreStore";
 import GroupIndicatorScoreModal from "./components/GroupIndicatorScoreModal.vue";
 import { getIndicatorsFromStandard } from "@/utils/scoringStandard";
+
+defineOptions({
+  name: "ProjectStatisticDetailPage",
+});
 
 const router = useRouter();
 const route = useRoute();
@@ -150,6 +190,9 @@ const scoreStore = useScoreStore();
 // ==================== 数据定义 ====================
 const projectId = computed(() => route.params.projectId);
 const projectName = ref("");
+const maliciousRuleType = ref("AUTO");
+const maliciousScoreLower = ref(null);
+const maliciousScoreUpper = ref(null);
 const loading = ref(false);
 const exporting = ref(false);
 const activeTab = ref("group");
@@ -174,6 +217,15 @@ const totalScoreAwait = computed(() => {
   return totalScore.value || 0;
 });
 
+const maliciousRuleDesc = computed(() => {
+  if (maliciousRuleType.value === "THRESHOLD") {
+    const lower = maliciousScoreLower.value ?? "-";
+    const upper = maliciousScoreUpper.value ?? "-";
+    return `总分低于 ${lower} 或高于 ${upper} 的评分将被标记为恶意评分，并从处理后均分中剔除。`;
+  }
+  return "采用 MAD 低分单侧算法自动识别恶意评分，并从处理后均分中剔除。";
+});
+
 const getIndicatorMaxScore = (indicatorId) => {
   if (!indicatorId) return;
   return maxScores.value[indicatorId]?.maxScore || 0;
@@ -182,6 +234,17 @@ const getIndicatorMaxScore = (indicatorId) => {
 const getProgressPercentage = (score, maxScore) => {
   if (!maxScore) return 0;
   return Math.min(((Number(score || 0) / maxScore) * 100).toFixed(2), 100);
+};
+
+const getDisplayScore = (item = {}) => {
+  if (item.processedAverageScore !== undefined && item.processedAverageScore !== null) {
+    return item.processedAverageScore;
+  }
+  return item.averageScore || 0;
+};
+
+const formatScore = (score) => {
+  return Number(score || 0).toFixed(2);
 };
 
 // ==================== 方法 ====================
@@ -193,6 +256,9 @@ const loadProjectDetail = async () => {
     const response = await getProjectDetail(projectId.value);
     if (response.data) {
       projectName.value = response.data.name || `项目 ${projectId.value}`;
+      maliciousRuleType.value = response.data.maliciousRuleType || "AUTO";
+      maliciousScoreLower.value = response.data.maliciousScoreLower;
+      maliciousScoreUpper.value = response.data.maliciousScoreUpper;
       // 从打分标准获取满分值（使用 scoreStore 缓存管理）
       if (response.data.standardId) {
         try {
@@ -294,17 +360,22 @@ const getPercentage = (count) => {
 /**
  * 导出项目打分记录数据
  */
-const handleExport = async (isProject = true) => {
+const handleExport = async (isProject = true, isAbnormal = false) => {
   exporting.value = true;
-
   let requestFunc = exportProjectStatisticData;
   if (!isProject) requestFunc = exportProjectGroupIndicatorsData;
-
+  if (isAbnormal) {
+    requestFunc = exportProjectAbnormalScores;
+  }
   try {
-    const blobData = await requestFunc(projectId.value, "excel");
+    const blobData = isAbnormal
+      ? await requestFunc(projectId.value)
+      : await requestFunc(projectId.value, "excel");
 
     // 从响应头获取文件名，或者构造默认文件名
-    const fileName = `${projectName.value}_打分统计_${new Date().getTime()}.xlsx`;
+    const fileName = isAbnormal
+      ? `${projectName.value}_恶意评分记录_${new Date().getTime()}.xlsx`
+      : `${projectName.value}_打分统计_${new Date().getTime()}.xlsx`;
 
     // 创建下载链接
     const url = window.URL.createObjectURL(blobData);
@@ -393,6 +464,33 @@ onMounted(() => {
   font-size: 0.875rem;
   color: #9ca3af;
   margin-left: auto;
+}
+
+.rule-summary {
+  max-width: 1400px;
+  margin: 0 auto 20px;
+  padding: 14px 16px;
+  background: #fffdf5;
+  border: 1px solid #f3e8c3;
+  border-radius: 12px;
+}
+
+.rule-summary-title {
+  font-size: 13px;
+  color: #7c6b35;
+  margin-bottom: 8px;
+}
+
+.rule-summary-content {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.rule-summary-desc {
+  color: #6b7280;
+  font-size: 13px;
 }
 
 /* ==================== 标签页 ==================== */
@@ -520,6 +618,19 @@ onMounted(() => {
 
 .indicator-score :deep(.el-progress) {
   flex: 1;
+}
+
+.score-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin-top: 8px;
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
+.score-meta-item {
+  white-space: nowrap;
 }
 
 /* ==================== 评分人表格 ==================== */

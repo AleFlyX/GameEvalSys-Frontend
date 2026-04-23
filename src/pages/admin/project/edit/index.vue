@@ -74,6 +74,10 @@ import { projectApi } from '@/api/project';
 
 import { showMsgBox } from '@/utils/ConfirmBox';
 
+defineOptions({
+  name: 'ProjectEditPage'
+})
+
 const message = useMessage();
 const router = useRouter();
 const route = useRoute();
@@ -104,6 +108,9 @@ const formData = reactive({
   startDate: '',
   endDate: '',
   standardId: '',
+  maliciousRuleType: 'AUTO',
+  maliciousScoreLower: null,
+  maliciousScoreUpper: null,
   groupIds: [],
   scorerIds: [],
   // reviewerGroupIds: [],
@@ -264,10 +271,13 @@ onMounted(async () => {
         formData.startDate,
         formData.endDate,
         formData.standardId,
+        formData.maliciousRuleType,
+        formData.maliciousScoreLower,
+        formData.maliciousScoreUpper,
         formData.isEnabled
       ],
       // 第二个参数：变化后的回调
-      (newVals, oldVals) => {
+      () => {
         // console.log('BASIC INFO CHANGED', newVals);
         isDataAdjusted.basicInfoChanged = true;
       })
