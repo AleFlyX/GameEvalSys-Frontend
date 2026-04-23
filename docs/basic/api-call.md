@@ -1164,6 +1164,7 @@
 - **请求方式**：GET
 - **请求头**：`Authorization: Bearer {token}`
 - **路径参数**：`projectId` - 项目ID
+- **说明**：该接口现已支持**评委标准化 + 异常检测 + 原始/处理后双展示**。其中 `averageScore` 为兼容旧前端保留字段，语义等同于 `processedAverageScore`。
 - **响应示例**：
   ```json
   {
@@ -1174,56 +1175,34 @@
         {
           "groupId": 1,
           "groupName": "第一小组",
-          "averageScore": 4.5
+          "averageScore": 4.63,
+          "rawAverageScore": 4.41,
+          "normalizedAverageScore": 4.58,
+          "processedAverageScore": 4.63,
+          "abnormalCount": 1,
+          "sampleSize": 6,
+          "validSampleSize": 5
         }
       ],
       "indicatorAverage": [
         {
           "indicatorId": 1,
           "indicatorName": "复杂程度",
-          "averageScore": 4.2
+          "averageScore": 4.27,
+          "rawAverageScore": 4.08,
+          "normalizedAverageScore": 4.21,
+          "processedAverageScore": 4.27,
+          "abnormalCount": 1,
+          "sampleSize": 6,
+          "validSampleSize": 5
         }
       ],
       "scorerDistribution": [
         {
           "userId": 2,
           "userName": "打分员01",
-          "scoreRange": "4-5分",
+          "scoreRange": "4-6分",
           "count": 3
-        }
-      ]
-    }
-  }
-  ```
-
-### 7.1.1 获取项目内指定小组的指标平均得分明细
-
-- **接口地址**：`/projects/{projectId}/statistics/groups/{groupId}`
-- **请求方式**：GET
-- **请求头**：`Authorization: Bearer {token}`
-- **路径参数**：
-  | 参数名 | 类型 | 必填 | 说明 |
-  |--------|------|------|------|
-  | projectId | number | 是 | 项目ID |
-  | groupId | number | 是 | 小组ID |
-- **响应示例**：
-  ```json
-  {
-    "code": 200,
-    "message": "查询成功",
-    "data": {
-      "groupId": 1,
-      "groupName": "第一小组",
-      "indicatorAverage": [
-        {
-          "indicatorId": 1,
-          "indicatorName": "复杂程度",
-          "averageScore": 4.35
-        },
-        {
-          "indicatorId": 2,
-          "indicatorName": "创新性",
-          "averageScore": 3.92
         }
       ]
     }
@@ -1232,12 +1211,36 @@
 - **字段说明**：
   | 字段名 | 类型 | 说明 |
   |--------|------|------|
-  | groupId | number | 小组ID |
-  | groupName | string | 小组名称 |
-  | indicatorAverage | array | 当前小组各指标平均得分 |
+  | groupAverage | array | 小组维度统计结果，按处理后均分倒序返回 |
+  | groupAverage[].groupId | number | 小组ID |
+  | groupAverage[].groupName | string | 小组名称 |
+  | groupAverage[].averageScore | number | 兼容字段，等于 `processedAverageScore` |
+  | groupAverage[].rawAverageScore | number | 原始平均分，未做标准化和异常剔除 |
+  | groupAverage[].normalizedAverageScore | number | 标准化后平均分，已消除评委整体偏严/偏松影响，但未剔除异常值 |
+  | groupAverage[].processedAverageScore | number | 处理后平均分，基于标准化结果剔除异常值后计算 |
+  | groupAverage[].abnormalCount | number | 判定为异常的评分条数 |
+  | groupAverage[].sampleSize | number | 原始样本总数 |
+  | groupAverage[].validSampleSize | number | 剔除异常值后的有效样本数 |
+  | indicatorAverage | array | 指标维度统计结果，按处理后均分倒序返回 |
   | indicatorAverage[].indicatorId | number | 指标ID |
   | indicatorAverage[].indicatorName | string | 指标名称 |
-  | indicatorAverage[].averageScore | number | 指标平均得分 |
+  | indicatorAverage[].averageScore | number | 兼容字段，等于 `processedAverageScore` |
+  | indicatorAverage[].rawAverageScore | number | 原始平均分，未做标准化和异常剔除 |
+  | indicatorAverage[].normalizedAverageScore | number | 标准化后平均分，已消除评委整体偏严/偏松影响，但未剔除异常值 |
+  | indicatorAverage[].processedAverageScore | number | 处理后平均分，基于标准化结果剔除异常值后计算 |
+  | indicatorAverage[].abnormalCount | number | 判定为异常的评分条数 |
+  | indicatorAverage[].sampleSize | number | 原始样本总数 |
+  | indicatorAverage[].validSampleSize | number | 剔除异常值后的有效样本数 |
+  | scorerDistribution | array | 打分用户分布统计 |
+  | scorerDistribution[].userId | number | 打分用户ID |
+  | scorerDistribution[].userName | string | 打分用户名称 |
+  | scorerDistribution[].scoreRange | string | 总分区间，当前可能值为 `0-2分`、`2-4分`、`4-6分`、`6-8分`、`8-10分`、`其他` |
+  | scorerDistribution[].count | number | 该用户落在当前分值区间的记录数 |
+- **统计逻辑说明**：
+  - **原始平均分**：直接基于原始打分求平均。
+  - **标准化平均分**：按评委在当前统计范围内的整体均值做中心化处理，公式为 `adjusted = raw - scorerMean + overallMean`。
+  - **处理后平均分**：在标准化后的分数基础上，再使用 MAD（Median Absolute Deviation）进行异常检测并剔除异常值后计算。
+  - **降级策略**：当同一统计范围样本量过少时，异常检测会自动跳过，仅保留标准化结果。
 
 ### 7.2 获取平台全局统计数据
 
