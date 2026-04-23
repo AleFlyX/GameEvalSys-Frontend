@@ -10,7 +10,11 @@
         :value="platformStats.totalProjects.toString()" sub="累计提报项目" label-placement="body" icon-bg="transparent"
         :icon-size="40" :icon-radius="12">
         <template #icon>
-          <div class="stat-icon indigo-icon"></div>
+          <div class="stat-icon indigo-icon">
+            <el-icon color="#6366f1" size="20">
+              <component :is="getElementIcon('ChatSquare')"></component>
+            </el-icon>
+          </div>
         </template>
         <template #head-extra>
           <!-- <span class="growth-rate up">+Nan%</span> -->
@@ -22,7 +26,11 @@
         :value="platformStats.totalScores.toString()" sub="本周新增评审" label-placement="body" icon-bg="transparent"
         :icon-size="40" :icon-radius="12">
         <template #icon>
-          <div class="stat-icon emerald-icon"></div>
+          <div class="stat-icon emerald-icon">
+            <el-icon color="#10b981" size="20">
+              <component :is="getElementIcon('Star')"></component>
+            </el-icon>
+          </div>
         </template>
         <template #head-extra>
           <!-- <span class="growth-rate up">+Nan%</span> -->
@@ -33,7 +41,11 @@
       <StatCard class="stat-card--metric" label="平均项目得分" :value="platformStats.averageScore.toFixed(2)" sub="满分由打分标准决定"
         label-placement="body" icon-bg="transparent" :icon-size="40" :icon-radius="12">
         <template #icon>
-          <div class="stat-icon amber-icon"></div>
+          <div class="stat-icon amber-icon">
+            <el-icon color="#f59e0b" size="20">
+              <component :is="getElementIcon('DataAnalysis')"></component>
+            </el-icon>
+          </div>
         </template>
         <template #head-extra>
           <!-- <span class="growth-rate up">+Nan%</span> -->
@@ -107,6 +119,7 @@ import { ref, computed, onMounted, watch, nextTick, onUnmounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import StatCard from '@/components/common/data/StatCard.vue'
 import { getPlatformStatistics } from '@/api/statistic'
+import { getElementIcon } from '@/utils/elementIcons';
 // -------------------------- 1. 响应式数据定义 --------------------------
 // 图表 DOM 引用
 const trendsChartRef = ref(null)
@@ -392,6 +405,10 @@ onUnmounted(() => {
   width: 40px;
   height: 40px;
   border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
   /* 减轻内陷效果：减小阴影偏移、模糊半径和透明度 */
   box-shadow:
     inset 1px 1px 3px rgba(0, 0, 0, 0.08),
