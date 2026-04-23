@@ -1,10 +1,5 @@
 <template>
-  <BaseDialogModal
-    v-bind="$attrs"
-    :visible="visible"
-    :max-width="900"
-    @update:visible="emit('update:visible', $event)"
-  >
+  <BaseDialogModal v-bind="$attrs" :visible="visible" :max-width="900" @update:visible="emit('update:visible', $event)">
     <template #header>
       {{ selectedGroup?.groupName || selectedGroup?.name || "小组" }} - 指标平均得分
     </template>
@@ -21,19 +16,33 @@
               </div>
             </template>
           </el-table-column>
-          <el-table-column label="平均得分" width="220">
+          <el-table-column label="处理后均分" width="220">
             <template #default="{ row }">
               <span class="score">
-                {{ Number(row.averageScore || 0).toFixed(2) }}/{{ getIndicatorMaxScore(row.indicatorId) }}
+                {{ formatScore(getDisplayScore(row)) }}/{{ getIndicatorMaxScore(row.indicatorId) }}
               </span>
+            </template>
+          </el-table-column>
+          <el-table-column label="原始/标准化" width="220">
+            <template #default="{ row }">
+              <div class="meta-pair">
+                <span>原始: {{ formatScore(row.rawAverageScore) }}</span>
+                <span>标准化: {{ formatScore(row.normalizedAverageScore) }}</span>
+              </div>
+            </template>
+          </el-table-column>
+          <el-table-column label="异常/样本" width="200">
+            <template #default="{ row }">
+              <div class="meta-pair">
+                <span>异常: {{ row.abnormalCount ?? 0 }}</span>
+                <span>样本: {{ row.sampleSize ?? 0 }}</span>
+                <span>有效: {{ row.validSampleSize ?? 0 }}</span>
+              </div>
             </template>
           </el-table-column>
           <el-table-column label="得分进度" min-width="280">
             <template #default="{ row }">
-              <el-progress
-                :percentage="getPercentage(row.averageScore, row.indicatorId)"
-                :stroke-width="10"
-              />
+              <el-progress :percentage="getPercentage(getDisplayScore(row), row.indicatorId)" :stroke-width="10" />
             </template>
           </el-table-column>
         </el-table>
@@ -90,6 +99,17 @@ const getPercentage = (averageScore, indicatorId) => {
   if (!maxScore) return 0;
   return Math.min(Math.round((Number(averageScore || 0) / maxScore) * 100), 100);
 };
+
+const getDisplayScore = (row = {}) => {
+  if (row.processedAverageScore !== undefined && row.processedAverageScore !== null) {
+    return row.processedAverageScore;
+  }
+  return row.averageScore || 0;
+};
+
+const formatScore = (score) => {
+  return Number(score || 0).toFixed(2);
+};
 </script>
 
 <style scoped>
@@ -115,5 +135,13 @@ const getPercentage = (averageScore, indicatorId) => {
 .score {
   font-weight: 600;
   color: #1f2937;
+}
+
+.meta-pair {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  color: #6b7280;
 }
 </style>

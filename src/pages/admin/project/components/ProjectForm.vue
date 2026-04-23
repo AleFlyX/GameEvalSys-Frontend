@@ -33,6 +33,39 @@
         </el-select>
       </el-form-item>
 
+      <el-form-item label="恶意判定规则" prop="maliciousRuleType">
+        <el-radio-group v-model="formData.maliciousRuleType" @change="handleRuleTypeChange">
+          <el-radio label="AUTO">默认算法（MAD）</el-radio>
+          <el-radio label="THRESHOLD">阈值区间</el-radio>
+        </el-radio-group>
+      </el-form-item>
+
+      <el-form-item v-if="formData.maliciousRuleType === 'THRESHOLD'" label="总分阈值范围" required>
+        <div class="threshold-range-row">
+          <el-form-item class="threshold-item" prop="maliciousScoreLower">
+            <el-input-number v-model="formData.maliciousScoreLower" :min="0" :precision="2" :step="0.5"
+              controls-position="right" placeholder="最低分" />
+          </el-form-item>
+          <span class="threshold-separator">~</span>
+          <el-form-item class="threshold-item" prop="maliciousScoreUpper">
+            <el-input-number v-model="formData.maliciousScoreUpper" :min="0" :precision="2" :step="0.5"
+              controls-position="right" placeholder="最高分" />
+          </el-form-item>
+        </div>
+      </el-form-item>
+      <div class="rule-tip">
+        <el-alert v-if="formData.maliciousRuleType === 'AUTO'" type="info" :closable="false" show-icon>
+          <template #default>
+            使用默认 MAD 低分单侧算法识别恶意评分。
+          </template>
+        </el-alert>
+        <el-alert v-else type="warning" :closable="false" show-icon>
+          <template #default>
+            使用阈值模式时，超出设定区间（小于最低分或大于最高分）的记录会被自动标记为恶意评分。
+          </template>
+        </el-alert>
+      </div>
+
       <el-form-item v-if="!editMode" label="项目内受评分的小组" prop="groupIds">
         <div class="group-selector-field">
           <div class="group-selector-actions">
@@ -110,6 +143,9 @@ const props = defineProps({
       standardId: '',
       groupIds: [],
       scorerIds: [],
+      maliciousRuleType: 'AUTO',
+      maliciousScoreLower: null,
+      maliciousScoreUpper: null,
       isEnabled: true,
       status: 'not_started'
     })
@@ -145,6 +181,26 @@ const baseFormRef = ref(null)
 const formData = ref(props.data)
 const groupSelectionVisible = ref(false)
 const selectedGroupDetails = ref([])
+
+const normalizeRuleType = (ruleType) => {
+  return ruleType === 'THRESHOLD' ? 'THRESHOLD' : 'AUTO';
+}
+
+const ensureMaliciousConfigDefaults = () => {
+  formData.value.maliciousRuleType = normalizeRuleType(formData.value.maliciousRuleType);
+  if (formData.value.maliciousRuleType !== 'THRESHOLD') {
+    formData.value.maliciousScoreLower = null;
+    formData.value.maliciousScoreUpper = null;
+  }
+}
+
+const handleRuleTypeChange = (ruleType) => {
+  formData.value.maliciousRuleType = normalizeRuleType(ruleType);
+  if (formData.value.maliciousRuleType !== 'THRESHOLD') {
+    formData.value.maliciousScoreLower = null;
+    formData.value.maliciousScoreUpper = null;
+  }
+}
 
 /**
  * 日期时间选择器的禁用函数，禁止选择今天之前的日期
@@ -430,6 +486,13 @@ watch(
 )
 
 watch(
+  () => props.data?.maliciousRuleType,
+  () => {
+    ensureMaliciousConfigDefaults()
+  }
+)
+
+watch(
   () => props.data?.groupIds,
   (newGroupIds) => {
     if (!Array.isArray(newGroupIds)) {
@@ -444,6 +507,7 @@ watch(
 
 onMounted(() => {
   syncDateTimeFields()
+  ensureMaliciousConfigDefaults()
   if (props.editMode) {
     initProjectFormData();
   }
@@ -482,5 +546,23 @@ onMounted(() => {
   border: 1px solid var(--el-border-color-lighter);
   border-radius: 8px;
   background: var(--el-fill-color-lighter);
+}
+
+.threshold-range-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.threshold-item {
+  margin-bottom: 0;
+}
+
+.threshold-separator {
+  color: var(--el-text-color-secondary);
+}
+
+.rule-tip {
+  margin: 4px 0 12px;
 }
 </style>

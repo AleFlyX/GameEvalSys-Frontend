@@ -21,6 +21,10 @@ export const getPlatformStatistics = () => {
  *   - groupAverage: 各小组平均得分
  *   - indicatorAverage: 各指标平均得分
  *   - scorerDistribution: 评分人分布
+ * 处理口径说明：
+ *   - rawAverageScore 包含恶意评分
+ *   - processedAverageScore 会剔除按项目规则标记为恶意的评分
+ *   - 项目规则来自项目配置（AUTO/MAD 或 THRESHOLD）
 
  */
 export const getProjectScoringStatistic = (projectId) => {
@@ -52,6 +56,12 @@ export const exportProjectStatisticData = (projectId, format = 'excel') => {
   });
 };
 
+/**
+ * 导出项目内指定小组的指标平均分数据
+ * @param {*} projectId
+ * @param {*} format
+ * @returns
+ */
 export const exportProjectGroupIndicatorsData = (projectId, format = 'excel') => {
   return service.get(`/projects/${projectId}/export/group-indicator-items`, {
     params: {
@@ -60,3 +70,14 @@ export const exportProjectGroupIndicatorsData = (projectId, format = 'excel') =>
     responseType: 'blob'
   });
 };
+
+/**
+ * 导出项目内恶意评分数据（按项目规则标记）
+ * @param {*} projectId
+ * @returns
+ */
+export const exportProjectAbnormalScores = (projectId) => {
+  return service.get(`/projects/${projectId}/export/abnormal-scores`, {
+    responseType: 'blob'
+  })
+}

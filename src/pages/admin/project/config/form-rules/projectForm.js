@@ -1,7 +1,37 @@
 const checkLength = (rule, value, callback) => {
-  console.log("VALIDATING", value)
-  if (value.length == 0) {
+  if (!Array.isArray(value) || value.length === 0) {
     callback(new Error('请输入有效值'));
+    return;
+  }
+  callback();
+}
+
+const validateThresholdLower = (rule, value, callback, source) => {
+  if (source?.maliciousRuleType !== 'THRESHOLD') {
+    callback();
+    return;
+  }
+  if (value === undefined || value === null || value === '') {
+    callback(new Error('阈值模式下请填写最低分阈值'));
+    return;
+  }
+  callback();
+}
+
+const validateThresholdUpper = (rule, value, callback, source) => {
+  if (source?.maliciousRuleType !== 'THRESHOLD') {
+    callback();
+    return;
+  }
+  if (value === undefined || value === null || value === '') {
+    callback(new Error('阈值模式下请填写最高分阈值'));
+    return;
+  }
+  const lower = Number(source?.maliciousScoreLower);
+  const upper = Number(value);
+  if (!Number.isNaN(lower) && !Number.isNaN(upper) && lower > upper) {
+    callback(new Error('最低分阈值不能大于最高分阈值'));
+    return;
   }
   callback();
 }
@@ -25,6 +55,17 @@ export const projectFormRules = {
   standardId: [
     { required: true, message: '请选择打分标准', trigger: 'change' }
   ],
+  maliciousRuleType: [
+    { required: true, message: '请选择恶意判定规则', trigger: 'change' }
+  ],
+  maliciousScoreLower: [
+    { validator: validateThresholdLower, trigger: 'blur' },
+    { validator: validateThresholdLower, trigger: 'change' }
+  ],
+  maliciousScoreUpper: [
+    { validator: validateThresholdUpper, trigger: 'blur' },
+    { validator: validateThresholdUpper, trigger: 'change' }
+  ],
   groupIds: [
     { required: true, message: '请选择至少一个小组', trigger: 'change' },
     { validator: checkLength, trigger: 'blur' }
@@ -34,4 +75,3 @@ export const projectFormRules = {
     { validator: checkLength, trigger: 'blur' }
   ]
 }
-

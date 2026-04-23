@@ -3,9 +3,14 @@
     <!-- {{ project }} -->
     <div class="card-header">
       <h3 class="project-name">{{ project.name }}</h3>
-      <el-tag :type="getStatusType(project.status)">
-        {{ getStatusLabel(project.status) }}
-      </el-tag>
+      <div class="header-tags">
+        <el-tag :type="getStatusType(project.status)">
+          {{ getStatusLabel(project.status) }}
+        </el-tag>
+        <el-tag size="small" :type="project.maliciousRuleType === 'THRESHOLD' ? 'warning' : 'info'">
+          {{ project.maliciousRuleType === 'THRESHOLD' ? '阈值模式' : '默认模式' }}
+        </el-tag>
+      </div>
     </div>
 
     <div class="card-content">
@@ -117,6 +122,12 @@ const selectProject = (project) => {
   align-items: flex-start;
   gap: 12px;
   margin-bottom: 16px;
+}
+
+.header-tags {
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .project-name {
