@@ -21,7 +21,6 @@ import { ref } from 'vue';
 import { ElMessage } from 'element-plus';
 import BaseFormModal from '@/components/common/modal/BaseFormModal.vue';
 import ProjectForm from './ProjectForm.vue';
-import { projectApi } from '@/api/project';
 
 defineOptions({
   inheritAttrs: false
@@ -37,6 +36,9 @@ const props = defineProps({
       startDate: '',
       endDate: '',
       standardId: '',
+      maliciousRuleType: 'AUTO',
+      maliciousScoreLower: null,
+      maliciousScoreUpper: null,
       groupIds: [],
       scorerIds: [],
       isEnabled: true,

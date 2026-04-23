@@ -37,6 +37,9 @@ const initialFormData = {
   startDate: '',
   endDate: '',
   standardId: '',
+  maliciousRuleType: 'AUTO',
+  maliciousScoreLower: null,
+  maliciousScoreUpper: null,
   groupIds: [],
   scorerIds: [],
   isEnabled: true
