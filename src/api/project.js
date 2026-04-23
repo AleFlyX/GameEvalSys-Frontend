@@ -13,8 +13,11 @@ import service from "@/utils/request";
  * @param {string} data.endDate - 结束日期 YYYY-MM-DD（必填）
  * @param {boolean} [data.isEnabled=true] - 是否启用（可选，默认true）
  * @param {number} data.standardId - 关联打分标准ID（必填）
+ * @param {'AUTO'|'THRESHOLD'} [data.maliciousRuleType='AUTO'] - 恶意判定规则
+ * @param {number|null} [data.maliciousScoreLower] - 阈值下限（THRESHOLD模式）
+ * @param {number|null} [data.maliciousScoreUpper] - 阈值上限（THRESHOLD模式）
  * @param {number[]} data.groupIds - 关联小组ID列表（必填）
- * @param {number} data.reviewerGroupIds - 关联评审组ID（必填）
+ * @param {number} data.reviewerGroupId - 关联评审组ID（必填）
  * @returns {Promise} 响应数据（包含项目id等信息）
  */
 export const createProject = (params) => {
@@ -54,6 +57,9 @@ export const getProjectOverview = () => {
  * @param {string} [data.endDate] - 结束日期 YYYY-MM-DD
  * @param {boolean} [data.isEnabled] - 是否启用
  * @param {number} [data.standardId] - 关联打分标准ID
+ * @param {'AUTO'|'THRESHOLD'} [data.maliciousRuleType] - 恶意判定规则
+ * @param {number|null} [data.maliciousScoreLower] - 阈值下限（THRESHOLD模式）
+ * @param {number|null} [data.maliciousScoreUpper] - 阈值上限（THRESHOLD模式）
  * @param {number[]} [data.groupIds] - 关联小组ID列表
  * @param {number[]} [data.scorerIds] - 可参与打分的用户ID列表
  * @returns {Promise} 响应数据
