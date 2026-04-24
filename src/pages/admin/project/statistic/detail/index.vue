@@ -64,28 +64,61 @@
             <div v-if="statisticData.groupAverage?.length" class="group-list">
               <div v-for="group in statisticData.groupAverage" :key="group.groupId">
                 <BaseCard class="group-item" shadow="hover">
-                  <div class="group-info">
-                    <span class="group-name">{{ group.groupName }}</span>
-                    <span class="group-id">#{{ group.groupId }}</span>
+                  <!-- 卡片主体：小组信息 + 得分进度 + 操作 -->
+                  <div class="group-main">
+                    <div class="group-info">
+                      <span class="group-name" :title="group.groupName">{{ group.groupName }}</span>
+                      <span class="group-id">#{{ group.groupId }}</span>
+                    </div>
+                    <div class="group-score">
+                      <el-progress :percentage="getProgressPercentage(getDisplayScore(group), totalScoreAwait)"
+                        :color="getScoreColor(getProgressPercentage(getDisplayScore(group), totalScoreAwait))"
+                        :stroke-width="10" />
+                      <span class="score-value">{{ formatScore(getDisplayScore(group)) }}</span>
+                      <span class="score-total">/{{ totalScoreAwait }}</span>
+                    </div>
+                    <div class="group-actions">
+                      <el-button type="primary" link @click="openGroupScoreDetailModal(group)">
+                        查看明细
+                      </el-button>
+                    </div>
                   </div>
-                  <div class="group-score">
-                    <el-progress :percentage="getProgressPercentage(getDisplayScore(group), totalScoreAwait)"
-                      :color="getScoreColor(getDisplayScore(group))" />
-                    <span class="score-value">{{ formatScore(getDisplayScore(group)) }}/{{ totalScoreAwait }}</span>
-                  </div>
-                  <div class="score-meta">
-                    <span class="score-meta-item">原始: {{ formatScore(group.rawAverageScore) }}</span>
-                    <span class="score-meta-item">标准化: {{ formatScore(group.normalizedAverageScore) }}</span>
-                    <span class="score-meta-item">处理后: {{ formatScore(group.processedAverageScore || group.averageScore)
-                      }}</span>
-                    <span class="score-meta-item">恶意: {{ group.abnormalCount ?? 0 }}</span>
-                    <span class="score-meta-item">样本: {{ group.sampleSize ?? 0 }}</span>
-                    <span class="score-meta-item">有效: {{ group.validSampleSize ?? 0 }}</span>
-                  </div>
-                  <div class="group-actions">
-                    <el-button type="primary" link @click="openGroupScoreDetailModal(group)">
-                      查看明细
-                    </el-button>
+                  <!-- 卡片底部：元数据 -->
+                  <div class="group-footer">
+                    <div class="footer-divider"></div>
+                    <div class="score-meta">
+                      <span class="meta-item">
+                        <span class="meta-label">原始</span>
+                        <span class="meta-value">{{ formatScore(group.rawAverageScore) }}</span>
+                      </span>
+                      <span class="meta-sep">·</span>
+                      <span class="meta-item">
+                        <span class="meta-label">标准化</span>
+                        <span class="meta-value">{{ formatScore(group.normalizedAverageScore) }}</span>
+                      </span>
+                      <span class="meta-sep">·</span>
+                      <span class="meta-item">
+                        <span class="meta-label">处理后</span>
+                        <span class="meta-value meta-value--primary">{{
+                          formatScore(group.processedAverageScore || group.averageScore)
+                          }}</span>
+                      </span>
+                      <span class="meta-sep">·</span>
+                      <span class="meta-item" :class="{ 'meta-item--warning': (group.abnormalCount ?? 0) > 0 }">
+                        <span class="meta-label">恶意</span>
+                        <span class="meta-value">{{ group.abnormalCount ?? 0 }}</span>
+                      </span>
+                      <span class="meta-sep">·</span>
+                      <span class="meta-item">
+                        <span class="meta-label">样本</span>
+                        <span class="meta-value">{{ group.sampleSize ?? 0 }}</span>
+                      </span>
+                      <span class="meta-sep">·</span>
+                      <span class="meta-item">
+                        <span class="meta-label">有效</span>
+                        <span class="meta-value">{{ group.validSampleSize ?? 0 }}</span>
+                      </span>
+                    </div>
                   </div>
                 </BaseCard>
               </div>
@@ -108,7 +141,7 @@
                 <div class="indicator-score">
                   <el-progress
                     :percentage="getProgressPercentage(getDisplayScore(indicator), getIndicatorMaxScore(indicator.indicatorId))"
-                    :color="getScoreColor(getDisplayScore(indicator))" />
+                    :color="getScoreColor(getDisplayScore(indicator))" :stroke-width="8" />
                   <span class="score-value">
                     {{ formatScore(getDisplayScore(indicator)) }}/
                     {{ getIndicatorMaxScore(indicator.indicatorId) }}
@@ -197,7 +230,7 @@ const loading = ref(false);
 const exporting = ref(false);
 const activeTab = ref("group");
 const lastUpdateTime = ref("");
-const maxScores = ref({}); // indicators[id][maxScore]
+const maxScores = ref({});
 const totalScore = ref(0);
 const groupScoreModalVisible = ref(false);
 const selectedGroup = ref({});
@@ -210,9 +243,6 @@ const statisticData = ref({
 });
 
 // ==================== 计算属性 ====================
-/**
- * 计算最大总分值（所有指标最大分的总和）
- */
 const totalScoreAwait = computed(() => {
   return totalScore.value || 0;
 });
@@ -248,9 +278,6 @@ const formatScore = (score) => {
 };
 
 // ==================== 方法 ====================
-/**
- * 加载项目详情
- */
 const loadProjectDetail = async () => {
   try {
     const response = await getProjectDetail(projectId.value);
@@ -259,7 +286,6 @@ const loadProjectDetail = async () => {
       maliciousRuleType.value = response.data.maliciousRuleType || "AUTO";
       maliciousScoreLower.value = response.data.maliciousScoreLower;
       maliciousScoreUpper.value = response.data.maliciousScoreUpper;
-      // 从打分标准获取满分值（使用 scoreStore 缓存管理）
       if (response.data.standardId) {
         try {
           const standardData = await scoreStore.fetchScoreStandard(response.data.standardId);
@@ -267,7 +293,7 @@ const loadProjectDetail = async () => {
           if (standardIndicators.length) {
             totalScore.value = 0;
             maxScores.value = standardIndicators.reduce((obj, item) => {
-              totalScore.value += item.maxScore; //计算评分标准分数总和
+              totalScore.value += item.maxScore;
               const { id, ...rest } = item;
               if (id !== undefined && id !== null) {
                 obj[id] = rest;
@@ -285,12 +311,8 @@ const loadProjectDetail = async () => {
   }
 };
 
-/**
- * 加载统计数据
- */
 const loadStatisticData = async () => {
   if (!projectId.value) return;
-
   loading.value = true;
   try {
     const response = await getProjectScoringStatistic(projectId.value);
@@ -306,12 +328,8 @@ const loadStatisticData = async () => {
   }
 };
 
-/**
- * 获取指定小组的指标平均分明细
- */
 const loadGroupIndicatorScores = async (groupId) => {
   if (!projectId.value || !groupId) return;
-
   groupIndicatorScoreLoading.value = true;
   try {
     const response = await getProjectGroupIndicatorStatistic(projectId.value, groupId);
@@ -330,36 +348,25 @@ const loadGroupIndicatorScores = async (groupId) => {
   }
 };
 
-/**
- * 打开小组得分明细弹窗
- */
 const openGroupScoreDetailModal = async (group) => {
   selectedGroup.value = group || {};
   groupScoreModalVisible.value = true;
   await loadGroupIndicatorScores(group?.groupId);
 };
 
-/**
- * 根据得分获取颜色
- */
-const getScoreColor = (score) => {
-  if (score >= 4.5) return "#67c23a"; // 绿色
-  if (score >= 3.5) return "#409eff"; // 蓝色
-  if (score >= 2.5) return "#e6a23c"; // 橙色
-  return "#f56c6c"; // 红色
+const getScoreColor = (percentage) => {
+  if (percentage >= 80) return "#67c23a";
+  if (percentage >= 70) return "#409eff";
+  if (percentage >= 60) return "#e6a23c";
+  return "#f56c6c";
 };
 
-/**
- * 计算百分比
- */
 const getPercentage = (count) => {
   const total = statisticData.value.scorerDistribution?.reduce((sum, item) => sum + item.count, 0) || 0;
-  return total > 0 ? Math.round((count / total) * 100) : 0;
+  // return total > 0 ? Math.round((count / total) * 100) : 0;
+  return total > 0 ? (count / total).toFixed(4) : 0;
 };
 
-/**
- * 导出项目打分记录数据
- */
 const handleExport = async (isProject = true, isAbnormal = false) => {
   exporting.value = true;
   let requestFunc = exportProjectStatisticData;
@@ -371,26 +378,17 @@ const handleExport = async (isProject = true, isAbnormal = false) => {
     const blobData = isAbnormal
       ? await requestFunc(projectId.value)
       : await requestFunc(projectId.value, "excel");
-
-    // 从响应头获取文件名，或者构造默认文件名
     const fileName = isAbnormal
       ? `${projectName.value}_恶意评分记录_${new Date().getTime()}.xlsx`
       : `${projectName.value}_打分统计_${new Date().getTime()}.xlsx`;
-
-    // 创建下载链接
     const url = window.URL.createObjectURL(blobData);
     const link = document.createElement("a");
     link.href = url;
     link.download = fileName;
     document.body.appendChild(link);
-
-    // 触发下载
     link.click();
-
-    // 清理资源
     document.body.removeChild(link);
     window.URL.revokeObjectURL(url);
-
     ElMessage.success("数据导出成功");
   } catch (error) {
     ElMessage.error("导出失败");
@@ -400,16 +398,12 @@ const handleExport = async (isProject = true, isAbnormal = false) => {
   }
 };
 
-/**
- * 返回列表
- */
 const goBack = () => {
   router.push({
     name: "projectStatisticList",
   });
 };
 
-// ==================== 生命周期 ====================
 onMounted(() => {
   loadProjectDetail();
   loadStatisticData();
@@ -517,61 +511,175 @@ onMounted(() => {
   margin: 0 0 20px 0;
 }
 
-/* ==================== 小组列表 ==================== */
+/* ==================== 小组列表（优化后） ==================== */
 .group-list {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(500px, 1fr));
+  gap: 20px;
 }
 
+/* 卡片容器 - 依赖 BaseCard 提供背景/阴影/圆角，这里仅做微调 */
 .group-item {
-  background: #f9fafb;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  padding: 16px;
+  margin-bottom: 15px;
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;
 }
 
+/* 卡片主体：去掉冗余的背景/边框，由 BaseCard 统一承载 */
+.group-main {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 4px 0;
+}
+
+/* 小组信息 */
 .group-info {
   display: flex;
   align-items: center;
-  gap: 12px;
-  flex: 1;
+  gap: 10px;
+  flex: 0 0 auto;
+  min-width: 0;
+  max-width: 160px;
 }
 
 .group-name {
   font-weight: 600;
   color: #1f2937;
   font-size: 0.95rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .group-id {
   font-size: 0.75rem;
   color: #9ca3af;
+  flex-shrink: 0;
 }
 
+/* 得分进度条区域 */
 .group-score {
   display: flex;
   align-items: center;
-  gap: 12px;
-  min-width: 200px;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
 }
 
 .group-score :deep(.el-progress) {
   flex: 1;
+  min-width: 80px;
 }
 
-.group-actions {
-  margin-left: 8px;
+/* 进度条加粗 */
+.group-score :deep(.el-progress-bar__outer) {
+  height: 10px;
+  border-radius: 6px;
+  background-color: #e8ecf1;
 }
 
+.group-score :deep(.el-progress-bar__inner) {
+  height: 10px;
+  border-radius: 6px;
+}
+
+/* 分数数值 - 更醒目 */
 .score-value {
-  font-weight: 600;
+  font-weight: 700;
+  font-size: 1.15rem;
   color: #1f2937;
-  min-width: 60px;
-  text-align: right;
+  white-space: nowrap;
+  letter-spacing: -0.01em;
+}
+
+.score-total {
+  font-size: 0.8rem;
+  color: #9ca3af;
+  white-space: nowrap;
+  margin-left: -4px;
+}
+
+/* 操作按钮 */
+.group-actions {
+  flex-shrink: 0;
+}
+
+/* 卡片底部 */
+.group-footer {
+  margin-top: auto;
+  padding-top: 4px;
+}
+
+.footer-divider {
+  height: 1px;
+  background: linear-gradient(to right, #e5e7eb 0%, #e5e7eb 60%, transparent 100%);
+  margin-bottom: 10px;
+}
+
+/* 元数据行 - 精致小标签风格 */
+.score-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px 4px;
+  font-size: 0.72rem;
+  color: #6b7280;
+  line-height: 1.6;
+}
+
+.meta-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  white-space: nowrap;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: #f3f4f6;
+  transition: background 0.2s;
+}
+
+.meta-item:hover {
+  background: #e5e7eb;
+}
+
+/* 恶意评分 > 0 时高亮 */
+.meta-item--warning {
+  background: #fef2f2;
+  color: #dc2626;
+}
+
+.meta-item--warning:hover {
+  background: #fde8e8;
+}
+
+.meta-item--warning .meta-value {
+  color: #dc2626;
+  font-weight: 700;
+}
+
+.meta-label {
+  color: #9ca3af;
+  font-weight: 400;
+}
+
+.meta-value {
+  color: #4b5563;
+  font-weight: 500;
+}
+
+/* 处理后分数高亮 */
+.meta-value--primary {
+  color: #3b82f6;
+  font-weight: 600;
+}
+
+/* 分隔符 */
+.meta-sep {
+  color: #d1d5db;
+  font-size: 0.65rem;
+  margin: 0 1px;
+  user-select: none;
 }
 
 /* ==================== 指标列表 ==================== */
@@ -620,17 +728,20 @@ onMounted(() => {
   flex: 1;
 }
 
-.score-meta {
-  display: flex;
-  flex-wrap: wrap;
+/* 指标区域的元数据保持原简洁风格 */
+.indicator-item .score-meta {
+  font-size: 0.75rem;
   gap: 8px 16px;
   margin-top: 8px;
-  font-size: 0.75rem;
-  color: #6b7280;
 }
 
-.score-meta-item {
-  white-space: nowrap;
+.indicator-item .score-meta .score-meta-item {
+  background: transparent;
+  padding: 0;
+}
+
+.indicator-item .score-meta .score-meta-item:hover {
+  background: transparent;
 }
 
 /* ==================== 评分人表格 ==================== */
@@ -653,25 +764,41 @@ onMounted(() => {
 
   .page-title {
     font-size: 1.25rem;
+    min-width: auto;
   }
 
   .group-list {
     grid-template-columns: 1fr;
+    gap: 14px;
   }
 
-  .group-item {
+  /* 移动端：小组卡片内部改为垂直布局 */
+  .group-main {
     flex-direction: column;
-    align-items: flex-start;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .group-info {
+    max-width: none;
+    flex-direction: row;
   }
 
   .group-score {
-    width: 100%;
-    margin-top: 12px;
+    flex-wrap: nowrap;
   }
 
   .group-actions {
-    margin-top: 8px;
-    margin-left: 0;
+    align-self: flex-end;
+  }
+
+  /* 移动端元数据去掉分隔符节省空间 */
+  .meta-sep {
+    display: none;
+  }
+
+  .meta-item {
+    padding: 2px 5px;
   }
 
   .indicator-item {
@@ -682,6 +809,33 @@ onMounted(() => {
   .indicator-score {
     width: 100%;
     margin-top: 12px;
+    min-width: auto;
+  }
+}
+
+@media (max-width: 480px) {
+  .project-statistic-detail-container {
+    padding: 16px 10px;
+  }
+
+  .statistic-tabs {
+    padding: 12px;
+  }
+
+  .tab-content {
+    padding: 12px 0;
+  }
+
+  .group-score {
+    gap: 6px;
+  }
+
+  .score-value {
+    font-size: 1rem;
+  }
+
+  .group-name {
+    font-size: 0.85rem;
   }
 }
 </style>

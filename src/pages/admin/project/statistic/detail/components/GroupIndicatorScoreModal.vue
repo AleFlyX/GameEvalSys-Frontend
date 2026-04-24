@@ -23,15 +23,15 @@
               </span>
             </template>
           </el-table-column>
-          <el-table-column label="原始/标准化" width="220">
+          <!-- <el-table-column label="原始/标准化" width="220">
             <template #default="{ row }">
               <div class="meta-pair">
                 <span>原始: {{ formatScore(row.rawAverageScore) }}</span>
                 <span>标准化: {{ formatScore(row.normalizedAverageScore) }}</span>
               </div>
             </template>
-          </el-table-column>
-          <el-table-column label="异常/样本" width="200">
+          </el-table-column> -->
+          <!-- <el-table-column label="异常/样本" width="200">
             <template #default="{ row }">
               <div class="meta-pair">
                 <span>异常: {{ row.abnormalCount ?? 0 }}</span>
@@ -39,7 +39,7 @@
                 <span>有效: {{ row.validSampleSize ?? 0 }}</span>
               </div>
             </template>
-          </el-table-column>
+          </el-table-column> -->
           <el-table-column label="得分进度" min-width="280">
             <template #default="{ row }">
               <el-progress :percentage="getPercentage(getDisplayScore(row), row.indicatorId)" :stroke-width="10" />
