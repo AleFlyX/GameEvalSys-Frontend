@@ -1,0 +1,83 @@
+/* ==================== 响应式 ==================== */
+@media (max-width: 768px) {
+  .detail-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .page-title {
+    font-size: 1.25rem;
+    min-width: auto;
+  }
+
+  .group-list {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  /* 移动端：小组卡片内部改为垂直布局 */
+  .group-main {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .group-info {
+    max-width: none;
+    flex-direction: row;
+  }
+
+  .group-score {
+    flex-wrap: nowrap;
+  }
+
+  .group-actions {
+    align-self: flex-end;
+  }
+
+  /* 移动端元数据去掉分隔符节省空间 */
+  .meta-sep {
+    display: none;
+  }
+
+  .meta-item {
+    padding: 2px 5px;
+  }
+
+  .indicator-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .indicator-score {
+    width: 100%;
+    margin-top: 12px;
+    min-width: auto;
+  }
+}
+
+@media (max-width: 480px) {
+  .project-statistic-detail-container {
+    padding: 16px 10px;
+  }
+
+  .statistic-tabs {
+    padding: 12px;
+  }
+
+  .tab-content {
+    padding: 12px 0;
+  }
+
+  .group-score {
+    gap: 6px;
+  }
+
+  .score-value {
+    font-size: 1rem;
+  }
+
+  .group-name {
+    font-size: 0.85rem;
+  }
+}
