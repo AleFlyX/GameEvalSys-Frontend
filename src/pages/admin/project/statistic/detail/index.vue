@@ -88,9 +88,11 @@
         <el-tab-pane label="评分人分布" name="scorer">
           <div class="tab-content">
             <h3 class="section-title">评分人打分分布</h3>
-            <div v-if="statisticData.scorerDistribution?.length" class="scorer-list">
-              <SearchInput size="middle" :showAddBtn="false"> </SearchInput>
-              <el-table :data="statisticData.scorerDistribution" stripe style="width: 95%">
+            <div class="scorer-list">
+              <SearchInput size="middle" :showAddBtn="false" @search="handleSearch" immediate :delay="300">
+              </SearchInput>
+              <el-table v-if="statisticData.scorerDistribution?.length" :data="statisticData.scorerDistribution" stripe
+                style="width: 95%">
                 <el-table-column prop="userName" label="评分人" />
                 <el-table-column prop="scoreRange" label="打分范围" />
                 <el-table-column prop="count" label="打分次数" width="" align="center">
@@ -105,8 +107,8 @@
                   </template>
                 </el-table-column>
               </el-table>
+              <el-empty v-else description="暂无数据" />
             </div>
-            <el-empty v-else description="暂无数据" />
           </div>
         </el-tab-pane>
       </el-tabs>
@@ -136,6 +138,7 @@ import GroupIndicatorScoreModal from "./components/GroupIndicatorScoreModal.vue"
 import { getIndicatorsFromStandard } from "@/utils/scoringStandard";
 import GroupCard from "./components/GroupCard.vue";
 import IndicatorItem from "./components/IndicatorItem.vue";
+import { removeSpacesFromObject } from "@/utils/removeSpacesFromData";
 
 defineOptions({
   name: "ProjectStatisticDetailPage",
@@ -215,6 +218,7 @@ const loadProjectDetail = async () => {
   }
 };
 
+const backupStatisticData = ref(null);
 const loadStatisticData = async () => {
   if (!projectId.value) return;
   loading.value = true;
@@ -222,6 +226,7 @@ const loadStatisticData = async () => {
     const response = await getProjectScoringStatistic(projectId.value);
     if (response.data) {
       statisticData.value = response.data;
+      backupStatisticData.value = { ...response.data };
       lastUpdateTime.value = new Date().toLocaleTimeString("zh-CN");
     }
   } catch (error) {
@@ -229,6 +234,23 @@ const loadStatisticData = async () => {
     console.error(error);
   } finally {
     loading.value = false;
+  }
+};
+
+
+const handleSearch = (searchTerm) => {
+  // 目前仅在评分人分布表格中使用，后续可根据需要扩展到其他部分
+  if (activeTab.value === "scorer") {
+    // 这里可以实现搜索功能，例如过滤 statisticData.value.scorerDistribution 数据
+    if (searchTerm.trim() !== "") {
+      statisticData.value.scorerDistribution = statisticData.value.scorerDistribution.filter((item) => {
+        return item.userName.toLowerCase().includes(removeSpacesFromObject(searchTerm, true).toLowerCase());
+      });
+    } else {
+      statisticData.value.scorerDistribution = backupStatisticData.value?.scorerDistribution || [];
+      // 如果搜索框为空，则重新加载数据
+      // debounce(loadStatisticData(), 300);
+    }
   }
 };
 
