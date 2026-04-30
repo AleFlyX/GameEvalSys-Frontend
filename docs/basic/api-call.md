@@ -22,6 +22,8 @@
 
 ## 1. 认证模块
 
+- 说明：`refreshToken` 由后端通过 `HttpOnly Cookie` 下发，前端刷新请求不再显式传递 `refreshToken`；相关请求已开启 `withCredentials`，浏览器会自动携带 Cookie。
+
 ### 1.1 登录
 
 - **接口地址**：`/auth/login`
@@ -31,6 +33,8 @@
   |--------|------|------|------|
   | username | string | 是 | 用户名 |
   | password | string | 是 | 密码 |
+
+- **响应说明**：响应头会下发 `refreshToken` 的 `HttpOnly Cookie`，前端不直接读取该值。
 - **响应示例**：
   ```json
   {
@@ -38,7 +42,6 @@
     "message": "登录成功",
     "data": {
       "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-      "refreshToken": "b9f5e3c7f7c24c8a9c10d3d0bcd12c7c",
       "sid": "7d2f7b72a6d7467e8b1d2e9b46b9e1a1",
       "expireTime": "2026-04-28 12:00:00",
       "userInfo": {
@@ -59,7 +62,9 @@
   | 参数名 | 类型 | 必填 | 说明 |
   |--------|------|------|------|
   | sid | string | 是 | 会话ID |
-  | refreshToken | string | 是 | 刷新令牌 |
+
+- **请求说明**：刷新令牌由浏览器自动携带 Cookie，`refreshToken` 不再出现在请求体中。
+- **响应说明**：刷新成功后会轮换 `refreshToken` 的 Cookie。
 - **响应示例**：
   ```json
   {
@@ -67,7 +72,6 @@
     "message": "刷新成功",
     "data": {
       "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-      "refreshToken": "7f1b4e5c3a9b4df1b4d2e2a9c1d3f0ab",
       "sid": "7d2f7b72a6d7467e8b1d2e9b46b9e1a1",
       "expireTime": "2026-04-28 16:00:00"
     }
@@ -79,6 +83,7 @@
 - **接口地址**：`/auth/logout`
 - **请求方式**：POST
 - **请求头**：`Authorization: Bearer {token}`
+- **请求说明**：请求会携带 Cookie，用于服务端清除 refreshToken 会话。
 - **响应示例**：
   ```json
   {
