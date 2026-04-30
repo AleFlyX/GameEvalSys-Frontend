@@ -4,7 +4,6 @@ import { userApi } from "@/api/user.js";
 
 export const useUserStore = defineStore("userStore", () => {
   const token = ref(localStorage.getItem("accessToken") || localStorage.getItem("token") || "");
-  const refreshToken = ref(localStorage.getItem("refreshToken") || "");
   const sid = ref(localStorage.getItem("sid") || "");
   const expireTime = ref(localStorage.getItem("expireTime") || "");
   const userInfo = ref(
@@ -28,13 +27,13 @@ export const useUserStore = defineStore("userStore", () => {
    */
   function clearUserStore() {
     token.value = "";
-    refreshToken.value = "";
     sid.value = "";
     expireTime.value = "";
     userInfo.value = {};
     // 兼容旧 key 和新 key
     localStorage.removeItem("accessToken");
     localStorage.removeItem("token");
+    // 兼容清理历史 refreshToken 持久化
     localStorage.removeItem("refreshToken");
     localStorage.removeItem("sid");
     localStorage.removeItem("expireTime");
@@ -51,14 +50,12 @@ export const useUserStore = defineStore("userStore", () => {
       const response = await userApi.login(loginForm);
       const data = response.data;
       token.value = data.token;
-      refreshToken.value = data.refreshToken || "";
       sid.value = data.sid || "";
       expireTime.value = data.expireTime || "";
       userInfo.value = data.userInfo;
       // 兼容旧逻辑和新 JWT 逻辑
       localStorage.setItem("accessToken", token.value);
       localStorage.setItem("token", token.value);
-      localStorage.setItem("refreshToken", refreshToken.value);
       localStorage.setItem("sid", sid.value);
       localStorage.setItem("expireTime", expireTime.value);
       localStorage.setItem("userInfo", JSON.stringify(userInfo.value));
@@ -87,7 +84,6 @@ export const useUserStore = defineStore("userStore", () => {
 
   return {
     token,
-    refreshToken,
     sid,
     expireTime,
     userInfo,

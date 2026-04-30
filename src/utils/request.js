@@ -8,6 +8,7 @@ const message = useMessage();
 const service = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || "/api/v1", // 基础路径（从环境变量读取）
   timeout: 10000, // 请求超时时间
+  withCredentials: true,
   headers: {
     "Content-Type": "application/json;charset=utf-8", // 默认请求格式
   },
@@ -16,6 +17,7 @@ const service = axios.create({
 const refreshClient = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || "/api/v1",
   timeout: 10000,
+  withCredentials: true,
   headers: {
     "Content-Type": "application/json;charset=utf-8",
   },
@@ -23,7 +25,6 @@ const refreshClient = axios.create({
 
 const ACCESS_TOKEN_KEY = "accessToken";
 const LEGACY_TOKEN_KEY = "token";
-const REFRESH_TOKEN_KEY = "refreshToken";
 const SID_KEY = "sid";
 const EXPIRE_TIME_KEY = "expireTime";
 
@@ -43,7 +44,8 @@ function getAccessToken() {
 function clearAuthStorage() {
   localStorage.removeItem(ACCESS_TOKEN_KEY);
   localStorage.removeItem(LEGACY_TOKEN_KEY);
-  localStorage.removeItem(REFRESH_TOKEN_KEY);
+  // 兼容清理历史 refreshToken 持久化
+  localStorage.removeItem("refreshToken");
   localStorage.removeItem(SID_KEY);
   localStorage.removeItem(EXPIRE_TIME_KEY);
   localStorage.removeItem("userInfo");
@@ -81,18 +83,16 @@ function shouldSkipRefresh(url = "") {
 
 async function doRefreshToken() {
   const sid = localStorage.getItem(SID_KEY);
-  const refreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
-  if (!sid || !refreshToken) {
-    throw new Error("缺少刷新凭证");
+  if (!sid) {
+    throw new Error("缺少会话标识，无法刷新登录");
   }
-  const response = await refreshClient.post("/auth/refresh", { sid, refreshToken });
+  const response = await refreshClient.post("/auth/refresh", { sid });
   const res = response.data;
-  if (res?.code !== 200 || !res?.data?.token || !res?.data?.refreshToken) {
+  if (res?.code !== 200 || !res?.data?.token) {
     throw new Error(res?.message || "刷新登录失败");
   }
   localStorage.setItem(ACCESS_TOKEN_KEY, res.data.token);
   localStorage.setItem(LEGACY_TOKEN_KEY, res.data.token);
-  localStorage.setItem(REFRESH_TOKEN_KEY, res.data.refreshToken);
   if (res.data.sid) localStorage.setItem(SID_KEY, res.data.sid);
   if (res.data.expireTime) localStorage.setItem(EXPIRE_TIME_KEY, res.data.expireTime);
   return res.data.token;

@@ -21,7 +21,6 @@ export const userApi = {
    * 刷新 Token（JWT 轮换）
    * @param {Object} params
    * @param {string} params.sid
-   * @param {string} params.refreshToken
    * @returns {Promise}
    */
   refreshToken: (params) => {
