@@ -18,11 +18,72 @@ export const userApi = {
   },
 
   /**
+   * 刷新 Token（JWT 轮换）
+   * @param {Object} params
+   * @param {string} params.sid
+   * @returns {Promise}
+   */
+  refreshToken: (params) => {
+    return service.post("/auth/refresh", params);
+  },
+
+  /**
    * 退出登录
    * @returns {Promise}
    */
   logout: () => {
     return service.post("/auth/logout");
+  },
+
+  /**
+   * 我的会话列表
+   * @returns {Promise}
+   */
+  getMySessions: () => {
+    return service.get("/auth/sessions/me");
+  },
+
+  /**
+   * 管理端在线用户列表
+   * @param {Object} params
+   * @param {number} [params.page=1]
+   * @param {number} [params.size=10]
+   * @param {string} [params.role]
+   * @param {string} [params.keyWords]
+   * @param {boolean} [params.isEnabled]
+   * @param {boolean} [params.onlineOnly]
+   * @returns {Promise}
+   */
+  getOnlineUsers: (params = {}) => {
+    const defaultParams = { page: 1, size: 10, ...params };
+    return service.get("/admin/online-users", { params: defaultParams });
+  },
+
+  /**
+   * 踢指定会话下线
+   * @param {string} sid
+   * @returns {Promise}
+   */
+  kickSessionBySid: (sid) => {
+    return service.post(`/admin/sessions/${sid}/kick`);
+  },
+
+  /**
+   * 查询指定用户会话列表
+   * @param {number|string} userId
+   * @returns {Promise}
+   */
+  getAdminSessionsByUser: (userId) => {
+    return service.get("/admin/sessions", { params: { userId } });
+  },
+
+  /**
+   * 踢用户全部会话下线
+   * @param {number|string} userId
+   * @returns {Promise}
+   */
+  kickAllSessionsByUser: (userId) => {
+    return service.post(`/admin/users/${userId}/kick-all`);
   },
 
   /**

@@ -22,6 +22,8 @@
 
 ## 1. 认证模块
 
+- 说明：`refreshToken` 由后端通过 `HttpOnly Cookie` 下发，前端刷新请求不再显式传递 `refreshToken`；相关请求已开启 `withCredentials`，浏览器会自动携带 Cookie。
+
 ### 1.1 登录
 
 - **接口地址**：`/auth/login`
@@ -31,6 +33,8 @@
   |--------|------|------|------|
   | username | string | 是 | 用户名 |
   | password | string | 是 | 密码 |
+
+- **响应说明**：响应头会下发 `refreshToken` 的 `HttpOnly Cookie`，前端不直接读取该值。
 - **响应示例**：
   ```json
   {
@@ -38,6 +42,8 @@
     "message": "登录成功",
     "data": {
       "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+      "sid": "7d2f7b72a6d7467e8b1d2e9b46b9e1a1",
+      "expireTime": "2026-04-28 12:00:00",
       "userInfo": {
         "id": 1,
         "username": "admin",
@@ -48,17 +54,161 @@
   }
   ```
 
-### 1.2 退出登录
+### 1.2 刷新 Token
+
+- **接口地址**：`/auth/refresh`
+- **请求方式**：POST
+- **请求参数**：
+  | 参数名 | 类型 | 必填 | 说明 |
+  |--------|------|------|------|
+  | sid | string | 是 | 会话ID |
+
+- **请求说明**：刷新令牌由浏览器自动携带 Cookie，`refreshToken` 不再出现在请求体中。
+- **响应说明**：刷新成功后会轮换 `refreshToken` 的 Cookie。
+- **响应示例**：
+  ```json
+  {
+    "code": 200,
+    "message": "刷新成功",
+    "data": {
+      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+      "sid": "7d2f7b72a6d7467e8b1d2e9b46b9e1a1",
+      "expireTime": "2026-04-28 16:00:00"
+    }
+  }
+  ```
+
+### 1.3 退出登录
 
 - **接口地址**：`/auth/logout`
 - **请求方式**：POST
 - **请求头**：`Authorization: Bearer {token}`
+- **请求说明**：请求会携带 Cookie，用于服务端清除 refreshToken 会话。
 - **响应示例**：
   ```json
   {
     "code": 200,
     "message": "退出成功",
     "data": null
+  }
+  ```
+
+### 1.4 查询我的在线会话
+
+- **接口地址**：`/auth/sessions/me`
+- **请求方式**：GET
+- **请求头**：`Authorization: Bearer {token}`
+- **响应示例**：
+  ```json
+  {
+    "code": 200,
+    "message": "查询成功",
+    "data": [
+      {
+        "sid": "7d2f7b72a6d7467e8b1d2e9b46b9e1a1",
+        "username": "admin",
+        "role": "super_admin",
+        "loginAt": "2026-04-28T08:00:00Z",
+        "lastActiveAt": "2026-04-28T10:15:00Z",
+        "status": "active"
+      }
+    ]
+  }
+  ```
+
+### 1.5 管理员会话管理
+
+#### 1.5.1 查询指定用户会话
+
+- **接口地址**：`/admin/sessions`
+- **请求方式**：GET
+- **请求头**：`Authorization: Bearer {token}`
+- **请求参数**（Query）：
+  | 参数名 | 类型 | 必填 | 说明 |
+  |--------|------|------|------|
+  | userId | number | 是 | 用户ID |
+- **响应示例**：
+  ```json
+  {
+    "code": 200,
+    "message": "查询成功",
+    "data": [
+      {
+        "sid": "7d2f7b72a6d7467e8b1d2e9b46b9e1a1",
+        "username": "admin",
+        "role": "super_admin",
+        "loginAt": "2026-04-28T08:00:00Z",
+        "lastActiveAt": "2026-04-28T10:15:00Z",
+        "status": "active"
+      }
+    ]
+  }
+  ```
+
+#### 1.5.2 踢指定会话下线
+
+- **接口地址**：`/admin/sessions/{sid}/kick`
+- **请求方式**：POST
+- **请求头**：`Authorization: Bearer {token}`
+- **响应示例**：
+  ```json
+  {
+    "code": 200,
+    "message": "踢下线成功",
+    "data": null
+  }
+  ```
+
+#### 1.5.3 踢用户全部会话下线
+
+- **接口地址**：`/admin/users/{userId}/kick-all`
+- **请求方式**：POST
+- **请求头**：`Authorization: Bearer {token}`
+- **响应示例**：
+  ```json
+  {
+    "code": 200,
+    "message": "踢下线成功",
+    "data": null
+  }
+  ```
+
+#### 1.5.4 查询在线用户列表
+
+- **接口地址**：`/admin/online-users`
+- **请求方式**：GET
+- **请求头**：`Authorization: Bearer {token}`
+- **请求参数**（Query）：
+  | 参数名 | 类型 | 必填 | 说明 |
+  |--------|------|------|------|
+  | page | number | 否 | 页码（默认1） |
+  | size | number | 否 | 每页条数（默认10） |
+  | role | string | 否 | 角色筛选 |
+  | keyWords | string | 否 | 关键词搜索 |
+  | isEnabled | boolean | 否 | 按启用状态筛选 |
+  | onlineOnly | boolean | 否 | 仅返回在线用户 |
+- **响应示例**：
+  ```json
+  {
+    "code": 200,
+    "message": "查询成功",
+    "data": {
+      "list": [
+        {
+          "id": 1,
+          "username": "admin",
+          "name": "超级管理员",
+          "role": "super_admin",
+          "isEnabled": true,
+          "onlineCount": 2,
+          "lastActiveAt": "2026-04-29T08:12:00Z",
+          "lastLoginAt": "2026-04-29T08:00:00Z"
+        }
+      ],
+      "total": 1,
+      "page": 1,
+      "size": 10
+    }
   }
   ```
 

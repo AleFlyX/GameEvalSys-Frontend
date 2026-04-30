@@ -3,7 +3,9 @@ import { ref, computed } from "vue";
 import { userApi } from "@/api/user.js";
 
 export const useUserStore = defineStore("userStore", () => {
-  const token = ref(localStorage.getItem("token") || "");
+  const token = ref(localStorage.getItem("accessToken") || localStorage.getItem("token") || "");
+  const sid = ref(localStorage.getItem("sid") || "");
+  const expireTime = ref(localStorage.getItem("expireTime") || "");
   const userInfo = ref(
     JSON.parse(localStorage.getItem("userInfo")) ||
     {
@@ -25,9 +27,16 @@ export const useUserStore = defineStore("userStore", () => {
    */
   function clearUserStore() {
     token.value = "";
+    sid.value = "";
+    expireTime.value = "";
     userInfo.value = {};
-    isLogin.value = false;
+    // 兼容旧 key 和新 key
+    localStorage.removeItem("accessToken");
     localStorage.removeItem("token");
+    // 兼容清理历史 refreshToken 持久化
+    localStorage.removeItem("refreshToken");
+    localStorage.removeItem("sid");
+    localStorage.removeItem("expireTime");
     localStorage.removeItem("userInfo");
   }
 
@@ -41,9 +50,14 @@ export const useUserStore = defineStore("userStore", () => {
       const response = await userApi.login(loginForm);
       const data = response.data;
       token.value = data.token;
+      sid.value = data.sid || "";
+      expireTime.value = data.expireTime || "";
       userInfo.value = data.userInfo;
-      // console.log(data, token, userInfo)
+      // 兼容旧逻辑和新 JWT 逻辑
+      localStorage.setItem("accessToken", token.value);
       localStorage.setItem("token", token.value);
+      localStorage.setItem("sid", sid.value);
+      localStorage.setItem("expireTime", expireTime.value);
       localStorage.setItem("userInfo", JSON.stringify(userInfo.value));
       return Promise.resolve();
     } catch (err) {
@@ -70,6 +84,8 @@ export const useUserStore = defineStore("userStore", () => {
 
   return {
     token,
+    sid,
+    expireTime,
     userInfo,
     userRole,
     isLogin,

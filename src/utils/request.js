@@ -8,10 +8,28 @@ const message = useMessage();
 const service = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || "/api/v1", // 基础路径（从环境变量读取）
   timeout: 10000, // 请求超时时间
+  withCredentials: true,
   headers: {
     "Content-Type": "application/json;charset=utf-8", // 默认请求格式
   },
 });
+
+const refreshClient = axios.create({
+  baseURL: import.meta.env.VITE_API_BASE_URL || "/api/v1",
+  timeout: 10000,
+  withCredentials: true,
+  headers: {
+    "Content-Type": "application/json;charset=utf-8",
+  },
+});
+
+const ACCESS_TOKEN_KEY = "accessToken";
+const LEGACY_TOKEN_KEY = "token";
+const SID_KEY = "sid";
+const EXPIRE_TIME_KEY = "expireTime";
+
+let refreshPromise = null;
+let reloginPromptVisible = false;
 
 // 路由实例（用于401跳转）
 let router = null;
@@ -19,11 +37,72 @@ export function setRouter(r) {
   router = r;
 }
 
+function getAccessToken() {
+  return localStorage.getItem(ACCESS_TOKEN_KEY) || localStorage.getItem(LEGACY_TOKEN_KEY) || "";
+}
+
+function clearAuthStorage() {
+  localStorage.removeItem(ACCESS_TOKEN_KEY);
+  localStorage.removeItem(LEGACY_TOKEN_KEY);
+  // 兼容清理历史 refreshToken 持久化
+  localStorage.removeItem("refreshToken");
+  localStorage.removeItem(SID_KEY);
+  localStorage.removeItem(EXPIRE_TIME_KEY);
+  localStorage.removeItem("userInfo");
+}
+
+function jumpToLogin() {
+  if (router && typeof router.push === "function") {
+    router.push("/login");
+    return;
+  }
+  window.location.href = "/login";
+}
+
+function promptRelogin(messageText = "登录状态已过期，请重新登录") {
+  if (reloginPromptVisible) return;
+  reloginPromptVisible = true;
+  showMsgBox("提示", messageText, {
+    confirmButtonText: "去登录",
+    showCancelButton: false,
+    showClose: false,
+    showDefaultClose: false,
+    closeOnClickModal: false,
+    alowDefaultClose: false,
+    type: "warning",
+  }).then(() => {
+    jumpToLogin();
+  }).finally(() => {
+    reloginPromptVisible = false;
+  });
+}
+
+function shouldSkipRefresh(url = "") {
+  return url.includes("/auth/login") || url.includes("/auth/refresh");
+}
+
+async function doRefreshToken() {
+  const sid = localStorage.getItem(SID_KEY);
+  if (!sid) {
+    throw new Error("缺少会话标识，无法刷新登录");
+  }
+  const response = await refreshClient.post("/auth/refresh", { sid });
+  const res = response.data;
+  if (res?.code !== 200 || !res?.data?.token) {
+    throw new Error(res?.message || "刷新登录失败");
+  }
+  localStorage.setItem(ACCESS_TOKEN_KEY, res.data.token);
+  localStorage.setItem(LEGACY_TOKEN_KEY, res.data.token);
+  if (res.data.sid) localStorage.setItem(SID_KEY, res.data.sid);
+  if (res.data.expireTime) localStorage.setItem(EXPIRE_TIME_KEY, res.data.expireTime);
+  return res.data.token;
+}
+
 // -------------------------- 请求拦截器：添加token、处理请求前逻辑 --------------------------
 service.interceptors.request.use(
   async (config) => {
     // 1. 从localStorage获取token（登录后存储的）
-    const token = localStorage.getItem("token");
+    const token = getAccessToken();
     // 2. 自动添加Authorization请求头
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
@@ -64,7 +143,7 @@ service.interceptors.response.use(
       return Promise.reject(res);
     }
   },
-  (error) => {
+  async (error) => {
     // 3. HTTP状态码错误处理
     console.error("响应拦截器错误：", error);
     const responseData = error.response?.data;
@@ -75,24 +154,32 @@ service.interceptors.response.use(
     const status = error.response?.status;
     switch (status) {
       case 401:
-        // token过期/未登录：清除token并跳转登录页
-        localStorage.removeItem("token");
-        showMsgBox("提示", "登录状态已过期，请重新登录", {
-          confirmButtonText: "去登录",
-          showCancelButton: false,
-          showClose: false,
-          showDefaultClose: false,
-          closeOnClickModal: false,
-          alowDefaultClose: false,
-          type: "warning",
-        }).then(() => {
-          if (router && typeof router.push === "function") {
-            router.push("/login"); // 跳转到登录页
-          } else {
-            window.location.href = "/login";
+        {
+          const originalRequest = error.config || {};
+          const requestUrl = originalRequest.url || "";
+          const canTryRefresh = !originalRequest._retry && !shouldSkipRefresh(requestUrl);
+          if (canTryRefresh) {
+            try {
+              originalRequest._retry = true;
+              if (!refreshPromise) {
+                refreshPromise = doRefreshToken().finally(() => {
+                  refreshPromise = null;
+                });
+              }
+              const newToken = await refreshPromise;
+              originalRequest.headers = originalRequest.headers || {};
+              originalRequest.headers.Authorization = `Bearer ${newToken}`;
+              return service(originalRequest);
+            } catch (refreshError) {
+              clearAuthStorage();
+              promptRelogin("登录已失效，请重新登录");
+              return Promise.reject(refreshError);
+            }
           }
-        });
-        break;
+          clearAuthStorage();
+          promptRelogin("登录状态已过期，请重新登录");
+          break;
+        }
       case 403:
         message.error(backendMessage || "没有权限执行该操作");
         break;
