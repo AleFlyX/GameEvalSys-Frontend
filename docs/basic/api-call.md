@@ -22,8 +22,6 @@
 
 ## 1. 认证模块
 
-- 说明：`refreshToken` 由后端通过 `HttpOnly Cookie` 下发，前端刷新请求不再显式传递 `refreshToken`；相关请求已开启 `withCredentials`，浏览器会自动携带 Cookie。
-
 ### 1.1 登录
 
 - **接口地址**：`/auth/login`
@@ -33,8 +31,6 @@
   |--------|------|------|------|
   | username | string | 是 | 用户名 |
   | password | string | 是 | 密码 |
-
-- **响应说明**：响应头会下发 `refreshToken` 的 `HttpOnly Cookie`，前端不直接读取该值。
 - **响应示例**：
   ```json
   {
@@ -42,6 +38,7 @@
     "message": "登录成功",
     "data": {
       "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+      "refreshToken": "b9f5e3c7f7c24c8a9c10d3d0bcd12c7c",
       "sid": "7d2f7b72a6d7467e8b1d2e9b46b9e1a1",
       "expireTime": "2026-04-28 12:00:00",
       "userInfo": {
@@ -62,9 +59,7 @@
   | 参数名 | 类型 | 必填 | 说明 |
   |--------|------|------|------|
   | sid | string | 是 | 会话ID |
-
-- **请求说明**：刷新令牌由浏览器自动携带 Cookie，`refreshToken` 不再出现在请求体中。
-- **响应说明**：刷新成功后会轮换 `refreshToken` 的 Cookie。
+  | refreshToken | string | 是 | 刷新令牌 |
 - **响应示例**：
   ```json
   {
@@ -72,6 +67,7 @@
     "message": "刷新成功",
     "data": {
       "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+      "refreshToken": "7f1b4e5c3a9b4df1b4d2e2a9c1d3f0ab",
       "sid": "7d2f7b72a6d7467e8b1d2e9b46b9e1a1",
       "expireTime": "2026-04-28 16:00:00"
     }
@@ -83,7 +79,6 @@
 - **接口地址**：`/auth/logout`
 - **请求方式**：POST
 - **请求头**：`Authorization: Bearer {token}`
-- **请求说明**：请求会携带 Cookie，用于服务端清除 refreshToken 会话。
 - **响应示例**：
   ```json
   {
@@ -108,6 +103,9 @@
         "sid": "7d2f7b72a6d7467e8b1d2e9b46b9e1a1",
         "username": "admin",
         "role": "super_admin",
+        "ip": "203.0.113.5",
+        "device": "Windows/Chrome",
+        "loginLocation": "CN/Guangdong/Shenzhen",
         "loginAt": "2026-04-28T08:00:00Z",
         "lastActiveAt": "2026-04-28T10:15:00Z",
         "status": "active"
@@ -137,6 +135,9 @@
         "sid": "7d2f7b72a6d7467e8b1d2e9b46b9e1a1",
         "username": "admin",
         "role": "super_admin",
+        "ip": "203.0.113.5",
+        "device": "Windows/Chrome",
+        "loginLocation": "CN/Guangdong/Shenzhen",
         "loginAt": "2026-04-28T08:00:00Z",
         "lastActiveAt": "2026-04-28T10:15:00Z",
         "status": "active"
@@ -183,10 +184,14 @@
   |--------|------|------|------|
   | page | number | 否 | 页码（默认1） |
   | size | number | 否 | 每页条数（默认10） |
-  | role | string | 否 | 角色筛选 |
+  | role | string | 否 | 角色筛选；为空或不传则返回全部角色 |
   | keyWords | string | 否 | 关键词搜索 |
-  | isEnabled | boolean | 否 | 按启用状态筛选 |
-  | onlineOnly | boolean | 否 | 仅返回在线用户 |
+  | isEnabled | boolean | 否 | 按启用状态筛选；为空或不传则返回全部 |
+  | onlineOnly | boolean | 否 | 在线口径开关；`true` 仅返回当前活跃在线用户，`false` 返回至少登录过一次的用户（不包含从未登录的用户） |
+
+- 说明：
+  - `onlineOnly=true` 时，列表仅展示最近活跃窗口内仍在线的用户。
+  - `onlineOnly=false` 时，列表不再返回从未登录过的用户，以减少无效查询并避免误解为“全量用户列表”。
 - **响应示例**：
   ```json
   {
@@ -201,6 +206,8 @@
           "role": "super_admin",
           "isEnabled": true,
           "onlineCount": 2,
+          "device": "Windows/Chrome",
+          "loginLocation": "CN/Guangdong/Shenzhen",
           "lastActiveAt": "2026-04-29T08:12:00Z",
           "lastLoginAt": "2026-04-29T08:00:00Z"
         }
@@ -1365,6 +1372,7 @@
           "normalizedAverageScore": 4.21,
           "processedAverageScore": 4.27,
           "abnormalCount": 1,
+          "totalAbnormalCount": 2,
           "sampleSize": 6,
           "validSampleSize": 5
         }
@@ -1400,9 +1408,10 @@
   | indicatorAverage[].rawAverageScore | number | 原始平均分，未做标准化和异常剔除 |
   | indicatorAverage[].normalizedAverageScore | number | 标准化后平均分，已消除评委整体偏严/偏松影响，但未剔除异常值 |
   | indicatorAverage[].processedAverageScore | number | 处理后平均分，基于标准化结果剔除恶意评分后计算 |
-  | indicatorAverage[].abnormalCount | number | 判定为恶意评分的条数（按项目规则） |
+  | indicatorAverage[].abnormalCount | number | 该指标自身的恶意评分数（按该指标评分分布检测） |
+  | indicatorAverage[].totalAbnormalCount | number | 总恶意评分数（沿用原项目规则口径，用于兼容旧统计语义） |
   | indicatorAverage[].sampleSize | number | 原始样本总数 |
-  | indicatorAverage[].validSampleSize | number | 剔除异常值后的有效样本数 |
+  | indicatorAverage[].validSampleSize | number | 按指标维度剔除异常值后的有效样本数 |
   | scorerDistribution | array | 打分用户分布统计 |
   | scorerDistribution[].userId | number | 打分用户ID |
   | scorerDistribution[].userName | string | 打分用户名称 |
@@ -1411,6 +1420,7 @@
 - **统计逻辑说明**：
   - **原始平均分**：直接基于原始打分求平均。
   - **标准化平均分**：按评委在当前统计范围内的整体均值做中心化处理，公式为 `adjusted = raw - scorerMean + overallMean`。
+  - **指标异常计数口径**：`indicatorAverage[].abnormalCount` 按单个指标维度检测；`indicatorAverage[].totalAbnormalCount` 保留项目级恶意判定总量口径。
   - **恶意判定规则**（项目级）：
     - `AUTO`：使用 MAD 低分单侧规则 `x < median - 3 × 1.4826 × MAD` 标记恶意评分。
     - `THRESHOLD`：使用项目配置阈值区间，`x < lower` 或 `x > upper` 标记恶意评分。
