@@ -10,8 +10,17 @@
       <el-table v-loading="loading" :data="sessions" border style="width: 100%;" empty-text="暂无会话">
         <el-table-column label="SID" prop="sid" min-width="230" :show-overflow-tooltip="true" />
         <el-table-column label="状态" prop="status" width="110" align="center" />
-        <el-table-column label="登录时间" prop="loginAt" width="180" align="center" />
-        <el-table-column label="最近活跃" prop="lastActiveAt" width="180" align="center" />
+        <el-table-column label="登录时间" prop="loginAt" width="180" align="center">
+          <template #default="scope">
+            {{ formatTime(scope.row.loginAt, 'YYYY-MM-DD HH:mm:ss') }}
+          </template>
+        </el-table-column>
+        <el-table-column label="最近活跃" prop="lastActiveAt" width="180" align="center">
+          <template #default="scope">
+            {{ formatTime(scope.row.lastActiveAt, 'YYYY-MM-DD HH:mm:ss') }}
+          </template>
+        </el-table-column>
+        align="center" />
         <el-table-column label="操作" width="110" align="center">
           <template #default="scope">
             <el-button link type="danger" size="small" :disabled="scope.row.status !== 'active'"
@@ -27,7 +36,7 @@
 
 <script setup>
 import BaseDialogModal from '@/components/common/modal/BaseDialogModal.vue';
-
+import { formatTime } from '@/utils/format';
 defineOptions({
   name: 'OnlineSessionDialog',
 });

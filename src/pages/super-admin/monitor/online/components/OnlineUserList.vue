@@ -8,15 +8,16 @@
       <div class="identity-col">
         <div class="user-avatar" :class="row.isEnabled ? 'is-enabled' : 'is-disabled'">
           <el-icon>
-            <component :is="getElementIcon(getDeviceType(row) === 'desktop' ? 'Monitor' : 'Cellphone')" />
+            <component :is="getElementIcon(getDeviceType(row))" />
           </el-icon>
         </div>
         <div class="identity-copy">
           <div class="user-name-line">
-            <span class="user-name">{{ row.username || '-' }}</span>
+            <span class="user-name">{{ row.name || '-' }}</span>
             <el-tag size="small" effect="light" :type="getRoleTagType(row)">{{ getRoleTag(row) }}</el-tag>
           </div>
-          <div class="user-email">{{ formatEmail(row) }}</div>
+          <!-- <div class="user-email">{{ formatEmail(row) }}</div> -->
+          <div class="user-email">{{ row.username }}</div>
           <div class="user-role">{{ formatRole(row) }}</div>
         </div>
       </div>
@@ -59,7 +60,7 @@
 
 <script setup>
 import { getElementIcon } from '@/utils/elementIcons';
-
+import { formatTime } from '@/utils/format';
 defineOptions({
   name: 'OnlineUserList',
 });
@@ -85,11 +86,11 @@ function emitKickAll(row) {
   emit('kick-all', row);
 }
 
-function formatEmail(row) {
-  if (row?.email) return row.email;
-  if (row?.username) return `${row.username}@company.com`;
-  return '-';
-}
+// function formatEmail(row) {
+//   if (row?.email) return row.email;
+//   if (row?.username) return `${row.username}@company.com`;
+//   return '-';
+// }
 
 function formatRole(row) {
   const roleMap = {
@@ -102,29 +103,28 @@ function formatRole(row) {
 }
 
 function formatIp(row) {
-  return row?.loginIp || row?.ip || row?.clientIp || '-';
+  return row?.ip || '-';
 }
 
 function formatLocation(row) {
-  return row?.location || row?.city || row?.region || '-';
+  return row?.loginLocation || '-';
 }
 
 function formatLastLogin(row) {
-  return row?.lastLoginAt || row?.loginAt || '-';
+  return formatTime(row.lastLoginAt, 'YYYY-MM-DD HH:mm:ss');
 }
 
 function formatLastActive(row) {
-  if (row?.lastActiveText) return row.lastActiveText;
-  if (row?.idleText) return row.idleText;
-  if (row?.lastActiveAt) return row.lastActiveAt;
+  if (row?.lastActiveAt) return formatTime(row.lastActiveAt, 'YYYY-MM-DD HH:mm:ss');
   return '-';
 }
 
 function getDeviceType(row) {
-  const device = `${row?.deviceType || row?.clientType || row?.platform || ''}`.toLowerCase();
+  const device = `${row?.device || ''}`.toLowerCase();
+  if (row.onlineCount === 0) return 'User';
   return device.includes('mobile') || device.includes('phone') || device.includes('android') || device.includes('ios')
-    ? 'mobile'
-    : 'desktop';
+    ? 'Cellphone'
+    : 'Monitor';
 }
 
 function getRoleTag(row) {
@@ -139,16 +139,16 @@ function getRoleTag(row) {
 
 function getRoleTagType(row) {
   const roleMap = {
-    super_admin: 'success',
+    super_admin: 'primary',
     admin: 'primary',
-    scorer: 'warning',
+    scorer: 'success',
     normal: 'info',
   };
   return roleMap[row?.role] || 'info';
 }
 
 function getStatusTagType(row) {
-  if (row?.isEnabled === false) return 'info';
+  if (row?.isEnabled === false) return 'danger';
   if (Number(row?.onlineCount || 0) > 0) return 'success';
   return 'warning';
 }
@@ -187,7 +187,7 @@ function getStatusLabel(row) {
   grid-template-columns: minmax(260px, 1.6fr) minmax(140px, 0.9fr) minmax(150px, 0.95fr) minmax(150px, 0.95fr) 120px 92px;
   align-items: center;
   gap: 12px;
-  padding: 26px 28px;
+  padding: 20px 28px;
   border-bottom: 1px solid #eef2f6;
 }
 

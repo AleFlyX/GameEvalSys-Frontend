@@ -1,5 +1,6 @@
 <template>
   <div class="online-panel">
+    <!-- {{ queryParams }} -->
     <base-card shadow="hover" class="online-card">
       <div class="online-toolbar">
         <div>
@@ -31,7 +32,7 @@
             <el-option label="禁用" :value="false" />
           </el-select>
         </el-form-item>
-        <el-form-item label="在线" prop="onlineOnly">
+        <el-form-item label="只看在线" prop="onlineOnly">
           <el-switch v-model="queryParams.onlineOnly" />
         </el-form-item>
         <el-form-item class="online-form-actions">
@@ -81,7 +82,7 @@ const sessionList = ref([]);
 const currentSessionUser = ref({});
 
 const queryParams = ref({
-  role: 'scorer',
+  role: null,
   keyWords: '',
   isEnabled: null,
   onlineOnly: true,
@@ -93,7 +94,7 @@ async function getList() {
     const params = {
       page: pageNum.value,
       size: pageSize.value,
-      role: queryParams.value.role || 'scorer',
+      role: queryParams.value.role || null,
       keyWords: queryParams.value.keyWords || undefined,
       onlineOnly: queryParams.value.onlineOnly,
     };
@@ -117,8 +118,8 @@ function handleQuery() {
 }
 
 function resetQuery() {
-  queryParams.value.role = 'scorer';
-  queryParams.value.keyWords = '';
+  queryParams.value.role = null;
+  queryParams.value.keyWords = null;
   queryParams.value.isEnabled = null;
   queryParams.value.onlineOnly = true;
   handleQuery();
