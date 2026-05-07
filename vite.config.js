@@ -47,6 +47,7 @@ export default defineConfig(({ mode }) => {
       },
     },
     server: {
+      host: true,
       port: 5173, // 前端服务端口
       open: true, // 启动项目自动打开浏览器
       proxy: {
@@ -56,6 +57,24 @@ export default defineConfig(({ mode }) => {
           changeOrigin: true, // 开启跨域
           ws: true, // 支持WebSocket
           rewrite: (path) => path.replace(/^\/api\/v1/, ""), // 去掉前缀（若后端无该前缀）
+          // 反代给请求头添加X-Forwarded-For和X-Real-Ip
+          configure: (proxy) => {
+            proxy.on("proxyReq", (proxyReq, req) => {
+              const remoteAddress = req.socket?.remoteAddress || req.connection?.remoteAddress;
+              const forwardedFor = req.headers["x-forwarded-for"]; // node 环境下的请求头键名会被改为小写：x-forwarded-for
+              const existingForwardedFor = Array.isArray(forwardedFor)
+                ? forwardedFor.join(", ")
+                : forwardedFor;
+              if (remoteAddress) {
+                proxyReq.setHeader("X-Real-IP", remoteAddress);
+                proxyReq.setHeader(
+                  "X-Forwarded-For",
+                  existingForwardedFor ? `${existingForwardedFor}, ${remoteAddress}` : remoteAddress
+                );
+              }
+              console.log(remoteAddress, req.headers["x-forwarded-for"], req.headers["x-real-ip"])
+            });
+          },
         },
       },
     },
