@@ -25,6 +25,7 @@
 - `GET /admin/monitor/jvm`
 - `GET /admin/monitor/os`
 - `GET /admin/monitor/config`
+- `GET /admin/monitor/logs`
 
 用途：卡片局部刷新、失败重试、按需请求。
 
@@ -38,7 +39,10 @@
 
 - 首屏不依赖 SSE，仍然先走 `dashboard`。
 - SSE 只负责首屏后的实时刷新，不负责首次渲染。
-- 浏览器或代理不支持 SSE 时，前端应自动降级为轮询 `/admin/monitor/health`、`/admin/monitor/jvm`、`/admin/monitor/os`。
+- 浏览器或代理不支持 SSE 时，前端应自动降级为轮询 `/admin/monitor/health`、`/admin/monitor/jvm`、`/admin/monitor/os`、`/admin/monitor/logs`。
+- 认证时不要给 `EventSource` 额外设置请求头，浏览器不支持自定义 `Authorization` 头。
+- 当前前端约定通过查询参数携带 token，示例：`/admin/monitor/stream?accessToken={token}`。
+- 后端只会对该 SSE 地址读取查询参数令牌，不会把这种方式扩展到其它接口。
 
 ### 2.4 SSE 消息格式建议
 
@@ -65,11 +69,12 @@ data: {"systemCpuLoadPercent":12.34,"processCpuLoadPercent":4.56,"memoryUsagePer
 - `datasource`
 - `redis`
 - `config`
+- `logs`
 
 说明：
 
 - `health`、`jvm`、`os` 高频推送。
-- `datasource`、`redis`、`config` 低频推送，或者页面进入时推一次即可。
+- `datasource`、`redis`、`config`、`logs` 低频推送，或者页面进入时推一次即可。
 
 ---
 
@@ -79,8 +84,8 @@ data: {"systemCpuLoadPercent":12.34,"processCpuLoadPercent":4.56,"memoryUsagePer
 
 1. 登录后确认当前用户角色为 `super_admin`。
 2. 进入监控页时先请求 `GET /admin/monitor/dashboard`。
-3. 渲染总览卡、状态卡、资源卡和配置卡。
-4. 首屏完成后立即建立 `EventSource` 连接到 `/admin/monitor/stream`。
+3. 渲染总览卡、状态卡、资源卡、配置卡和日志卡。
+4. 首屏完成后立即建立 `EventSource` 连接到 `/admin/monitor/stream?accessToken={token}`。
 5. 若首屏请求失败，再根据卡片优先级降级请求分项接口。
 
 ### 3.2 定时刷新
@@ -88,7 +93,7 @@ data: {"systemCpuLoadPercent":12.34,"processCpuLoadPercent":4.56,"memoryUsagePer
 - SSE 建立成功后，前端不再对实时卡片做高频轮询。
 - 建议由后端每 3 秒到 10 秒推送一次变更数据，具体频率按机器负载调整。
 - 如果 SSE 断开，前端立即进入轮询降级模式，刷新周期建议 10 秒到 30 秒。
-- 建议优先推送：`health`、`jvm`、`os`；`datasource`、`redis`、`config` 可低频推送或只在页面进入时刷新。
+- 建议优先推送：`health`、`jvm`、`os`；`datasource`、`redis`、`config`、`logs` 可低频推送或只在页面进入时刷新。
 
 ### 3.3 连接生命周期
 
@@ -99,6 +104,7 @@ data: {"systemCpuLoadPercent":12.34,"processCpuLoadPercent":4.56,"memoryUsagePer
 3. 监听 `onmessage` 或按事件名分发到各个卡片。
 4. 监听 `onerror`，达到重连阈值后切换轮询。
 5. 页面卸载或路由切换时调用 `close()` 释放连接。
+6. 如果用户重新登录或 token 刷新，先关闭旧连接，再用新 token 重建 SSE。
 
 建议重连策略：
 
@@ -111,6 +117,7 @@ data: {"systemCpuLoadPercent":12.34,"processCpuLoadPercent":4.56,"memoryUsagePer
 - `401`：说明 token 失效，走现有刷新或重新登录流程。
 - `403`：说明当前用户不是 `super_admin`，应直接展示无权限提示。
 - `5xx`：展示接口失败状态，不影响其它卡片继续渲染。
+- `EventSource` 的 `401` 优先排查 token 是否已过期，或是否没有拼到 `accessToken` 查询参数里。
 
 ---
 
@@ -122,6 +129,7 @@ data: {"systemCpuLoadPercent":12.34,"processCpuLoadPercent":4.56,"memoryUsagePer
 
 - 主机名
 - server port
+- application version
 - Java 版本
 - 启动时间
 - 运行时长
@@ -145,6 +153,7 @@ data: {"systemCpuLoadPercent":12.34,"processCpuLoadPercent":4.56,"memoryUsagePer
 - Redis 连接状态
 - JVM 堆内存和线程数
 - CPU、内存、磁盘占用
+- 操作系统名称、版本、架构和 CPU 总核心数
 
 ### 4.4 配置区
 
@@ -155,6 +164,7 @@ data: {"systemCpuLoadPercent":12.34,"processCpuLoadPercent":4.56,"memoryUsagePer
 - server.port
 - timeZone
 - cacheSchedulerEnabled
+- 最近 5 条 warning/error 日志
 
 ---
 
@@ -170,6 +180,7 @@ data: {"systemCpuLoadPercent":12.34,"processCpuLoadPercent":4.56,"memoryUsagePer
 - `MonitorJvmCard`
 - `MonitorOsCard`
 - `MonitorConfigCard`
+- `MonitorLogCard`
 
 组件职责建议：
 
@@ -208,7 +219,7 @@ data: {"systemCpuLoadPercent":12.34,"processCpuLoadPercent":4.56,"memoryUsagePer
 
 1. 先接 `dashboard` 接口完成首屏。
 2. 首屏完成后建立 SSE 连接，订阅 `health`、`jvm`、`os` 的实时推送。
-3. 再补 `datasource`、`redis` 和 `config` 的低频刷新。
+3. 再补 `datasource`、`redis`、`config` 和 `logs` 的低频刷新。
 4. 最后补异常态样式、断线重连和加载骨架屏。
 5. 如果 SSE 在生产环境受代理限制，再保留轮询兜底逻辑。
 
@@ -218,6 +229,8 @@ data: {"systemCpuLoadPercent":12.34,"processCpuLoadPercent":4.56,"memoryUsagePer
 
 - `super_admin` 能正常打开监控页。
 - 首屏能展示总览和健康状态。
+- 总览里能展示应用版本号、操作系统信息和 CPU 总核心数。
+- 日志卡能展示最近 5 条 `WARN/ERROR` 记录。
 - 分项卡片能通过 SSE 正常刷新，断线后能自动降级轮询。
 - `403` 场景能正确拦截非 `super_admin` 用户。
 - 页面上不显示数据库密码和 Redis 密码明文。
