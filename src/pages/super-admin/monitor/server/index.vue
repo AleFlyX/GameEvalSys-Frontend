@@ -1,37 +1,9 @@
 <template>
   <div class="monitor-page">
     <div class="monitor-shell">
-      <header class="hero-card">
-        <div class="hero-copy">
-          <p class="eyebrow">服务器监控</p>
-          <h1>GameEvalSys-Monitor</h1>
-          <p class="hero-desc">
-            聚焦总览、健康态、资源使用和配置摘要
-          </p>
-          <div class="hero-meta">
-            <el-tag :type="statusMeta.type" effect="light" size="small">
-              {{ statusMeta.text }}
-            </el-tag>
-            <span>{{ dashboard.summary.message }}</span>
-            <span class="meta-dot">·</span>
-            <span>接口更新时间 {{ dashboard.summary.updatedAt }}</span>
-            <span class="meta-dot">·</span>
-            <span>页面刷新 {{ lastRefreshText }}</span>
-          </div>
-        </div>
-
-        <div class="hero-actions">
-          <el-button type="primary" :loading="loading" class="refresh-btn" @click="handleRefresh">
-            刷新数据
-          </el-button>
-          <div class="hero-state">
-            <span class="state-dot" :class="statusMeta.className"></span>
-            <span>{{ transportText }}</span>
-            <span class="state-dot state-dot--small" :class="connectionMeta.className"></span>
-            <span>{{ connectionMeta.text }}</span>
-          </div>
-        </div>
-      </header>
+      <monitorPageHero :status-meta="statusMeta" :transport-text="transportText" :dashboard-summary="dashboard.summary"
+        :connection-meta="connectionMeta" :last-refresh-text="lastRefreshText" :loading="loading"
+        @refresh="handleRefresh" />
 
       <section class="stat-grid">
         <StatCard v-for="item in summaryCards" :key="item.label" class="metric-card" :label="item.label"
@@ -41,59 +13,43 @@
 
       <section class="content-grid">
         <div class="left-column">
-          <BaseCard class="panel-card" shadow="never">
-            <div class="panel-head">
-              <div>
-                <div class="panel-title">健康总览</div>
-                <div class="panel-subtitle">服务状态、数据库和缓存状态</div>
-              </div>
+          <MonitorCard title="健康总览" subtitle="服务状态、数据库和缓存状态">
+            <template #subheader>
               <el-tag effect="light" :type="statusMeta.type">
                 {{ dashboard.application.port ? `PORT ${dashboard.application.port}` : 'PORT --' }}
               </el-tag>
-            </div>
-
-            <div class="health-list">
-              <div v-for="item in healthItems" :key="item.name" class="health-item">
-                <div class="health-item-left">
-                  <div class="health-icon" :style="{ '--item-color': item.color }">
-                    {{ item.shortName }}
-                  </div>
-                  <div>
-                    <div class="health-name">{{ item.name }}</div>
-                    <div class="health-desc">{{ item.detail }}</div>
-                  </div>
+            </template>
+            <div v-for="item in healthItems" :key="item.name" class="health-item">
+              <div class="health-item-left">
+                <div class="health-icon" :style="{ '--item-color': item.color }">
+                  {{ item.shortName }}
                 </div>
-                <el-tag :type="item.tagType" effect="light" size="small">
-                  {{ item.statusText }}
-                </el-tag>
+                <div>
+                  <div class="health-name">{{ item.name }}</div>
+                  <div class="health-desc">{{ item.detail }}</div>
+                </div>
               </div>
+              <el-tag :type="item.tagType" effect="light" size="small">
+                {{ item.statusText }}
+              </el-tag>
             </div>
-          </BaseCard>
+          </MonitorCard>
 
-          <BaseCard class="panel-card" shadow="never">
-            <div class="panel-head">
-              <div>
-                <div class="panel-title">资源趋势</div>
-                <div class="panel-subtitle">最近一段时间的 CPU、内存和磁盘变化</div>
+          <MonitorCard title="资源使用" subtitle="CPU、内存和磁盘的实时使用情况">
+            <div v-for="item in resourceItems" :key="item.label" class="metric-row">
+              <div class="metric-row-head">
+                <div>
+                  <div class="metric-label">{{ item.label }}</div>
+                  <div class="metric-note">{{ item.note }}</div>
+                </div>
+                <div class="metric-value">{{ item.value }}%</div>
               </div>
-            </div>
 
-            <div class="metric-list">
-              <div v-for="item in resourceItems" :key="item.label" class="metric-row">
-                <div class="metric-row-head">
-                  <div>
-                    <div class="metric-label">{{ item.label }}</div>
-                    <div class="metric-note">{{ item.note }}</div>
-                  </div>
-                  <div class="metric-value">{{ item.value }}%</div>
-                </div>
+              <el-progress :percentage="item.value" :stroke-width="8" :color="item.color" :show-text="false" />
 
-                <el-progress :percentage="item.value" :stroke-width="8" :color="item.color" :show-text="false" />
-
-                <div class="sparkline">
-                  <span v-for="(point, index) in item.trend" :key="`${item.label}-${index}`" class="spark-bar"
-                    :style="{ height: `${Math.max(point, 10)}%`, backgroundColor: item.color }" />
-                </div>
+              <div class="sparkline">
+                <span v-for="(point, index) in item.trend" :key="`${item.label}-${index}`" class="spark-bar"
+                  :style="{ height: `${Math.max(point, 10)}%`, backgroundColor: item.color }" />
               </div>
             </div>
 
@@ -101,16 +57,9 @@
               <span class="load-label">负载均值 (1m / 5m / 15m)</span>
               <span class="load-value">{{ dashboard.loadAverage.join(' / ') }}</span>
             </div>
-          </BaseCard>
+          </MonitorCard>
 
-          <BaseCard class="panel-card" shadow="never">
-            <div class="panel-head">
-              <div>
-                <div class="panel-title">JVM 运行态</div>
-                <div class="panel-subtitle">堆内存、提交内存、最大内存与线程数</div>
-              </div>
-            </div>
-
+          <MonitorCard title="JVM 运行态" subtitle="堆内存、提交内存、最大内存与线程数">
             <div class="jvm-grid">
               <div v-for="item in jvmItems" :key="item.label" class="jvm-item">
                 <div class="jvm-item-head">
@@ -122,18 +71,11 @@
                   :color="item.color" :show-text="false" />
               </div>
             </div>
-          </BaseCard>
+          </MonitorCard>
         </div>
 
         <div class="right-column">
-          <BaseCard class="panel-card" shadow="never">
-            <div class="panel-head">
-              <div>
-                <div class="panel-title">运行摘要</div>
-                <div class="panel-subtitle">主机、应用与数据库的最小必要信息</div>
-              </div>
-            </div>
-
+          <MonitorCard title="运行摘要" subtitle="主机、应用与数据库的最小必要信息">
             <div class="summary-block">
               <div class="summary-item">
                 <span class="summary-label">主机</span>
@@ -160,32 +102,16 @@
                 <span class="summary-value">{{ dashboard.database.latencyMs }} ms</span>
               </div> -->
             </div>
-          </BaseCard>
+          </MonitorCard>
 
-          <BaseCard class="panel-card" shadow="never">
-            <div class="panel-head">
-              <div>
-                <div class="panel-title">配置摘要</div>
-                <div class="panel-subtitle">只展示脱敏后的关键信息，不回显敏感配置</div>
-              </div>
+          <MonitorCard title="配置摘要" subtitle="只展示脱敏后的关键信息，不回显敏感配置">
+            <div v-for="item in configItems" :key="item.label" class="config-row">
+              <span class="config-label">{{ item.label }}</span>
+              <span class="config-value">{{ item.value }}</span>
             </div>
+          </MonitorCard>
 
-            <div class="config-list">
-              <div v-for="item in configItems" :key="item.label" class="config-row">
-                <span class="config-label">{{ item.label }}</span>
-                <span class="config-value">{{ item.value }}</span>
-              </div>
-            </div>
-          </BaseCard>
-
-          <BaseCard class="panel-card" shadow="never">
-            <div class="panel-head">
-              <div>
-                <div class="panel-title">最近告警 / 日志</div>
-                <div class="panel-subtitle">{{ dashboard.logs.length }} 条最新记录</div>
-              </div>
-            </div>
-
+          <MonitorCard title="最近告警 / 日志" :subtitle="`${dashboard.logs.length} 条最新记录`">
             <div class="log-list">
               <div v-for="log in dashboard.logs" :key="`${log.time}-${log.content}`" class="log-item">
                 <div class="log-item-head">
@@ -197,7 +123,7 @@
                 <div class="log-content">{{ log.content }}</div>
               </div>
             </div>
-          </BaseCard>
+          </MonitorCard>
         </div>
       </section>
     </div>
@@ -209,7 +135,10 @@ import { computed, onMounted, onUnmounted, ref } from 'vue';
 import { ElMessage } from 'element-plus';
 import BaseCard from '@/components/common/data/BaseCard.vue';
 import StatCard from '@/components/common/data/StatCard.vue';
+import monitorPageHero from './components/monitorPageHero.vue';
 import { monitorApi } from '@/api/monitor';
+import { useLoading } from '@/composables/useLoading';
+import MonitorCard from './components/monitorCard.vue';
 
 defineOptions({
   name: 'ServerMonitorIndex',
@@ -219,7 +148,8 @@ const POLL_INTERVAL = 15000;
 const RECONNECT_DELAY = 5000;
 const MAX_STREAM_RETRY = 3;
 
-const loading = ref(false);
+const { isLoading: loading } = useLoading('monitorServer');
+
 const lastRefreshText = ref(formatNow());
 const connectionStatus = ref('connecting');
 const realtimeMode = ref('idle');
@@ -1284,6 +1214,8 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+@import './styles/media.css';
+
 :global(:root) {
   --monitor-bg: #edf2f7;
   --monitor-bg-2: #f7fafc;
@@ -1311,7 +1243,6 @@ onUnmounted(() => {
   margin: 0 auto;
 }
 
-.hero-card,
 .panel-card,
 .metric-card {
   background: var(--monitor-card);
@@ -1320,101 +1251,16 @@ onUnmounted(() => {
   backdrop-filter: blur(10px);
 }
 
-.hero-card {
-  border-radius: 24px;
-  padding: 26px 28px;
-  display: flex;
-  justify-content: space-between;
-  gap: 18px;
-  align-items: flex-end;
-  margin-bottom: 16px;
-}
 
-.eyebrow {
-  margin: 0 0 8px;
-  font-size: 13px;
-  color: #2563eb;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-}
 
-.hero-copy h1 {
-  margin: 0;
-  font-size: clamp(26px, 3vw, 40px);
-  line-height: 1.12;
-  font-weight: 800;
-}
-
-.hero-desc {
-  margin: 12px 0 0;
-  max-width: 760px;
-  color: var(--monitor-sub);
-  line-height: 1.7;
-  font-size: 14px;
-}
-
-.hero-meta {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 10px;
-  margin-top: 16px;
-  color: var(--monitor-sub);
-  font-size: 13px;
-}
 
 .meta-dot {
   color: #cbd5e1;
 }
 
-.hero-actions {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 12px;
-  flex-shrink: 0;
-}
-
 .refresh-btn {
   border-radius: 12px;
   padding-inline: 18px;
-}
-
-.hero-state {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  color: var(--monitor-sub);
-  font-size: 13px;
-}
-
-.state-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: #94a3b8;
-  box-shadow: 0 0 0 6px rgba(148, 163, 184, 0.12);
-}
-
-.state-dot--small {
-  width: 8px;
-  height: 8px;
-  box-shadow: none;
-}
-
-.state-dot.is-success {
-  background: #22c55e;
-  box-shadow: 0 0 0 6px rgba(34, 197, 94, 0.12);
-}
-
-.state-dot.is-warning {
-  background: #f59e0b;
-  box-shadow: 0 0 0 6px rgba(245, 158, 11, 0.12);
-}
-
-.state-dot.is-danger {
-  background: #ef4444;
-  box-shadow: 0 0 0 6px rgba(239, 68, 68, 0.12);
 }
 
 .stat-grid {
@@ -1472,14 +1318,6 @@ onUnmounted(() => {
   margin-top: 4px;
   font-size: 13px;
   color: var(--monitor-sub);
-}
-
-.health-list,
-.metric-list,
-.config-list,
-.log-list {
-  display: grid;
-  gap: 12px;
 }
 
 .health-item {
@@ -1693,58 +1531,5 @@ onUnmounted(() => {
   font-size: 13px;
   color: #334155;
   line-height: 1.65;
-}
-
-@media (max-width: 1180px) {
-
-  .stat-grid,
-  .content-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .jvm-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .summary-block {
-    grid-template-columns: 1fr;
-  }
-}
-
-@media (max-width: 760px) {
-  .monitor-page {
-    padding: 16px 12px 24px;
-  }
-
-  .hero-card {
-    padding: 20px 16px;
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .hero-actions {
-    width: 100%;
-    align-items: flex-start;
-  }
-
-  .panel-card {
-    padding: 16px;
-  }
-
-  .health-item,
-  .config-row,
-  .metric-row,
-  .log-item {
-    padding: 12px;
-  }
-
-  .health-item,
-  .config-row,
-  .log-item-head,
-  .metric-row-head,
-  .load-row {
-    flex-direction: column;
-    align-items: flex-start;
-  }
 }
 </style>
