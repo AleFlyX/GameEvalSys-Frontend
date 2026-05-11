@@ -29,8 +29,15 @@ export function useMonitorServer() {
   const lastRefreshText = ref(formatNow());
   const dashboard = ref<DashboardModel>(createMockDashboard());
 
+  /**
+   * 将新值添加到趋势数据中，并保持长度不超过 8 个数据点
+   * @param series 当前的趋势数据数组
+   * @param value 新的数值
+   * @returns 更新后的趋势数据数组
+   */
   function pushTrend(series: number[], value: number) {
     const next = [...series];
+    if (!Number.isFinite(value)) return next;
     next.push(Number(value.toFixed(1)));
     while (next.length > 8) {
       next.shift();
@@ -38,12 +45,21 @@ export function useMonitorServer() {
     return next;
   }
 
+  /**
+   * 获取实时指标的最新值，若无数据则返回 "0.0"
+   * @param key 指标名称，需与 dashboard.value.metrics 中的键对应
+   * @returns 格式化为字符串的数值，保留一位小数
+   */
   function getMetricValue(key: MetricKey) {
     const series = dashboard.value.metrics[key];
     const last = series[series.length - 1];
     return Number.isFinite(last) ? Number(last).toFixed(1) : "0.0";
   }
 
+  /**
+   * 获取 JVM 堆内存使用百分比
+   * @returns 格式化为字符串的数值，保留一位小数
+   */
   function getJvmHeapUsagePercent() {
     const max = Number(dashboard.value.jvm.heapMaxBytes || 0);
     const used = Number(dashboard.value.jvm.heapUsedBytes || 0);
@@ -53,12 +69,15 @@ export function useMonitorServer() {
     return Number(((used / max) * 100).toFixed(1));
   }
 
+  /**
+   * 触摸远程数据，更新最后刷新时间文本
+   */
   function touchRemote() {
     dashboard.value = {
       ...dashboard.value,
       summary: {
         ...dashboard.value.summary,
-        source: "remote",
+        source: "remote", // 标记数据来源为远程，以区分初始示例数据
       },
     };
     lastRefreshText.value = formatNow();
@@ -207,6 +226,7 @@ export function useMonitorServer() {
             : dashboard.value.metrics.disk,
       },
     };
+    console.log("handled", dashboard.value);
     touchRemote();
   }
 
@@ -260,7 +280,7 @@ export function useMonitorServer() {
         applyLogsPayload(payload);
         break;
       case "dashboard":
-        dashboard.value = normalizeDashboard(payload);
+        dashboard.value = normalizeDashboard(payload, dashboard.value);
         lastRefreshText.value = formatNow();
         break;
       default:

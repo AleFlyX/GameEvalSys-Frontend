@@ -58,9 +58,9 @@ export function createMockDashboard(): DashboardModel {
       message: "offline",
     },
     metrics: {
-      cpu: [18, 22, 20, 24, 23, 21, 26, 0],
-      memory: [52, 54, 56, 59, 60, 61, 62, 0],
-      disk: [44, 44, 45, 45, 46, 46, 46, 0],
+      cpu: [18, 22, 20, 24, 23, 21, 26],
+      memory: [52, 54, 56, 59, 60, 61, 62],
+      disk: [44, 44, 45, 45, 46, 46, 46],
     },
     loadAverage: ["0.00", "0.00", "0.00"],
     config: [
@@ -74,9 +74,10 @@ export function createMockDashboard(): DashboardModel {
   };
 }
 
-export function normalizeDashboard(raw: any = {}): DashboardModel {
+export function normalizeDashboard(raw: any = {}, previous?: DashboardModel): DashboardModel {
   const payload = raw && typeof raw === "object" ? raw : {};
   const base = createMockDashboard();
+  const hasPreviousTrendData = previous?.summary.source === "remote";
   const overview = payload.overview || {};
   const health = payload.health || {};
   const datasource = payload.datasource || {};
@@ -142,15 +143,21 @@ export function normalizeDashboard(raw: any = {}): DashboardModel {
       message: normalizeText(health.message, base.health.message),
     },
     metrics: {
-      cpu: normalizeSeries(
-        os.systemCpuLoadPercent !== undefined ? [os.systemCpuLoadPercent] : base.metrics.cpu,
-      ),
-      memory: normalizeSeries(
-        os.memoryUsagePercent !== undefined ? [os.memoryUsagePercent] : base.metrics.memory,
-      ),
-      disk: normalizeSeries(
-        os.diskUsagePercent !== undefined ? [os.diskUsagePercent] : base.metrics.disk,
-      ),
+      cpu: hasPreviousTrendData
+        ? previous!.metrics.cpu
+        : normalizeSeries(
+            os.systemCpuLoadPercent !== undefined ? [os.systemCpuLoadPercent] : base.metrics.cpu,
+          ),
+      memory: hasPreviousTrendData
+        ? previous!.metrics.memory
+        : normalizeSeries(
+            os.memoryUsagePercent !== undefined ? [os.memoryUsagePercent] : base.metrics.memory,
+          ),
+      disk: hasPreviousTrendData
+        ? previous!.metrics.disk
+        : normalizeSeries(
+            os.diskUsagePercent !== undefined ? [os.diskUsagePercent] : base.metrics.disk,
+          ),
     },
     loadAverage: base.loadAverage,
     config: normalizeConfigList(config, base.config),
