@@ -49,10 +49,10 @@
 
               <div class="sparkline">
                 <span v-for="(point, index) in item.trend" :key="`${item.label}-${index}`" class="spark-bar"
-                  :style="{ height: `${Math.max(point, 10)}%`, backgroundColor: item.color }" />
+                  :style="{ height: `${Math.max(point, 10)}%`, backgroundColor: item.color, animationDelay: `${index * 0.04}s` }" />
               </div>
-            </div>
 
+            </div>
             <div class="load-row">
               <span class="load-label">负载均值 (1m / 5m / 15m)</span>
               <span class="load-value">{{ dashboard.loadAverage.join(' / ') }}</span>
@@ -75,7 +75,7 @@
         </div>
 
         <div class="right-column">
-          <MonitorCard title="运行摘要" subtitle="主机、应用与数据库的最小必要信息">
+          <MonitorCard title="运行摘要" subtitle="主机、应用的最小必要信息">
             <div class="summary-block">
               <div class="summary-item" v-for="item in summaryItems" :key="item.name">
                 <span class="summary-label">{{ item.label }}</span>
@@ -84,7 +84,7 @@
             </div>
           </MonitorCard>
 
-          <MonitorCard title="配置摘要" subtitle="只展示脱敏后的关键信息，不回显敏感配置">
+          <MonitorCard title="配置摘要" subtitle="只展示脱敏后的关键信息，不回显敏感配置" :max-height="'500px'">
             <div v-for="item in configItems" :key="item.label" class="config-row">
               <span class="config-label">{{ item.label }}</span>
               <span class="config-value">{{ item.value }}</span>
@@ -298,7 +298,20 @@ const {
   min-height: 10px;
   border-radius: 999px 999px 6px 6px;
   opacity: 0.85;
-  transition: all 0.3s ease;
+  transform: scaleY(0);
+  transform-origin: bottom;
+  transition: height 0.3s ease;
+  animation: sparkRise 0.6s cubic-bezier(0.2, 0.95, 0.4, 1.05) forwards;
+}
+
+@keyframes sparkRise {
+  0% {
+    transform: scaleY(0);
+  }
+
+  100% {
+    transform: scaleY(1);
+  }
 }
 
 .load-row {

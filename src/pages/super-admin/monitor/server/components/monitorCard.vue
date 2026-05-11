@@ -7,7 +7,7 @@
       </div>
       <slot name="subheader"> </slot>
     </div>
-    <div class="data-list">
+    <div class="data-list" :style="{ maxHeight: maxHeight || 'auto' }">
       <slot>
 
       </slot>
@@ -23,7 +23,11 @@ defineProps({
   subtitle: {
     type: String,
     default: '',
-  }
+  },
+  maxHeight: {
+    type: String,
+    default: 'auto',
+  },
 })
 </script>
 <style scoped>
@@ -59,5 +63,6 @@ defineProps({
 .data-list {
   display: grid;
   gap: 12px;
+  overflow-y: auto;
 }
 </style>
