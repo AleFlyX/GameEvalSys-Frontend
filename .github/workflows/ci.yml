@@ -5,9 +5,23 @@ on:
   pull_request:
     branches:
       - main
+    paths-ignore:
+      - "**.md" # 忽略所有 md 文档
+      - "docs/**" # 忽略 docs 目录
+      - "**/*.txt" # 忽略文本文件
+      - ".github/**/*.md" # 忽略 github 相关的文档
+      - "LICENSE" # 忽略许可证文件
+      - "**/.gitignore" # 忽略 gitignore
   push:
     branches:
       - main
+    paths-ignore:
+      - "**.md"
+      - "docs/**"
+      - "**/*.txt"
+      - ".github/**/*.md"
+      - "LICENSE"
+      - "**/.gitignore"
 
 concurrency:
   group: ci-${{ github.ref }}
