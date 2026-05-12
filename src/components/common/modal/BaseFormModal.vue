@@ -40,7 +40,7 @@ defineOptions({
 
 defineProps([]);
 
-const emits = defineEmits([
+defineEmits([
   'update:visible' // 用于双向绑定，通知父组件更新显隐状态
 ])
 

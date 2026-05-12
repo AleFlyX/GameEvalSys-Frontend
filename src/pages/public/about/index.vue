@@ -132,6 +132,10 @@
 <script setup>
 import { ref, reactive, onMounted, onUnmounted } from 'vue'
 
+defineOptions({
+  name: 'OJRecruitPage'
+})
+
 // 动态 translateX 控制（初始为0，滚动时向左移动产生视差）
 const translateXValue = ref(0)
 

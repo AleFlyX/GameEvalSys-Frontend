@@ -65,6 +65,10 @@ import { useElPagination } from "@/composables/useElPagination";
 import { useLoading } from "@/composables/useLoading";
 import { debounce } from "@/utils/debounce";
 
+defineOptions({
+  name: "ProjectStatisticListPage"
+});
+
 // ==================== 数据定义 ====================
 const projects = ref([]);
 const searchKeywords = ref("");

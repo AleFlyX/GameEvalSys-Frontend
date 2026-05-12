@@ -64,6 +64,10 @@ import { columnsRules } from '../config/projectListColRules';//数据表格列�
 import { useScoringList } from './composables/useScoringList';
 import { useHandleInteract } from './composables/useHandleInteract';
 
+defineOptions({
+  name: 'ScoringListPage'
+});
+
 // const userStore = useUserStore()
 const {
   currentPage,

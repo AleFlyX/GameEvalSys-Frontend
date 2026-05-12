@@ -38,7 +38,7 @@
 
 <script setup>
 import BaseDialogModal from '@/components/common/modal/BaseDialogModal.vue';
-const props = defineProps({
+defineProps({
   selectedGroup: {
     type: Object,
     default: () => { }

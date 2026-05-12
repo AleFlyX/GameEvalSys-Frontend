@@ -96,6 +96,10 @@ import { useGroupScoringFilters } from './composables/useGroupScoringFilters';
 import { useGroupScoringRecords } from './composables/useGroupScoringRecords';
 import { useHandleDataStatus } from './composables/useHandleDataStatus';
 
+defineOptions({
+  name: 'GroupScoringPage'
+});
+
 const projectStore = useProjectStore();
 const scoreStore = useScoreStore();
 const route = useRoute();

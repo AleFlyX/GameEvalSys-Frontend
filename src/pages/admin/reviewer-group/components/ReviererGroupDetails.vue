@@ -54,7 +54,7 @@
 <script setup>
 import BaseModal from '@/components/common/modal/BaseModal.vue'
 
-const props = defineProps({
+defineProps({
   selectedGroup: {
     type: Object,
     default: () => { }

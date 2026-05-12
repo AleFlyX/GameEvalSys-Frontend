@@ -57,6 +57,10 @@ import BaseFormModal from "@/components/common/modal/BaseFormModal.vue";
 import UserForm from "@/components/business/user/user-form/UserForm.vue";
 import { removeSpacesFromObject } from "@/utils/removeSpacesFromData";
 
+defineOptions({
+  name: "HeadBar"
+});
+
 const route = useRoute();
 const router = useRouter();
 const userStore = useUserStore();

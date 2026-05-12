@@ -34,7 +34,7 @@
 
 <script setup>
 // 建议添加 props 来接收进度值，例如：
-const props = defineProps({
+defineProps({
   icon: { type: String, default: "Management" },
   title: { type: String, default: "标题" },
   ringChart: { type: Boolean, default: false },
