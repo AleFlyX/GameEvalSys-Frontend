@@ -145,7 +145,8 @@ const handleSubmit = async () => {
     // setTimeout(() => {
     //   router.push('/home');
     // }, 1500);
-  } catch (err) {
+  } catch {
+    //console.log(err)
     // Simulate error
     isError.value = true;
     isLoading.value = false;
