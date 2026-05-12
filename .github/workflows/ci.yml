@@ -35,19 +35,8 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Lint gate (adaptive)
-        shell: bash
-        run: |
-          SCRIPTS="$(npm run)"
-          if echo "$SCRIPTS" | grep -q "lint:check:base"; then
-            npm run lint:check:base
-          elif echo "$SCRIPTS" | grep -q "lint:check"; then
-            npm run lint:check
-          elif echo "$SCRIPTS" | grep -q "lint"; then
-            npm run lint
-          else
-            npx eslint . --cache
-          fi
+      - name: Lint gate
+        run: npm run lint:check
 
       - name: Test gate (adaptive)
         shell: bash

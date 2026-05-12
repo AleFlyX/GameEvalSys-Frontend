@@ -20,10 +20,9 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
 
 // Props
-const props = defineProps({
+defineProps({
   title: { type: String, default: '提示' },
   content: { type: String, default: '确认执行此操作？' },
   visible: { type: Boolean, default: false }

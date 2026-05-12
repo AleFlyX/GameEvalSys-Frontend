@@ -76,6 +76,10 @@ import { projectApi } from '@/api/project';
 import { useLoading } from '@/composables/useLoading';
 import { debounce } from '@/utils/debounce';
 
+defineOptions({
+  name: 'ProjectManagementPage'
+});
+
 const router = useRouter();
 
 const overViewStats = ref({

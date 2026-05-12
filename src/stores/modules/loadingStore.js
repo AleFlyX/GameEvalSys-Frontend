@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import { ref, reactive } from 'vue';
+import { reactive } from 'vue';
 /**
  * 用于各个业务组件触发layout页面中的main部分显示全页面加载动画的统一管理store
  */
@@ -7,7 +7,6 @@ import { ref, reactive } from 'vue';
 export const useLoadingStore = defineStore('loadingStore', () => {
   // 是否正在加载状态
   const map = reactive({});
-  const showLoadingGap = ref(200)
 
   /**
     * 相当于一个中继，外部也可以直接访问loadingStore.map[key]来获取
@@ -37,9 +36,12 @@ export const useLoadingStore = defineStore('loadingStore', () => {
 
   /**
   * 开始加载（通常在请求完成前调用）
+  * 加载动画和骨架屏的显示由 startTime 和定时器控制，避免闪烁
   * @param {string} key - 标识符，默认为 'global'
+  * @param {number} showLoadingGap - 显示加载动画的延迟（毫秒）
+  * @param {number} showSkeletonGap - 显示骨架屏的延迟（毫秒）
   */
-  function start(key = 'global') {
+  function start(key = 'global', showLoadingGap = 200, showSkeletonGap = 2000) {
     if (!map[key]) {
       map[key] = {
         count: 0,   // 统计当前共有多少个加载，用于多个请求并发
@@ -66,16 +68,16 @@ export const useLoadingStore = defineStore('loadingStore', () => {
       item.loadingTimer = setTimeout(() => {
         const current = map[key];
         if (current) current.showLoading = true;
-      }, 200);
+      }, showLoadingGap);
 
-      // 1200ms 后显示骨架屏
+      // 2000ms 后显示骨架屏
       item.skeletonTimer = setTimeout(() => {
         const current = map[key];
         if (current) {
           current.showSkeleton = true;
           current.showLoading = false;
         }
-      }, 2000);
+      }, showSkeletonGap);
       // item.timer = setTimeout(() => {
       //   // 定时器回调中需重新获取当前项，避免 end 已将其删除而导致状态残留
       //   const currentItem = map[key]
@@ -85,7 +87,7 @@ export const useLoadingStore = defineStore('loadingStore', () => {
       //   if (duration >= 200) {
       //     currentItem.showLoading = true;
       //   }
-      //   if (duration >= 1200) {
+      //   if (duration >= 2000) {
       //     currentItem.showSkeleton = true;
       //   }
       // }, showLoadingGap.value);

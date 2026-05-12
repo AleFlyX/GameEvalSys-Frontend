@@ -62,7 +62,7 @@ const userStore = useUserStore();
 // ============ Composables ============
 const { loginFormRef: formRef, loginForm, loginRules, validateForm } = useLoginForm();
 const {
-  effectiveTheme,
+  // effectiveTheme,
   isDarkMode,
   toggleTheme,
   initTheme,

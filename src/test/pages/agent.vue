@@ -17,6 +17,10 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import { PageAgent } from 'page-agent'
 
+defineOptions({
+  name: 'AgentTest'
+})
+
 const showAgent = ref(false)
 const command = ref('')
 let agent = null

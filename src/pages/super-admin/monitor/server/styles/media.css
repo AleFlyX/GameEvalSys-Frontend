@@ -1,0 +1,51 @@
+@media (max-width: 1180px) {
+  .stat-grid,
+  .content-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .jvm-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .summary-block {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 760px) {
+  .monitor-page {
+    padding: 16px 12px 24px;
+  }
+
+  .hero-card {
+    padding: 20px 16px;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .hero-actions {
+    width: 100%;
+    align-items: flex-start;
+  }
+
+  .panel-card {
+    padding: 16px;
+  }
+
+  .health-item,
+  .config-row,
+  .metric-row,
+  .log-item {
+    padding: 12px;
+  }
+
+  .health-item,
+  .config-row,
+  .log-item-head,
+  .metric-row-head,
+  .load-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

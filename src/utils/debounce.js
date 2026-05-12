@@ -11,15 +11,11 @@ export function debounce(fn, delay = 200, options = {}) {
   let timer = null; // 闭包保存定时器ID，避免全局污染
   const { immediate = false, dev = false } = options;
   let isInvoked = false; // 标记是否已立即执行过
-  if (dev) console.log("*****debounce utils****** fn: "
-    + fn
-    + ";delay: " + delay + "ms; options.immediate: "
-    + immediate);
+  if (dev) console.log(`*****debounce utils****** fn: ${fn} ;delay:${delay} ms; options.immediate: ${immediate}`)
   // 防抖核心函数
   const debounced = function (...args) {
     // 保存原函数的this指向（比如DOM事件中的this）
     const context = this;
-
     // 每次触发，先清空上一次的定时器
     if (timer) clearTimeout(timer);
 

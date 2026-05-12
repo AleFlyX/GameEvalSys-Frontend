@@ -3,7 +3,7 @@
     <!-- 顶部导航 -->
     <header class="header">
       <div class="nav">
-        <h1 class="logo">YTU OJ 实验室</h1>
+        <h1 class="logo">YTU OJ实验室</h1>
         <div class="nav-links">
           <button @click="scrollTo('intro')">平台介绍</button>
           <button @click="scrollTo('work')">学习内容</button>
@@ -18,7 +18,7 @@
     <section class="banner" id="top">
       <div class="banner-text" :style="{ transform: `translateX(${translateXValue}px)` }">
         <h2>OnlineJudge 实验室 2026 纳新</h2>
-        <p>不卷算法 · 专注Web开发 · 新手友好 · 资源拉满</p>
+        <p>不卷纯算法 · 专注全栈 & AI 应用开发 · 拥抱 Copilot/Codex · Vibe Coding 更高效</p>
       </div>
     </section>
 
@@ -29,6 +29,8 @@
         <div class="content-card">
           <p>学校的 OnlineJudge 平台目前主要为学生提供在线程序评测和自动化代码批改服务。</p>
           <p>OJ 实验室服务于 YTUOnline Judge 平台，进行日常维护和升级。</p>
+          <p>⚡ <strong>2026 全新升级</strong>：全面引入全栈开发实践 + AI 应用开发流程。从大模型 API 调用到智能编程助手，使用 GitHub Copilot、Cursor、Codex 等
+            Agent 进行 Vibe Coding，培养具备现代工程能力的开发者。</p>
         </div>
       </div>
     </section>
@@ -44,13 +46,17 @@
               <p>处理师生日常答疑、学生提交情况处理、考试异常处理（如更换机器、清空答题记录）。</p>
             </li>
             <li>
-              <strong>Web 开发学习（核心）</strong>
-              <p>学习内容：前端页面设计实现、后端系统编程、数据库使用。<br>
-                循序渐进，对新手超级友好！</p>
+              <strong>全栈开发 + AI 应用开发（核心）</strong>
+              <p>学习内容：可根据个人兴趣自行选择技术栈，前端(Vue/React) + 后端(Node.js/Go/Python/Java) + 数据库设计；掌握大模型 API 调用、构建智能助手、AI 应用落地。<br>
+                循序渐进，对新手超级友好，学长学姐手把手带你从零到完整项目！</p>
             </li>
             <li>
               <strong>Linux 系统使用</strong>
-              <p>服务器维护必备，日常学习工作以 Linux 为主，熟练掌握命令行操作。</p>
+              <p>服务器维护必备，日常学习工作以 Linux 为主，熟练掌握命令行操作，为全栈与 AI 应用部署打下坚实基础。</p>
+            </li>
+            <li>
+              <strong>AI 辅助开发 & Vibe Coding 实践</strong>
+              <p>学习使用 GitHub Copilot、Cursor、Codex 等智能 Agent 辅助编码、调试与重构，体验“自然语言驱动开发”的前沿范式，大幅提升开发效率与创造力。</p>
             </li>
           </ol>
         </div>
@@ -85,16 +91,16 @@
             <p>OJ 实验室招新宣传工作</p>
           </div>
           <div class="time-item">
-            <h4>2025.12~2026.2月</h4>
-            <p>自主学习 C/C++/算法；可提前自学 HTML/CSS/JS</p>
-          </div>
-          <div class="time-item">
-            <h4>2026.3~4月</h4>
-            <p>Web 开发阶段性任务（2~3次）</p>
+            <h4>2025.11~2026.4月</h4>
+            <p>自主学习 C/C++/算法基础；可提前自学 HTML/CSS/JS，鼓励尝试使用 Copilot、Codex 等 AI 工具辅助学习编程。</p>
           </div>
           <div class="time-item">
             <h4>2026.5月</h4>
-            <p>成果验收 + 面试，确定最终成员</p>
+            <p>成果验收 + 面试（展示期间使用的 AI 工作流、项目作品），确定最终成员</p>
+          </div>
+          <div class="time-item">
+            <h4>2026.5~8月</h4>
+            <p>实验室成员初期培训：全栈 + AI 应用开发阶段性任务（前后端对接、AI API 调用等）</p>
           </div>
         </div>
       </div>
@@ -106,7 +112,7 @@
         <h3 class="title">📩 加入我们</h3>
         <div class="join-card">
           <h2>现在加群，开启纳新考核第一步！</h2>
-          <p class="tip">胜利在向你们招手！！！</p>
+          <p class="tip">全栈 + AI 开发新体验，胜利在向你们招手！！！</p>
           <div class="qrcode">
             <img src="../../../assets/qqew.jpg" style="width: 280px;">
             <!-- <div class="qrcode-placeholder">
@@ -125,6 +131,10 @@
 
 <script setup>
 import { ref, reactive, onMounted, onUnmounted } from 'vue'
+
+defineOptions({
+  name: 'OJRecruitPage'
+})
 
 // 动态 translateX 控制（初始为0，滚动时向左移动产生视差）
 const translateXValue = ref(0)
@@ -147,27 +157,32 @@ const faqs = reactive([
   },
   {
     question: '选拔考核怎么考？',
-    answer: '通过阶段性任务验收进行筛选：安装Linux、配置环境、简单网页、前后端对接等。<br>提供教程，学长学姐答疑。<br>约3次任务 + 面试 = 最终录取。',
+    answer: '通过阶段性任务验收进行筛选：安装Linux、配置环境、简单网页、前后端对接、调用AI接口等。<br>提供教程，学长学姐答疑。<br>约3次任务 + 面试 = 最终录取。过程鼓励使用Copilot/Codex辅助编码。',
     open: false
   },
   {
     question: '没有基础，学得来这些开发技术吗？',
-    answer: '完全可以！Web 开发用到的算法不深奥，考核主要看学习能力与毅力。<br>只要踏实肯花时间，见效极快，比聪明更重要的是耐心。',
+    answer: '完全可以！全栈与AI开发更看重工程思维与学习能力，考核主要看投入度和动手意愿。<br>只要踏实肯花时间，借助AI辅助工具学习效率更高，比聪明更重要的是耐心。',
     open: false
   },
   {
     question: 'OJ 实验室跟 ACM 实验室有什么区别？',
-    answer: 'OJ：要求算法低，主攻 Web 开发、做网站、做项目。<br>ACM：侧重算法学习、刷题、打算法竞赛。',
+    answer: 'OJ：要求算法低，主攻全栈开发、AI应用落地、做网站/项目。<br>ACM：侧重算法学习、刷题、打算法竞赛。',
     open: false
   },
   {
     question: 'OJ 实验室的优势是什么？',
-    answer: '独立空调WIFI学习空间 + 高质量学习资源<br>学习前沿技术，提升项目能力<br>学长学姐规划学习路线，少走弯路<br>学习时间自主，氛围轻松<br>大厂/985/211学长学姐资源',
+    answer: '独立空调WIFI学习空间 + 高质量学习资源<br>学习前沿全栈技术和AI应用开发，提升项目能力<br>学长学姐规划学习路线，并带领使用Copilot等AI工具加速成长<br>学习时间自主，氛围轻松<br>大厂/985/211学长学姐资源',
     open: false
   },
   {
     question: '加入了 OJ 实验室，是不是学不了算法了？',
     answer: '不是！只是学习重心不同。<br>你依然可以自学算法、参加蓝桥杯等竞赛。<br>精力有限，做好选择即可。',
+    open: false
+  },
+  {
+    question: '✨ 实验室会教我们使用AI编程工具吗？具体有哪些？',
+    answer: '当然！我们将组织专项分享和实战，带领大家上手 GitHub Copilot、Cursor、Codex 等 AI 编程助手，讲解如何利用LLM改善代码质量、快速原型开发，并鼓励 Vibe Coding 方式合作。让你真正接触工业级 AI 开发流程。',
     open: false
   }
 ])

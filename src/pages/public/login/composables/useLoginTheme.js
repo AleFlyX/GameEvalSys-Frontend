@@ -3,6 +3,7 @@ import { ref } from 'vue';
 /**
  * 暗黑模式管理 Composable
  * 处理主题切换、系统主题检测和主题持久化
+ * @returns {Object} 主题相关状态和方法
  */
 export const useLoginTheme = () => {
   // 当前主题：'light' | 'dark' | 'auto'
@@ -58,7 +59,7 @@ export const useLoginTheme = () => {
 
     // 监听系统主题变化
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    const handleThemeChange = (e) => {
+    const handleThemeChange = () => {
       if (currentTheme.value === 'auto') {
         applyTheme('auto');
       }

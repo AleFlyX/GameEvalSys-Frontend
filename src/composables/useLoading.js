@@ -6,13 +6,13 @@ import { computed } from 'vue';
  * @param {string} key - 加载标识
  * @returns {Function} 包装函数 (asyncFn, options?) => Promise
  */
-export const useLoading = (key = 'global') => {
+export const useLoading = (key = 'global', showLoadingGap = 200, showSkeletonGap = 2000) => {
   const loadingStore = useLoadingStore();
 
   const isLoading = computed(() => loadingStore.isLoading(key));
   const isSkeleton = computed(() => loadingStore.isSkeleton(key));
 
-  const start = () => loadingStore.start(key);
+  const start = () => loadingStore.start(key, showLoadingGap, showSkeletonGap);
   const end = () => loadingStore.end(key);
 
   /**
@@ -22,7 +22,7 @@ export const useLoading = (key = 'global') => {
    * @returns {Promise} 异步任务的返回值
    */
   async function requestWithLoading(fn, ...args) {
-    loadingStore.start(key)
+    loadingStore.start(key, showLoadingGap, showSkeletonGap)
     try {
       return await fn(...args);
     }

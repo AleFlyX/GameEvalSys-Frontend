@@ -16,6 +16,10 @@
 <script setup>
 import { ref, onUnmounted } from 'vue'
 
+defineOptions({
+  name: 'SlideBlock'
+})
+
 const trackRef = ref(null)
 const offsetX = ref(0)          // 当前水平偏移量
 const isDragging = ref(false)

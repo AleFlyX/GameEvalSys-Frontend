@@ -73,6 +73,10 @@ import { showMsgBox } from '@/utils/ConfirmBox';
 import { COLUMN_RULES } from './config/data-table/projectGroupColRule';
 import { useProjectGroupData } from './composables/useProjectGroupData';
 
+defineOptions({
+  name: 'ProjectGroupManagementPage'
+});
+
 const {
   currentPage,
   pageSize,

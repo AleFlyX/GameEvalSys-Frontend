@@ -76,6 +76,10 @@ import { useElPagination } from '@/composables/useElPagination';
 import { useLoading } from '@/composables/useLoading';
 import { getIndicatorsFromStandard } from '@/utils/scoringStandard';
 
+defineOptions({
+  name: 'ScoringStandardManagementPage'
+});
+
 const { isLoading: loading, start: startLoading, end: endLoading } = useLoading('scoringStd:list');
 const {
   currentPage,

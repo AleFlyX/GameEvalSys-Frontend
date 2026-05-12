@@ -38,7 +38,10 @@
 <script setup>
 // import { ref, watch } from 'vue';
 import BaseDialogModal from '@/components/common/modal/BaseDialogModal.vue';
-const props = defineProps({
+defineOptions({
+  name: 'ProjectDetailModal'
+});
+defineProps({
   selectedProject: {
     type: Object,
     default: () => ({})
