@@ -1,6 +1,10 @@
 import type { ComputedRef } from "vue";
 
-export declare function useLoading(key?: string): {
+export declare function useLoading(
+  key?: string,
+  showLoadingGap?: number,
+  showSkeletonGap?: number,
+): {
   isLoading: ComputedRef<boolean>;
   isSkeleton: ComputedRef<boolean>;
   start: () => void;
