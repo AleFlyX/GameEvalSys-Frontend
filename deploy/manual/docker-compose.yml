@@ -1,0 +1,14 @@
+services:
+  gameevaluate-frontend:
+    build:
+      context: ../..
+      dockerfile: deploy/manual/Dockerfile
+    image: gameevaluate-frontend:latest
+    container_name: gameevaluate-frontend
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "8999:80"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
