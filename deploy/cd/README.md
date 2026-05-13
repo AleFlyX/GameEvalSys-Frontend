@@ -4,8 +4,15 @@
 
 ## 用法
 
-1. 由 CI 把 `build-output` 解压到 [deploy/cd/dist](dist).
-2. 进入 [deploy/cd](.) 后执行：
+1. CD开始执行之前，在运行此服务的linux上创建前端nginx环境配置
+   - 将deploy/cd/.env.template的内容复制到刚刚创建的`.env`，并且按需更改
+
+```bash
+cp deploy/cd/.env.template /opt/gameevaluate-cd/.env
+```
+
+3. 由 CI 把 `build-output` 解压到 [deploy/cd/dist](dist).
+4. 进入 [deploy/cd](.) 后执行：
 
 ```bash
 docker compose up -d --build --remove-orphans

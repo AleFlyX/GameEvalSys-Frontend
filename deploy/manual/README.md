@@ -6,6 +6,7 @@
 
 ```bash
 cd deploy/manual
+cp .env.template .env #复制后按需修改nginx配置项
 docker compose up -d --build --remove-orphans
 ```
 

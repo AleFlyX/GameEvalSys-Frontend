@@ -7,7 +7,7 @@ services:
     container_name: gameevaluate-frontend
     restart: unless-stopped
     env_file:
-      - .env
+      - /opt/gameevaluate-cd/.env
     ports:
       - "8999:8080"
     extra_hosts:
