@@ -1,0 +1,50 @@
+name: CD
+
+on:
+  workflow_run:
+    workflows: ["CI"] # 必须与你的 CI 工作流 name 一致
+    branches: [main]
+    types:
+      - completed
+
+concurrency:
+  group: cd-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: [self-hosted, pve_ct_151]
+    timeout-minutes: 15
+
+    steps:
+      # 1. 进入 CD 部署目录
+      - name: Change to deploy directory
+        working-directory: /srv/gameEvaluate/GameEvalSys-Frontend/deploy/cd
+        run: |
+          pwd
+
+      # 2. 拉取最新的仓库代码（包括 deploy/cd 下的部署文件）
+      - name: Git pull latest config
+        working-directory: /srv/gameEvaluate/GameEvalSys-Frontend/deploy/cd
+        run: |
+          git fetch origin main
+          git reset --hard origin/main   # 强制与远程 main 保持一致，丢弃本地未提交修改
+        # 如果你希望保留本地某些文件（如 .env），可以使用 git stash 或单独处理
+
+      # 3. 下载 CI 构建的产物（dist/）
+      - name: Download dist artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: build-output # 必须与 CI 中 upload-artifact 的 name 一致
+          path: /srv/gameEvaluate/GameEvalSys-Frontend/deploy/cd/dist/
+
+      # 4. 使用 Docker Compose 重新构建并启动容器
+      #    这里直接把 CI 产物打进 Nginx 镜像，不再在部署机上重复跑前端 build
+      - name: Rebuild and restart containers
+        working-directory: /srv/gameEvaluate/GameEvalSys-Frontend/deploy/cd
+        run: |
+          docker compose up -d --build --remove-orphans
