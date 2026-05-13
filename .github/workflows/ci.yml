@@ -68,3 +68,10 @@ jobs:
 
       - name: Build gate
         run: npm run build
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-output
+          path: deploy/dist # 与vite打包的输出路径一致，这是输出产物的位置
+          if-no-files-found: error

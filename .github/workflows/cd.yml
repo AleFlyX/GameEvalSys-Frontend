@@ -33,6 +33,9 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: build-output
+          run-id: ${{ github.event.workflow_run.id }}
+          repository: ${{ github.repository }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           path: ${{ github.workspace }}/deploy/cd/dist
 
       # 3. 使用 Docker Compose 重新构建并启动容器
