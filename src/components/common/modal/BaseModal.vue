@@ -43,20 +43,20 @@ const props = defineProps({
     default: ''
   },
   minWidth: {
-    type: Number,
+    type: [Number, String],
     default: 0
   },
   maxWidth: {
-    type: Number,
+    type: [Number, String],
     default: 0
   },
 
   minHeight: {
-    type: Number,
+    type: [Number, String],
     default: 0
   },
   maxHeight: {
-    type: Number,
+    type: [Number, String],
     default: 0
   },
 
@@ -176,6 +176,7 @@ const isDarkMode = computed(() => props.darkMode)
   background: white;
   border-radius: 15px;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
   z-index: var(--z-modal-content, 2001);
 }
 

@@ -14,11 +14,11 @@
         </h3>
       </header>
 
-      <body>
+      <div class="body">
         <slot name="body">
 
         </slot>
-      </body>
+      </div>
       <div class="operation">
         <slot name="footer">
 
@@ -44,7 +44,7 @@ defineEmits([
 </script>
 
 <style scoped>
-body {
+.body {
   padding: 5px;
   max-height: 60vh;
   overflow-y: auto;
