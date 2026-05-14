@@ -1,5 +1,6 @@
 <template>
-  <BaseFormModal v-bind="$attrs" @update:visible="$emit('update:visible', $event)" :allow-mask-close="false">
+  <BaseFormModal v-bind="$attrs" @update:visible="$emit('update:visible', $event)" :allow-mask-close="false"
+    minHeight="85vh">
     <template #title>
       创建项目
     </template>
