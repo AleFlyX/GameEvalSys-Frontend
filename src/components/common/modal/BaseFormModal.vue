@@ -48,16 +48,22 @@ defineEmits([
 
 <style scoped>
 .modal-layout {
-  padding: 5 15px;
+  padding: 5px 15px;
   height: 100%;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   flex: 1;
 }
 
+.title {
+  flex-shrink: 0;
+}
+
 .content {
   padding: 5px;
-  max-height: 60vh;
+  flex: 1;
+  min-height: 0;
   overflow-y: auto;
 }
 
@@ -66,5 +72,6 @@ defineEmits([
   /* 保证操作区在底部 */
   display: flex;
   justify-content: flex-end;
+  flex-shrink: 0;
 }
 </style>

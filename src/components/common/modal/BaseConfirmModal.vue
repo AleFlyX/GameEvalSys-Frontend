@@ -74,4 +74,18 @@ const handleCancel = () => {
 }
 </script>
 
-<style scoped></style>
+<style scoped>
+.title {
+  flex-shrink: 0;
+}
+
+.content {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.operation {
+  flex-shrink: 0;
+}
+</style>
