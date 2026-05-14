@@ -46,6 +46,34 @@ export function useMonitorServer() {
   }
 
   /**
+   * 获取趋势数据的显示系列，将数值转换为 18-100 的范围以适配图表显示
+   * @param series
+   * @returns
+   */
+  function getTrendDisplaySeries(series: number[]) {
+    if (!Array.isArray(series) || series.length === 0) {
+      return [];
+    }
+
+    const values = series.filter((item) => Number.isFinite(item));
+    if (!values.length) {
+      return [];
+    }
+
+    const min = Math.min(...values);
+    const max = Math.max(...values);
+
+    if (max <= min) {
+      return values.map(() => 36); // 当所有数值相同或无有效数值时，返回一个固定的中等高度（如 36%）以保持图表显示的一致性
+    }
+
+    return values.map((value) => {
+      const ratio = (value - min) / (max - min);
+      return Number((18 + ratio * 82).toFixed(1)); // 将数值映射到 18-100 的范围
+    });
+  }
+
+  /**
    * 获取实时指标的最新值，若无数据则返回 "0.0"
    * @param key 指标名称，需与 dashboard.value.metrics 中的键对应
    * @returns 格式化为字符串的数值，保留一位小数
@@ -226,7 +254,6 @@ export function useMonitorServer() {
             : dashboard.value.metrics.disk,
       },
     };
-    console.log("handled", dashboard.value);
     touchRemote();
   }
 
@@ -420,21 +447,21 @@ export function useMonitorServer() {
       value: getMetricValue("cpu"),
       note: "近 8 个采样点",
       color: "#2563eb",
-      trend: dashboard.value.metrics.cpu,
+      trend: getTrendDisplaySeries(dashboard.value.metrics.cpu),
     },
     {
       label: "内存使用",
       value: getMetricValue("memory"),
       note: "堆外与系统内存合并展示",
       color: "#7c3aed",
-      trend: dashboard.value.metrics.memory,
+      trend: getTrendDisplaySeries(dashboard.value.metrics.memory),
     },
     {
       label: "磁盘使用",
       value: getMetricValue("disk"),
       note: "整体磁盘占用情况",
       color: "#ea580c",
-      trend: dashboard.value.metrics.disk,
+      trend: getTrendDisplaySeries(dashboard.value.metrics.disk),
     },
   ]);
 

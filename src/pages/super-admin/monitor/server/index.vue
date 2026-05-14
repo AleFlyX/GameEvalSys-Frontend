@@ -49,7 +49,10 @@
 
               <div class="sparkline">
                 <span v-for="(point, index) in item.trend" :key="`${item.label}-${index}`" class="spark-bar"
-                  :style="{ height: `${Math.max(point, 10)}%`, backgroundColor: item.color, animationDelay: `${index * 0.04}s` }" />
+                  :style="{ height: `${point}%`, backgroundColor: item.color, animationDelay: `${index * 0.04}s` }">
+                  <!-- {{ item.trend[index] }}
+                  {{ point }}/{{ index }} -->
+                </span>
               </div>
 
             </div>
