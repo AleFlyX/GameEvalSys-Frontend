@@ -73,5 +73,6 @@ export const projectFormRules = {
   scorerIds: [
     { required: true, message: '请选择至少一个打分用户', trigger: 'change' },
     { validator: checkLength, trigger: 'blur' }
-  ]
+  ],
+  reviewerGroupId: [{ required: true, message: '请选择评审团', trigger: 'change' }]
 }

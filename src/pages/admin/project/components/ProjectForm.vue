@@ -97,8 +97,8 @@
 
       <el-form-item v-if="!editMode" ref="reviewerGroupChoiceRef" label="评审团" prop="reviewerGroupId" @click="showInfo">
         <el-select ref="reviewerGroupsSelectRef" v-model="formData.reviewerGroupId" placeholder="选择参与评分该项目的评审团"
-          :loading="loadingReviewerGps" filterable remote :remote-method="getReviewerGroupList" debounce="500"
-          :prefix-icon="Search" popper-class="reviewer-groups-select-popper"
+          :loading="loadingReviewerGps" filterable remote :clearable="!editMode" :remote-method="getReviewerGroupList"
+          debounce="500" :prefix-icon="Search" popper-class="reviewer-groups-select-popper"
           @popup-scroll="handleReviewerGroupsPopupScroll" @visible-change="handleReviewerGroupsVisibleChange">
           <el-option v-for="item in reviewerGroups" :key="item.id" :label="item.name" :value="item.id" />
         </el-select>
