@@ -20,6 +20,7 @@ export function useUserForm({ mode, onClose, onSuccess }) {
   const formRef = ref(null)
   const multiAddFormRef = ref(null)
   const multiAddMode = ref(false)
+  const activeTabName = computed(() => multiAddMode.value ? 'multi-add' : 'single-add');
   const submitting = ref(false)
 
   const isEditMode = computed(() => mode.value === 'edit')
@@ -27,6 +28,11 @@ export function useUserForm({ mode, onClose, onSuccess }) {
   const resetState = () => {
     multiAddMode.value = false
     submitting.value = false
+  }
+
+  const handleTabChange = (tab) => {
+    const tabName = tab.props.name;
+    multiAddMode.value = tabName === 'multi-add'
   }
 
   const closeFormModal = () => {
@@ -122,9 +128,11 @@ export function useUserForm({ mode, onClose, onSuccess }) {
   return {
     formRef,
     multiAddFormRef,
+    activeTabName,
     multiAddMode,
     submitting,
     isEditMode,
+    handleTabChange,
     closeFormModal,
     handleConfirm,
     resetState

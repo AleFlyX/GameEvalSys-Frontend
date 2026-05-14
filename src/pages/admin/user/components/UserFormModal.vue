@@ -1,19 +1,20 @@
 <template>
-  <BaseFormModal :visible="visible" @update:visible="$emit('update:visible', $event)" width="550px" min-height="65%">
+  <BaseFormModal :visible="visible" @update:visible="$emit('update:visible', $event)" width="550px" min-height="70vh">
     <template #title>
       <span v-if="isEditMode">{{ title }}</span>
-      <el-switch v-else v-model="multiAddMode" active-text="批量添加" inactive-text="单用户添加" size="large"></el-switch>
+      <el-tabs v-else v-model="activeTabName" @tab-click="handleTabChange">
+        <el-tab-pane label="单用户添加" name="single-add"></el-tab-pane>
+        <el-tab-pane label="批量添加" name="multi-add"></el-tab-pane>
+      </el-tabs>
+      <!-- <el-switch v-else v-model="multiAddMode" active-text="批量添加" inactive-text="单用户添加" size="large"></el-switch> -->
     </template>
 
     <template #form>
-      <div v-if="isEditMode || !multiAddMode" class="user-form-wrapper">
-        <UserForm ref="formRef" :init-data="initData" :edit-mode="isEditMode">
+      <KeepAlive class="user-form-wrapper">
+        <UserForm v-if="isEditMode || !multiAddMode" ref="formRef" :init-data="initData" :edit-mode="isEditMode">
         </UserForm>
-      </div>
-
-      <div v-else class="user-multi-add">
-        <UserMultiAddForm ref="multiAddFormRef"></UserMultiAddForm>
-      </div>
+        <UserMultiAddForm v-else ref="multiAddFormRef"></UserMultiAddForm>
+      </KeepAlive>
     </template>
 
     <template #operations>
@@ -64,9 +65,11 @@ const modeRef = computed(() => props.mode)
 const {
   formRef,
   multiAddFormRef,
+  activeTabName,
   multiAddMode,
   submitting,
   isEditMode,
+  handleTabChange,
   closeFormModal,
   handleConfirm,
   resetState
