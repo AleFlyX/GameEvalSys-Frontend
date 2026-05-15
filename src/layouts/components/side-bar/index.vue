@@ -18,7 +18,9 @@
         </template>
       </MenuItem>
 
-      <MenuFolder v-if="userStore.isSuperAdmin" base-index="/admin" label="数据统计" :collapsed="isCollapsed">
+      <!-- 数据统计和管理面板都在 /admin 下，但它们只应该响应各自的路由集合。 -->
+      <MenuFolder v-if="userStore.isSuperAdmin" base-index="/admin" label="数据统计"
+        :active-paths="visibleStatisticMenus.map((item) => item.path)" :collapsed="isCollapsed">
         <template #prefix>
           <el-icon>
             <component :is="elementIconMap.Histogram" />
@@ -35,7 +37,10 @@
         </MenuItem>
       </MenuFolder>
 
-      <MenuFolder v-if="userStore.isAdmin" base-index="/admin" label="管理面板" :collapsed="isCollapsed">
+      <!-- 管理面板使用同一前缀，但通过 excludePaths 排除统计页，避免误展开。 -->
+      <MenuFolder v-if="userStore.isAdmin" base-index="/admin" label="管理面板"
+        :active-paths="visibleAdminMenus.map((item) => item.path)"
+        :exclude-paths="visibleStatisticMenus.map((item) => item.path)" :collapsed="isCollapsed">
         <template #prefix>
           <el-icon>
             <component :is="elementIconMap.Setting" />
@@ -52,7 +57,9 @@
         </MenuItem>
       </MenuFolder>
 
-      <MenuFolder v-if="userStore.isSuperAdmin" base-index="/super-admin" label="后台管理" :collapsed="isCollapsed">
+      <!-- 后台管理单独使用 /super-admin 前缀，按自身路由集合展开。 -->
+      <MenuFolder v-if="userStore.isSuperAdmin" base-index="/super-admin" label="后台管理"
+        :active-paths="visibleSuperAdminMenus.map((item) => item.path)" :collapsed="isCollapsed">
         <template #prefix>
           <el-icon>
             <component :is="elementIconMap.Grid" />

@@ -30,6 +30,14 @@ import { useRoute } from "vue-router";
 import { ArrowUpBold } from "@element-plus/icons-vue";
 
 const props = defineProps({
+  activePaths: {
+    type: Array,
+    default: () => [],
+  },
+  excludePaths: {
+    type: Array,
+    default: () => [],
+  },
   baseIndex: {
     type: String,
     required: true,
@@ -56,7 +64,22 @@ const emits = defineEmits(["update:active"]);
 
 const route = useRoute();
 
-const childMenuItemActive = computed(() => route.path.startsWith(props.baseIndex));
+const childMenuItemActive = computed(() => {
+  const currentPath = route.path;
+  // 先排除不属于当前 folder 的子路径，避免同一前缀下的分组互相展开。
+  const isExcluded = props.excludePaths.some((path) => currentPath.startsWith(path));
+
+  if (isExcluded) {
+    return false;
+  }
+
+  if (props.activePaths.length) {
+    // 显式匹配当前 folder 负责的路由列表，比单纯依赖 baseIndex 更精确。
+    return props.activePaths.some((path) => currentPath.startsWith(path));
+  }
+
+  return currentPath.startsWith(props.baseIndex);
+});
 const opened = ref(props.alwaysOpen || props.active || childMenuItemActive.value);
 
 const handleToggle = () => {
