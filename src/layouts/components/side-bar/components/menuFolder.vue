@@ -15,9 +15,9 @@
         </el-icon>
       </span>
     </div>
-
     <transition name="submenu-collapse">
-      <ul v-show="opened && !collapsed" class="fold-submenu">
+      <!-- 使用 v-if 而不是 v-show, 让 enter/leave 动画可以平滑过渡高度，从而推开下方菜单更连贯 -->
+      <ul v-if="opened && !collapsed" class="fold-submenu">
         <slot />
       </ul>
     </transition>
@@ -181,6 +181,9 @@ watch(
   border-left: 1px solid rgba(148, 163, 184, 0.26);
   background-color: transparent;
   overflow: hidden;
+  /* 不直接过渡 height（性能/布局抖动），改为过渡 max-height + opacity + transform，使展开推开下方元素更平滑 */
+  /* 默认不限制 max-height，让展开后保持可见；enter/leave 状态负责从 0 到上限的过渡动画 */
+  max-height: none;
 }
 
 .fold-menu-group.collapsed .fold-menu-header {
@@ -197,12 +200,21 @@ watch(
 
 .submenu-collapse-enter-active,
 .submenu-collapse-leave-active {
-  transition: all 0.2s ease;
+  transition: max-height 240ms cubic-bezier(.2, .8, .2, 1), opacity 180ms ease, transform 180ms ease;
 }
 
 .submenu-collapse-enter-from,
 .submenu-collapse-leave-to {
+  max-height: 0;
   opacity: 0;
   transform: translateY(-6px);
+}
+
+.submenu-collapse-enter-to,
+.submenu-collapse-leave-from {
+  /* 给一个足够大的 max-height 以容纳子菜单内容（避免使用固定 height） */
+  max-height: 500px;
+  opacity: 1;
+  transform: translateY(0);
 }
 </style>
