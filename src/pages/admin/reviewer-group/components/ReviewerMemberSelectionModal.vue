@@ -1,40 +1,42 @@
 <template>
-  <BaseFormModal :visible="visible" width="82%" min-height="75%" :allow-mask-close="false"
-    @update:visible="handleVisibleChange">
-    <template #title>
-      选择评审组成员
-    </template>
+  <Teleport to="body">
+    <BaseFormModal :visible="visible" width="82%" min-height="75%" :allow-mask-close="false"
+      @update:visible="handleVisibleChange">
+      <template #title>
+        选择评审组成员
+      </template>
 
-    <template #form>
-      <div class="member-selection-modal">
-        <div class="toolbar">
-          <span class="selection-summary">已选 {{ selectedIdsDraft.length }} 位成员</span>
-          <el-button size="small" :disabled="selectedIdsDraft.length === 0" @click="handleClearAllSelection">
-            清空全部
-          </el-button>
-        </div>
+      <template #form>
+        <div class="member-selection-modal">
+          <div class="toolbar">
+            <span class="selection-summary">已选 {{ selectedIdsDraft.length }} 位成员</span>
+            <el-button size="small" :disabled="selectedIdsDraft.length === 0" @click="handleClearAllSelection">
+              清空全部
+            </el-button>
+          </div>
 
-        <div v-if="selectedUsersDraft.length" class="selected-preview">
-          <span class="preview-label">已选成员：</span>
-          <div class="tag-list">
-            <el-tag v-for="user in selectedUsersDraft" :key="user.id" closable @close="removeSelectedUser(user.id)">
-              {{ user.name || user.username || `用户${user.id}` }}
-            </el-tag>
+          <div v-if="selectedUsersDraft.length" class="selected-preview">
+            <span class="preview-label">已选成员：</span>
+            <div class="tag-list">
+              <el-tag v-for="user in selectedUsersDraft" :key="user.id" closable @close="removeSelectedUser(user.id)">
+                {{ user.name || user.username || `用户${user.id}` }}
+              </el-tag>
+            </div>
+          </div>
+
+          <div class="table-shell">
+            <UserSelectionTable v-model:selectedIds="selectedIdsDraft"
+              :allowed-roles="['scorer', 'admin', 'super_admin']" :show-disabled-users="false" />
           </div>
         </div>
+      </template>
 
-        <div class="table-shell">
-          <UserSelectionTable v-model:selectedIds="selectedIdsDraft" :allowed-roles="['scorer', 'admin', 'super_admin']"
-            :show-disabled-users="false" />
-        </div>
-      </div>
-    </template>
-
-    <template #operations>
-      <button class="primary-btn" @click="handleConfirm">确认选择</button>
-      <button class="cancel-btn" @click="handleVisibleChange(false)">取消</button>
-    </template>
-  </BaseFormModal>
+      <template #operations>
+        <button class="primary-btn" @click="handleConfirm">确认选择</button>
+        <button class="cancel-btn" @click="handleVisibleChange(false)">取消</button>
+      </template>
+    </BaseFormModal>
+  </Teleport>
 </template>
 
 <script setup>
