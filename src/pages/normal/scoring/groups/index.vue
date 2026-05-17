@@ -1,93 +1,122 @@
 <template>
-  <div class="group-scoring-container">
-    <div class="modal-title">
-      <MyBtn type="link" @click="$router.push('/scoring')" style="font-size: large;">
-        <div style="height: 80px;display: flex;align-items: center;">
+  <div class="group-scoring-page">
+    <section class="page-hero">
+      <BaseCard class="hero-main" shadow="always">
+        <MyBtn type="link" class="back-link" @click="$router.push('/scoring')">
           <el-icon>
             <ArrowLeft />
           </el-icon>
-          返回
+          返回项目列表
+        </MyBtn>
+
+        <div class="hero-copy">
+          <p class="eyebrow">评分任务流</p>
+          <h2>{{ projectName }}</h2>
+          <p>按任务卡逐个完成小组评分，未评分任务会优先显示在前面。</p>
         </div>
-      </MyBtn>
-      <h3>{{ projectName }} - 评分列表</h3>
-    </div>
+      </BaseCard>
 
-  </div>
+      <BaseCard class="hero-summary" shadow="always">
+        <div class="summary-item">
+          <span>全部小组</span>
+          <strong>{{ groupList.length }}</strong>
+        </div>
+        <div class="summary-item">
+          <span>未评分</span>
+          <strong>{{ pendingCount }}</strong>
+        </div>
+        <div class="summary-item">
+          <span>已评分</span>
+          <strong>{{ scoredCount }}</strong>
+        </div>
+      </BaseCard>
+    </section>
 
-  <body>
-    <!-- 搜索框 -->
-    <div class="search-section">
-      <SearchInput ref="searchBarRef" @search="handleSearch" :showAddBtn="false" size="middle" immediate :delay="200">
-        <template #operations>
-          <MyBtn @click="handleResetSearch">重置</MyBtn>
-        </template>
-      </SearchInput>
-    </div>
-
-    <el-tabs v-model="activeName" class="tabs">
-      <el-tab-pane label="未评分" name="not_scored">
-        未评分
-
-      </el-tab-pane>
-      <el-tab-pane label="已评分" name="scored">
-        已评分
-      </el-tab-pane>
-    </el-tabs>
-
-    <!-- 小组列表 -->
-    <div class="group-list">
-      <el-empty v-if="filteredGroups.length === 0" description="暂无小组数据"></el-empty>
-      <el-table v-else :data="filteredGroups" stripe style="width: 100%; font-size: 12px">
-        <el-table-column prop="id" label="小组ID" min-width="100"></el-table-column>
-        <el-table-column prop="name" label="小组名称" min-width="100"></el-table-column>
-        <el-table-column prop="scoreStatus" label="打分状态" min-width="80">
-          <template #default="{ row }">
-            <el-tag :type="getScoreStatusTag(row.scoreStatus)">
-              {{ formatScoreStatus(row.scoreStatus) }}
-            </el-tag>
+    <BaseCard class="toolbar-panel" shadow="always">
+      <div class="toolbar-main">
+        <SearchInput ref="searchBarRef" @search="handleSearch" :showAddBtn="false" size="middle" immediate :delay="200">
+          <template #operations>
+            <MyBtn @click="handleResetSearch">重置</MyBtn>
           </template>
-        </el-table-column>
-        <!-- <el-table-column prop="lastScore" label="最后打分时间" min-width="120">
-            <template #default="{ row }">
-              {{ row.lastScore || '-' }}
-            </template>
-          </el-table-column> -->
-        <el-table-column label="操作" width="150" fixed="right">
-          <template #default="{ row }">
-            <div style="display: flex;">
-              <el-button size="small" type="primary" link @click="handleScoring(row)">
-                {{ activeName == 'not_scored' ? '打分' : '重新打分' }}
-              </el-button>
-              <el-button v-if="row.scoreStatus === 'scored'" size="small" type="link" @click="handleViewScore(row)">
-                查看
-              </el-button>
+        </SearchInput>
+      </div>
+
+      <div class="filter-tabs">
+        <button v-for="tab in statusTabs" :key="tab.name" type="button" class="filter-tab"
+          :class="{ active: activeName === tab.name }" @click="activeName = tab.name">
+          <span>{{ tab.label }}</span>
+          <strong>{{ tab.count }}</strong>
+        </button>
+      </div>
+    </BaseCard>
+
+    <section class="task-section">
+      <div class="section-head">
+        <div>
+          <h3>{{ currentSectionTitle }}</h3>
+          <p>{{ currentSectionDescription }}</p>
+        </div>
+      </div>
+
+      <el-empty v-if="filteredGroups.length === 0" description="当前筛选下暂无小组数据" />
+
+      <div v-else class="group-card-list">
+        <BaseCard v-for="group in filteredGroups" :key="group.id" class="group-card"
+          :class="`status-${group.scoreStatus}`" shadow="hover">
+          <div class="group-card-main">
+            <div class="group-card-top">
+              <div>
+                <div class="group-id">小组 ID · {{ group.id }}</div>
+                <h4>{{ group.name }}</h4>
+              </div>
+              <!-- <el-tag class="status" effect="light" round :type="getScoreStatusTag(group.scoreStatus)">
+                {{ formatScoreStatus(group.scoreStatus) }}
+              </el-tag> -->
             </div>
-          </template>
-        </el-table-column>
-      </el-table>
-    </div>
-  </body>
 
+            <div class="group-card-meta">
+              <div class="meta-box">
+                <span>当前阶段</span>
+                <strong>{{ group.scoreStatus === 'scored' ? '已完成评分' : '等待处理' }}</strong>
+              </div>
+              <div class="meta-box">
+                <span>任务建议</span>
+                <strong>{{ group.scoreStatus === 'scored' ? '可复核或查看结果' : '建议立即评分' }}</strong>
+              </div>
+            </div>
+          </div>
 
+          <div class="group-card-actions">
+            <el-tag effect="light" round :type="getScoreStatusTag(group.scoreStatus)">
+              {{ formatScoreStatus(group.scoreStatus) }}
+            </el-tag>
+            <el-button type="primary" @click="handleScoring(group)">
+              {{ group.scoreStatus === 'scored' ? '重新评分' : '开始评分' }}
+            </el-button>
+            <el-button v-if="group.scoreStatus === 'scored'" @click="handleViewScore(group)">
+              查看评分
+            </el-button>
+          </div>
+        </BaseCard>
+      </div>
+    </section>
 
-  <!-- 打分表单模态框 -->
-  <ScoreProject v-model:visible="showScoringFormDialog" :project-id="projectId" :project-name="projectName"
-    :group-data="selectedGroup" @refresh="handleRefresh">
-  </ScoreProject>
-  <ScoringDetails v-model:visible="showScoringDetailDialog" :selected-group="selectedGroup"
-    :scoring-details="scoringDetails" :scoring-std-details="scoringStdDetails" :total-score="totalScore">
-  </ScoringDetails>
-
+    <ScoreProject v-model:visible="showScoringFormDialog" :project-id="projectId" :project-name="projectName"
+      :group-data="selectedGroup" @refresh="handleRefresh" />
+    <ScoringDetails v-model:visible="showScoringDetailDialog" :selected-group="selectedGroup"
+      :scoring-details="scoringDetails" :scoring-std-details="scoringStdDetails" :total-score="totalScore" />
+  </div>
 </template>
 
 <script setup>
-import { onMounted } from 'vue';
+import { computed, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { ArrowLeft } from '@element-plus/icons-vue';
 
 import ScoreProject from './components/ScoreProject.vue';
 import MyBtn from '@/components/common/form/MyBtn.vue';
 import ScoringDetails from './components/ScoringDetails.vue';
+import BaseCard from '@/components/common/data/BaseCard.vue';
 
 import { useProjectStore } from '@/stores/modules/projectStore';
 import { useScoreStore } from '@/stores/modules/scoreStore';
@@ -125,15 +154,26 @@ const {
   activeName,
   searchBarRef,
   filteredGroups,
-  // handleTabClick,
   handleSearch,
   handleResetSearch,
 } = useGroupScoringFilters(groupList);
 
-
-
-// 格式化打分状态
 const { formatScoreStatus, getScoreStatusTag } = useHandleDataStatus();
+
+const pendingCount = computed(() => groupList.value.filter((group) => group.scoreStatus !== 'scored').length);
+const scoredCount = computed(() => groupList.value.filter((group) => group.scoreStatus === 'scored').length);
+
+const statusTabs = computed(() => [
+  { name: 'not_scored', label: '未评分', count: pendingCount.value },
+  { name: 'scored', label: '已评分', count: scoredCount.value },
+]);
+
+const currentSectionTitle = computed(() => (activeName.value === 'scored' ? '已完成的小组' : '待处理的小组'));
+const currentSectionDescription = computed(() => (
+  activeName.value === 'scored'
+    ? '这里展示已经提交过评分的小组，可继续查看详情或再次评分。'
+    : '优先完成这些尚未提交评分的小组，任务会随着提交自动刷新。'
+));
 
 onMounted(() => {
   warmupProjectDetails();
@@ -142,41 +182,303 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.group-scoring-container,
-.scoring-detail-container {
+.group-scoring-page {
+  min-height: 100vh;
+  padding: 32px;
+  background:
+    radial-gradient(circle at top left, rgba(47, 107, 255, 0.1), transparent 30%),
+    linear-gradient(180deg, #f4f7fb 0%, #eef3f9 100%);
+  box-sizing: border-box;
+}
+
+.page-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.8fr) minmax(280px, 0.8fr);
+  gap: 20px;
+  margin-bottom: 24px;
+}
+
+.hero-main,
+.hero-summary,
+.toolbar-panel,
+.task-section {
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(227, 234, 245, 0.95);
+  backdrop-filter: blur(8px);
+}
+
+.hero-main {
+  border-radius: 28px;
+  padding: 24px 28px;
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 18px;
+  color: #2f6bff;
+}
+
+.hero-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.eyebrow {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: #2f6bff;
+}
+
+.hero-copy h2 {
+  margin: 0;
+  font-size: 30px;
+  line-height: 1.25;
+  color: #1f2a44;
+}
+
+.hero-copy p:last-child {
+  margin: 0;
+  line-height: 1.7;
+  color: #6e7f9b;
+}
+
+.hero-summary {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+  border-radius: 28px;
+  padding: 22px;
+}
+
+.summary-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #f7faff 0%, #eef5ff 100%);
+}
+
+.summary-item span {
+  color: #72839f;
+}
+
+.summary-item strong {
+  font-size: 28px;
+  color: #1f2a44;
+}
+
+.toolbar-panel,
+.task-section {
+  border-radius: 28px;
+}
+
+.toolbar-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  margin-bottom: 24px;
+  padding: 24px 28px;
+}
+
+.toolbar-main {
+  max-width: 700px;
+}
+
+.filter-tabs {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.filter-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  border: 1px solid #dce5f2;
+  border-radius: 999px;
+  background: #f8fbff;
+  color: #54657f;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.filter-tab strong {
+  min-width: 22px;
+  font-size: 14px;
+}
+
+.filter-tab.active {
+  border-color: transparent;
+  background: linear-gradient(135deg, #2f6bff 0%, #20b7c7 100%);
+  color: #fff;
+  box-shadow: 0 12px 24px rgba(47, 107, 255, 0.22);
+}
+
+.task-section {
+  padding: 28px;
+}
+
+.section-head {
+  margin-bottom: 20px;
+}
+
+.section-head h3 {
+  margin: 0;
+  font-size: 22px;
+  color: #1f2a44;
+}
+
+.section-head p {
+  margin: 8px 0 0;
+  color: #7c8aa5;
+  line-height: 1.7;
+}
+
+.group-card-list {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  min-width: 650px;
 }
 
-.modal-title {
-  padding: 5px;
-  border-bottom: 1px solid #f0f0f0;
-
-}
-
-.modal-title h3 {
-  margin: 0;
-  font-size: 16px;
-  font-weight: 600;
-  color: #303133;
-}
-
-body {
-  height: auto;
-  overflow-y: auto;
-  padding: 0 8px;
-}
-
-.search-section {
-  margin-bottom: 16px;
+.group-card {
   display: flex;
-  gap: 10px;
   align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  border-radius: 24px;
+  border: 1px solid #e6edf7;
+  background: linear-gradient(180deg, #ffffff 0%, #fbfcff 100%);
+  padding: 22px 24px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.group-list {
-  margin-top: 12px;
+.group-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 18px 32px rgba(31, 42, 68, 0.1);
+}
+
+.group-card.status-not_scored {
+  border-color: rgba(47, 107, 255, 0.24);
+  box-shadow: 0 12px 26px rgba(47, 107, 255, 0.08);
+}
+
+.group-card.status-scored {
+  border-color: rgba(34, 197, 94, 0.2);
+}
+
+.group-card-main {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+.group-card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.group-id {
+  margin-bottom: 8px;
+  font-size: 12px;
+  color: #96a4bb;
+}
+
+.group-card-top h4 {
+  margin: 0;
+  font-size: 22px;
+  line-height: 1.4;
+  color: #1f2a44;
+  word-break: break-word;
+}
+
+.group-card-meta {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 220px));
+  gap: 12px;
+}
+
+.meta-box {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: #f7faff;
+}
+
+.meta-box span {
+  font-size: 12px;
+  color: #8ea0bc;
+}
+
+.meta-box strong {
+  color: #30415f;
+}
+
+.group-card-actions {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.group-card-actions .el-button {
+  min-width: 104px;
+}
+
+@media (max-width: 960px) {
+  .group-scoring-page {
+    padding: 20px;
+  }
+
+  .page-hero {
+    grid-template-columns: 1fr;
+  }
+
+  .group-card {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .group-card-actions {
+    width: 100%;
+  }
+
+  .group-card-actions .el-button {
+    flex: 1;
+  }
+}
+
+@media (max-width: 640px) {
+
+  .hero-main,
+  .hero-summary,
+  .toolbar-panel,
+  .task-section {
+    padding-left: 18px;
+    padding-right: 18px;
+  }
+
+  .hero-copy h2 {
+    font-size: 24px;
+  }
+
+  .group-card-top,
+  .group-card-meta,
+  .group-card-actions {
+    display: flex;
+    flex-direction: column;
+  }
 }
 </style>
