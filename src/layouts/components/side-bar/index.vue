@@ -19,7 +19,7 @@
       </MenuItem>
 
       <!-- 数据统计和管理面板都在 /admin 下，但它们只应该响应各自的路由集合。 -->
-      <MenuFolder v-if="userStore.isSuperAdmin" base-index="/admin" label="数据统计"
+      <MenuFolder v-if="userStore.isAdmin" base-index="/admin" label="数据统计"
         :active-paths="visibleStatisticMenus.map((item) => item.path)" :collapsed="isCollapsed">
         <template #prefix>
           <el-icon>
@@ -134,12 +134,26 @@ const collapsedMenus = computed(() => {
 
   if (userStore.isAdmin) {
     menus.push(
-      ...visibleAdminMenus.value.map((item) => ({
-        key: `admin-${item.path}`,
-        path: item.path,
-        label: item.meta?.title || item.name,
-        icon: item.meta?.icon,
-      }))
+      ...visibleAdminMenus.value.map(
+        (item) => (
+          {
+            key: `admin-${item.path}`,
+            path: item.path,
+            label: item.meta?.title || item.name,
+            icon: item.meta?.icon,
+          }
+        )
+      ),
+      ...visibleStatisticMenus.value.map(
+        (item) => (
+          {
+            key: `statistic-${item.path}`,
+            path: item.path,
+            label: item.meta?.title || item.name,
+            icon: item.meta?.icon,
+          }
+        )
+      )
     );
   }
 
