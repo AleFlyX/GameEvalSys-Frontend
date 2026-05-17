@@ -1,7 +1,6 @@
 <template>
   <PagePanel>
     <template #header>
-
       <StatCard label="总评审组数" :value="overViewCardsMap.totalGroups" icon="User" iconColor="var(--primary-havy)"
         iconBg="var(--primary-light)" style="margin-right: 16px; display: inline-block; min-width: 180px;" />
       <StatCard label="活跃评审组" :value="overViewCardsMap.activeGroups" icon="UserFilled" iconColor="var(--success)"
@@ -10,11 +9,11 @@
         iconBg="var(--warning-light)" style="margin-right: 16px; display: inline-block; min-width: 180px;" />
       <StatCard label="平均组规模" :value="overViewCardsMap.avgGroupSize" icon="Management" iconColor="var(--info)"
         iconBg="var(--info-light)" style="display: inline-block; min-width: 180px;" />
-
     </template>
+
+    <SearchInput size="middle" placeholder="搜索评审组名称..." @search="handleSearch" @add="handleAdd" />
+
     <template #main-table>
-      <SearchInput size="middle" placeholder="搜索评审组名称..." @search="handleSearch" @add="handleAdd">
-      </SearchInput>
       <div class="data-table">
         <el-table :data="tableData" stripe style="width: 100%" v-loading="isLoading">
           <DataTableColums :col-rules="COLUMN_RULES"></DataTableColums>

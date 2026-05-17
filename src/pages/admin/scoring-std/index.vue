@@ -7,8 +7,9 @@
         style="display: inline-block; min-width: 180px;" />
     </template>
 
+    <SearchInput size="middle" @add="handleAdd" @search="handleSearch"></SearchInput>
+
     <template #main-table>
-      <SearchInput size="middle" @add="handleAdd" @search="handleSearch"></SearchInput>
       <el-table :data="tableData" stripe style="width: 100%; margin-top: 16px;" v-loading="loading">
         <DataTableColums :col-rules="COLUMN_RULES" :ellipsis="true"></DataTableColums>
         <el-table-column label="指标数" width="100">

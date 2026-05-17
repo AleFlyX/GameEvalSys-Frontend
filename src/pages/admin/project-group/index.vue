@@ -11,10 +11,11 @@
         iconBg="var(--info-light)" style="display: inline-block; min-width: 180px;" />
 
     </template>
-    <template #main-table>
-      <SearchInput size="middle" placeholder="搜索项目小组名称..." @search="handleSearch" @add="handleAdd">
-      </SearchInput>
 
+    <SearchInput size="middle" placeholder="搜索项目小组名称..." @search="handleSearch" @add="handleAdd">
+    </SearchInput>
+
+    <template #main-table>
       <el-table :data="tableData" stripe style="width: 100%">
         <DataTableColums :col-rules="COLUMN_RULES"></DataTableColums>
         <el-table-column label="操作" width="auto" fixed="right">

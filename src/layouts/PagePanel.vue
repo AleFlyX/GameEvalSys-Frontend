@@ -7,9 +7,11 @@
     </header>
 
     <section class="panel-content">
-      <slot>
-        <!-- 其他小组件区域 -->
-      </slot>
+      <div v-if="$slots.default" class="panel-toolbar">
+        <slot>
+          <!-- 其他小组件区域 -->
+        </slot>
+      </div>
 
       <main class="data-list">
         <slot name="main-table">
@@ -64,6 +66,13 @@
   gap: var(--panel-gap);
 }
 
+.panel-toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
 .data-list {
   width: 100%;
   min-height: 320px;
@@ -92,6 +101,10 @@
   .admin-panel {
     --panel-max-width: calc(100% - 24px);
     padding-top: 20px;
+  }
+
+  .panel-toolbar {
+    gap: 12px;
   }
 
   .data-list {

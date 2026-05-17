@@ -3,21 +3,22 @@
   <p>groupsChanged:: {{ isDataAdjusted.groupIdsChanged }}</p>
   <p>scorerIdsChanged:: {{ isDataAdjusted.scorerIdsChanged }}</p>
   <button @click="isDataChanged(formData)">isDataChanged??</button> -->
-  <div style="height:auto;display: flex;align-items: center;">
-    <MyBtn type="link" @click="handleGoBack" style="font-size: large;">
-      <div style="height: 80px;display: flex;align-items: center; margin-right: 15px;">
-        <el-icon>
-          <ArrowLeft />
-        </el-icon>
-        返回
-      </div>
-    </MyBtn>
-    <div class="project-edit-header">
-      <h2>编辑项目: {{ projectName }}</h2>
-      <p class="subtitle">填写项目基本信息、小组分配和评审团配置</p>
-    </div>
-  </div>
   <PagePanel>
+    <div class="project-edit-topbar">
+      <MyBtn type="link" @click="handleGoBack" class="project-edit-back-btn">
+        <div class="project-edit-back-content">
+          <el-icon>
+            <ArrowLeft />
+          </el-icon>
+          返回
+        </div>
+      </MyBtn>
+      <div class="project-edit-header">
+        <h2>编辑项目: {{ projectName }}</h2>
+        <p class="subtitle">填写项目基本信息、小组分配和评审团配置</p>
+      </div>
+    </div>
+
     <template #main-table>
       <div class="project-edit-container">
         <el-tabs v-model="activeTab" @tab-click="onTabChange" v-loading="initLoading || isSaving">
@@ -298,6 +299,24 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+.project-edit-topbar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.project-edit-back-btn {
+  flex: 0 0 auto;
+}
+
+.project-edit-back-content {
+  height: 80px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-right: 15px;
+}
+
 .project-edit-header {
   border-bottom: 1px solid var(--el-border-color);
 }
