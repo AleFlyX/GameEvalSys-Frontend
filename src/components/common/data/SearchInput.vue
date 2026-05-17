@@ -1,23 +1,31 @@
 <template>
   <form class="search-bar" @submit.prevent="handleInputSearch">
-    <div class="search-field" :style="searchFieldStyle">
-      <input v-model="inputContent" class="search-input" type="text" :placeholder="inputPlaceholder">
+    <div class="search-main">
+      <div class="search-field" :style="searchFieldStyle">
+        <input v-model="inputContent" class="search-input" type="text" :placeholder="placeholder">
+      </div>
+
+      <div class="search-actions">
+        <MyBtn v-if="showSearchBtn" native-type="submit" type="primary" :size="buttonSize">
+          {{ searchBtnText || '搜索' }}
+        </MyBtn>
+
+        <MyBtn v-if="showAddBtn" type="default" :size="buttonSize" @click="handleAdd">
+          {{ addBtnText || '添加' }}
+        </MyBtn>
+      </div>
     </div>
 
-    <button v-if="showSearchBtn" type="submit" class="btns search-btn" :style="customBtnsStyle">
-      {{ searchBtnText || '查找' }}
-    </button>
-
-    <button v-if="showAddBtn" type="button" class="btns add-btn" :style="customBtnsStyle" @click="handleAdd">
-      {{ addBtnText || '添加' }}
-    </button>
-
-    <slot name="operations"></slot>
+    <div v-if="$slots.operations" class="search-operations">
+      <slot name="operations" />
+    </div>
   </form>
 </template>
 
 <script setup>
 import { computed, ref, watch } from 'vue';
+
+import MyBtn from '@/components/common/form/MyBtn.vue';
 import { debounce } from '@/utils/debounce';
 import { removeSpacesFromObject } from '@/utils/removeSpacesFromData';
 
@@ -73,7 +81,6 @@ const props = defineProps({
 
 const emits = defineEmits(['search', 'add']);
 
-const inputPlaceholder = ref(props.placeholder);
 const inputContent = ref('');
 
 const validSizeVal = computed(() => {
@@ -105,10 +112,11 @@ const searchFieldStyle = computed(() => ({
   height: sizeMap[validSizeVal.value].height,
 }));
 
-const customBtnsStyle = computed(() => ({
-  fontSize: sizeMap[validSizeVal.value].font,
-  minHeight: sizeMap[validSizeVal.value].buttonHeight,
-}));
+const buttonSize = computed(() => ({
+  small: 'small',
+  middle: 'medium',
+  large: 'large',
+}[validSizeVal.value] || 'small'));
 
 const handleEmitSearch = (content = '') => {
   emits('search', content.trim());
@@ -121,7 +129,7 @@ const delay = computed(() => (
 const debouncedEmitSearch = debounce(handleEmitSearch, delay.value, { dev: true });
 
 const handleInputSearch = () => {
-  const value = removeSpacesFromObject(inputContent.value.trim(), props.removeAllSpaces);
+  const value = removeSpacesFromObject(inputContent.value, props.removeAllSpaces);
   emits('search', value);
 };
 
@@ -146,9 +154,18 @@ defineExpose({
 <style scoped>
 .search-bar {
   display: flex;
+  align-items: flex-start;
+  flex-direction: column;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.search-main {
+  display: flex;
   align-items: center;
   flex-wrap: wrap;
   gap: 12px;
+  width: 100%;
 }
 
 .search-field {
@@ -180,31 +197,15 @@ defineExpose({
   color: #97a6bb;
 }
 
-.btns {
-  min-width: 88px;
-  padding: 0 18px;
-  border: 1px solid transparent;
-  border-radius: 14px;
-  background: #fff;
-  color: #54657f;
-  box-shadow: 0 10px 22px rgba(31, 42, 68, 0.06);
-  cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+.search-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
-.btns:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 14px 28px rgba(31, 42, 68, 0.1);
-}
-
-.search-btn {
-  background: linear-gradient(135deg, #2f6bff 0%, #20b7c7 100%);
-  color: #fff;
-}
-
-.add-btn {
-  border-color: #d8e3f0;
-  background: #f8fbff;
+.search-operations {
+  width: 100%;
 }
 
 @media (max-width: 640px) {
@@ -217,7 +218,15 @@ defineExpose({
     min-width: 100% !important;
   }
 
-  .btns {
+  .search-main {
+    align-items: stretch;
+  }
+
+  .search-actions {
+    width: 100%;
+  }
+
+  .search-actions :deep(.btn) {
     flex: 1 1 120px;
   }
 }
