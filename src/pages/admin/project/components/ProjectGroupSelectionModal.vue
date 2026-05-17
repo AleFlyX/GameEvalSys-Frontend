@@ -1,78 +1,82 @@
 <template>
-  <BaseFormModal :visible="visible" width="78%" min-height="72%" :allow-mask-close="false"
-    @update:visible="handleVisibleChange">
-    <template #title>
-      选择项目内受评分的小组
-    </template>
+  <Teleport to="body">
+    <BaseFormModal :visible="visible" width="78%" min-height="72%" :allow-mask-close="false"
+      @update:visible="handleVisibleChange">
+      <template #title>
+        选择项目内受评分的小组
+      </template>
 
-    <template #form>
-      <div class="group-selection-modal">
-        <div class="toolbar">
-          <div class="search-row">
-            <el-input v-model="searchKeyword" placeholder="搜索小组名称" clearable style="width: 280px"
-              @input="handleSearch">
-              <template #prefix>
-                <el-icon>
-                  <Search />
-                </el-icon>
-              </template>
-            </el-input>
+      <template #form>
+        <div class="group-selection-modal">
+          <div class="toolbar">
+            <div class="search-row">
+              <el-input v-model="searchKeyword" placeholder="搜索小组名称" clearable style="width: 280px"
+                @input="handleSearch">
+                <template #prefix>
+                  <el-icon>
+                    <Search />
+                  </el-icon>
+                </template>
+              </el-input>
+            </div>
+
+            <div class="batch-row">
+              <span class="selection-summary">已选 {{ selectedIdsDraft.length }} 个小组</span>
+              <el-button size="small" type="primary" :disabled="tableData.length === 0"
+                @click="handleSelectAllCurrentPage">
+                全选本页
+              </el-button>
+              <el-button size="small" type="primary" plain :loading="selectAllLoading" :disabled="total === 0"
+                @click="handleSelectAllByFilter">
+                全选搜索结果
+              </el-button>
+              <el-button size="small" :disabled="currentPageSelectedRows.length === 0" @click="handleClearCurrentPage">
+                清空本页
+              </el-button>
+              <el-button size="small" :disabled="tableData.length === 0" @click="handleInvertCurrentPage">
+                反选本页
+              </el-button>
+              <el-button size="small" :disabled="selectedIdsDraft.length === 0" @click="handleClearAllSelection">
+                清空全部
+              </el-button>
+            </div>
           </div>
 
-          <div class="batch-row">
-            <span class="selection-summary">已选 {{ selectedIdsDraft.length }} 个小组</span>
-            <el-button size="small" type="primary" :disabled="tableData.length === 0" @click="handleSelectAllCurrentPage">
-              全选本页
-            </el-button>
-            <el-button size="small" type="primary" plain :loading="selectAllLoading" :disabled="total === 0"
-              @click="handleSelectAllByFilter">
-              全选搜索结果
-            </el-button>
-            <el-button size="small" :disabled="currentPageSelectedRows.length === 0" @click="handleClearCurrentPage">
-              清空本页
-            </el-button>
-            <el-button size="small" :disabled="tableData.length === 0" @click="handleInvertCurrentPage">
-              反选本页
-            </el-button>
-            <el-button size="small" :disabled="selectedIdsDraft.length === 0" @click="handleClearAllSelection">
-              清空全部
-            </el-button>
+          <div class="selected-preview" v-if="selectedGroupsDraft.length">
+            <span class="preview-label">已选小组：</span>
+            <div class="tag-list">
+              <el-tag v-for="group in selectedGroupsDraft" :key="group.id" closable
+                @close="removeSelectedGroup(group.id)">
+                {{ group.name }}
+              </el-tag>
+            </div>
+          </div>
+
+          <div class="table-container">
+            <el-table ref="tableRef" v-loading="loading" :data="tableData" row-key="id" stripe style="width: 100%"
+              :reserve-selection="true" @selection-change="handleSelectionChange">
+              <el-table-column type="selection" width="50" align="center" />
+              <el-table-column prop="id" label="小组ID" min-width="100" />
+              <el-table-column prop="name" label="小组名称" min-width="180" show-overflow-tooltip />
+              <el-table-column prop="description" label="描述" min-width="220" show-overflow-tooltip />
+              <el-table-column prop="createTime" label="创建时间" min-width="180" show-overflow-tooltip />
+            </el-table>
+          </div>
+
+          <div class="pagination-container">
+            <el-pagination v-model:current-page="currentPage" v-model:page-size="pageSize"
+              :page-sizes="[10, 20, 30, 50]" :total="total" layout="sizes, prev, pager, next"
+              @size-change="handleSizeChange" @current-change="handleCurrentChange" />
           </div>
         </div>
+      </template>
 
-        <div class="selected-preview" v-if="selectedGroupsDraft.length">
-          <span class="preview-label">已选小组：</span>
-          <div class="tag-list">
-            <el-tag v-for="group in selectedGroupsDraft" :key="group.id" closable @close="removeSelectedGroup(group.id)">
-              {{ group.name }}
-            </el-tag>
-          </div>
-        </div>
-
-        <div class="table-container">
-          <el-table ref="tableRef" v-loading="loading" :data="tableData" row-key="id" stripe style="width: 100%"
-            :reserve-selection="true" @selection-change="handleSelectionChange">
-            <el-table-column type="selection" width="50" align="center" />
-            <el-table-column prop="id" label="小组ID" min-width="100" />
-            <el-table-column prop="name" label="小组名称" min-width="180" show-overflow-tooltip />
-            <el-table-column prop="description" label="描述" min-width="220" show-overflow-tooltip />
-            <el-table-column prop="createTime" label="创建时间" min-width="180" show-overflow-tooltip />
-          </el-table>
-        </div>
-
-        <div class="pagination-container">
-          <el-pagination v-model:current-page="currentPage" v-model:page-size="pageSize" :page-sizes="[10, 20, 30, 50]"
-            :total="total" layout="sizes, prev, pager, next" @size-change="handleSizeChange"
-            @current-change="handleCurrentChange" />
-        </div>
-      </div>
-    </template>
-
-    <template #operations>
-      <button class="primary-btn" @click="handleConfirm">确认选择</button>
-      <button class="cancel-btn" @click="handleVisibleChange(false)">取消</button>
-    </template>
-  </BaseFormModal>
+      <template #operations>
+        <button class="primary-btn" @click="handleConfirm">确认选择</button>
+        <button class="cancel-btn" @click="handleVisibleChange(false)">取消</button>
+      </template>
+    </BaseFormModal>
+  </Teleport>
 </template>
 
 <script setup>

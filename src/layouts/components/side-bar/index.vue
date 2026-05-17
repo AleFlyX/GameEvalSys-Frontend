@@ -1,27 +1,46 @@
 <template>
   <aside class="sidebar-menu" :class="{ collapsed: isCollapsed }">
     <div class="sidebar-head">
-      <div class="brand-wrap">
-        <span class="brand-mark">GE</span>
-        <span v-show="!isCollapsed" class="title">项目评分平台</span>
-      </div>
-
+      <BrandIcon :is-collapsed="isCollapsed" />
       <button class="collapse-btn" type="button" :aria-label="isCollapsed ? '展开侧边栏' : '收起侧边栏'" @click="toggleSidebar">
         <span class="collapse-chev" :class="{ collapsed: isCollapsed }"></span>
       </button>
     </div>
 
+    <!-- 展开状态的菜单 -->
     <ul v-if="!isCollapsed" class="nav-items">
       <MenuItem v-for="item in visibleNormMenus" :key="item.path" :index="item.path"
         :label="item.meta?.title || item.name">
-      <template #prefix>
-        <el-icon>
-          <component :is="elementIconMap[item.meta.icon] || null" />
-        </el-icon>
-      </template>
+        <template #prefix>
+          <el-icon>
+            <component :is="elementIconMap[item.meta.icon] || null" />
+          </el-icon>
+        </template>
       </MenuItem>
 
-      <MenuFolder v-if="userStore.isAdmin" base-index="/admin" label="管理面板" :collapsed="isCollapsed">
+      <!-- 数据统计和管理面板都在 /admin 下，但它们只应该响应各自的路由集合。 -->
+      <MenuFolder v-if="userStore.isSuperAdmin" base-index="/admin" label="数据统计"
+        :active-paths="visibleStatisticMenus.map((item) => item.path)" :collapsed="isCollapsed">
+        <template #prefix>
+          <el-icon>
+            <component :is="elementIconMap.Histogram" />
+          </el-icon>
+        </template>
+
+        <MenuItem v-for="item in visibleStatisticMenus" :key="item.path" :index="item.path"
+          :label="item.meta?.title || item.name" level="sub">
+          <template #prefix>
+            <el-icon>
+              <component :is="elementIconMap[item.meta.icon] || null" />
+            </el-icon>
+          </template>
+        </MenuItem>
+      </MenuFolder>
+
+      <!-- 管理面板使用同一前缀，但通过 excludePaths 排除统计页，避免误展开。 -->
+      <MenuFolder v-if="userStore.isAdmin" base-index="/admin" label="管理面板"
+        :active-paths="visibleAdminMenus.map((item) => item.path)"
+        :exclude-paths="visibleStatisticMenus.map((item) => item.path)" :collapsed="isCollapsed">
         <template #prefix>
           <el-icon>
             <component :is="elementIconMap.Setting" />
@@ -30,15 +49,17 @@
 
         <MenuItem v-for="item in visibleAdminMenus" :key="item.path" :index="item.path"
           :label="item.meta?.title || item.name" level="sub">
-        <template #prefix>
-          <el-icon>
-            <component :is="elementIconMap[item.meta.icon] || null" />
-          </el-icon>
-        </template>
+          <template #prefix>
+            <el-icon>
+              <component :is="elementIconMap[item.meta.icon] || null" />
+            </el-icon>
+          </template>
         </MenuItem>
       </MenuFolder>
 
-      <MenuFolder v-if="userStore.isSuperAdmin" base-index="/super-admin" label="后台管理" :collapsed="isCollapsed">
+      <!-- 后台管理单独使用 /super-admin 前缀，按自身路由集合展开。 -->
+      <MenuFolder v-if="userStore.isSuperAdmin" base-index="/super-admin" label="后台管理"
+        :active-paths="visibleSuperAdminMenus.map((item) => item.path)" :collapsed="isCollapsed">
         <template #prefix>
           <el-icon>
             <component :is="elementIconMap.Grid" />
@@ -47,33 +68,34 @@
 
         <MenuItem v-for="item in visibleSuperAdminMenus" :key="item.path" :index="item.path"
           :label="item.meta?.title || item.name" level="sub">
-        <template #prefix>
-          <el-icon>
-            <component :is="elementIconMap[item.meta.icon] || null" />
-          </el-icon>
-        </template>
+          <template #prefix>
+            <el-icon>
+              <component :is="elementIconMap[item.meta.icon] || null" />
+            </el-icon>
+          </template>
         </MenuItem>
       </MenuFolder>
 
       <MenuItem v-if="userStore.isAdmin" :active="showAgent" label="使用PageAgent" @click="handleAgentShow">
-      <template #prefix>
-        <el-icon>
-          <component :is="elementIconMap.ChatSquare" />
-        </el-icon>
-      </template>
+        <template #prefix>
+          <el-icon>
+            <component :is="elementIconMap.ChatSquare" />
+          </el-icon>
+        </template>
       </MenuItem>
     </ul>
 
+    <!-- 折叠后的菜单 -->
     <ul v-else class="nav-items collapsed-nav">
       <el-tooltip v-for="item in collapsedMenus" :key="item.key" :content="item.label" placement="right" :offset="14"
         :show-after="110" popper-class="sidebar-menu-tooltip">
         <MenuItem :index="item.path" :label="item.label" :active="item.isAgent ? showAgent : null" :collapsed="true"
           :show-native-title="false" @clicked="handleCollapsedItemClick(item)">
-        <template #prefix>
-          <el-icon>
-            <component :is="elementIconMap[item.icon] || null" />
-          </el-icon>
-        </template>
+          <template #prefix>
+            <el-icon>
+              <component :is="elementIconMap[item.icon] || null" />
+            </el-icon>
+          </template>
         </MenuItem>
       </el-tooltip>
     </ul>
@@ -87,6 +109,7 @@ import { admin } from "@/router/modules/adminRoutes";
 import { superAdmin } from "@/router/modules/superAdminRoutes";
 import { useUserStore } from "@/stores/modules/userStore";
 import { elementIconMap } from "@/utils/elementIcons";
+import BrandIcon from "./components/BrandIcon.vue";
 import MenuItem from "./components/menuItem.vue";
 import MenuFolder from "./components/menuFolder.vue";
 
@@ -98,10 +121,9 @@ const userStore = useUserStore();
 
 // 找出可直接进入的路径
 const visibleNormMenus = computed(() => norm.filter((item) => !item.meta?.hidden));
-const visibleAdminMenus = computed(() => admin.filter((item) => !item.meta?.hidden));
-const visibleSuperAdminMenus = computed(() =>
-  superAdmin.filter((item) => !item.meta?.hidden)
-);
+const visibleAdminMenus = computed(() => admin.filter((item) => !item.meta?.hidden && !item.path.includes("statistic")));
+const visibleStatisticMenus = computed(() => admin.filter((item) => !item.meta?.hidden && item.path.includes("statistic")));
+const visibleSuperAdminMenus = computed(() => superAdmin.filter((item) => !item.meta?.hidden));
 const collapsedMenus = computed(() => {
   const menus = visibleNormMenus.value.map((item) => ({
     key: `norm-${item.path}`,
@@ -178,11 +200,12 @@ const toggleSidebar = () => {
   backdrop-filter: saturate(160%) blur(16px);
   color: #1f2937;
   height: 100%;
-  width: 248px;
+  width: 258px;
   transition: width 0.3s ease, box-shadow 0.3s ease;
   box-shadow: var(--sidebar-shadow);
   border-right: 1px solid var(--sidebar-border);
-  overflow: hidden;
+  /* 为确保滚动体验，x轴不产生多余滚动，且不影响垂直滚动行为 */
+  overflow-x: hidden;
   box-sizing: border-box;
 }
 
@@ -196,28 +219,6 @@ const toggleSidebar = () => {
   justify-content: space-between;
   gap: 8px;
   min-height: 44px;
-}
-
-.brand-wrap {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  min-width: 0;
-}
-
-.brand-mark {
-  width: 30px;
-  height: 30px;
-  border-radius: 10px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.5px;
-  color: #ffffff;
-  background: linear-gradient(135deg, #0a84ff, #0a69d7);
-  box-shadow: 0 8px 18px rgba(10, 132, 255, 0.35);
 }
 
 .title {
@@ -269,7 +270,14 @@ const toggleSidebar = () => {
   display: flex;
   flex-direction: column;
   gap: 3px;
-  overflow: auto;
+  overflow-y: auto;
+  /* 保证垂直滚动，auto 或 scroll */
+  overflow-x: hidden;
+  /* 避免水平滚动条 */
+  scrollbar-width: none;
+  /* Firefox 隐藏滚动条 */
+  -ms-overflow-style: none;
+  /* IE/Edge 隐藏 */
 }
 
 .collapsed-nav {
