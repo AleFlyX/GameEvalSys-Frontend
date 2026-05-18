@@ -179,8 +179,9 @@ onMounted(() => {
 /* ==================== 全局布局 ==================== */
 .project-statistic-list-container {
   padding: 32px 24px;
-  background-color: #f9fafb;
+  /* background-color: #f9fafb; */
   min-height: 100vh;
+  background: var(--bg-primary);
 }
 
 /* ==================== 页面标题 ==================== */
@@ -194,13 +195,13 @@ onMounted(() => {
 .page-title {
   font-size: 2rem;
   font-weight: 700;
-  color: #1f2937;
+  color: var(--text);
   margin: 0 0 8px 0;
 }
 
 .page-subtitle {
   font-size: 0.95rem;
-  color: #6b7280;
+  color: var(--text-secondary);
   margin: 0;
 }
 
@@ -253,7 +254,7 @@ onMounted(() => {
   margin-left: auto;
   margin-right: auto;
   padding: 16px;
-  background: #ffffff;
+  background: var(--card-bg);
   border-radius: 12px;
 }
 

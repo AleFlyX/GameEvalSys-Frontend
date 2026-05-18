@@ -129,12 +129,12 @@ const formatScore = (score) => {
 
 .indicator-cell .id {
   font-size: 12px;
-  color: #909399;
+  color: var(--text-disabled);
 }
 
 .score {
   font-weight: 600;
-  color: #1f2937;
+  color: var(--text);
 }
 
 .meta-pair {
@@ -142,6 +142,6 @@ const formatScore = (score) => {
   flex-direction: column;
   gap: 4px;
   font-size: 12px;
-  color: #6b7280;
+  color: var(--text-secondary);
 }
 </style>

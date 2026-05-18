@@ -352,14 +352,14 @@ watch(
   font-size: 22px;
   line-height: 1.35;
   font-weight: 700;
-  color: #1f2a44;
+  color: var(--text);
 }
 
 .dialog-title-wrap p {
   margin: 8px 0 0;
   font-size: 13px;
   line-height: 1.5;
-  color: #7b8798;
+  color: var(--text-secondary);
 }
 
 .group-selection-modal {
@@ -379,14 +379,18 @@ watch(
   border-radius: 16px;
 }
 
+html[data-theme="dark"] .selection-summary-panel {
+  background: linear-gradient(135deg, rgba(47, 107, 255, 0.16), rgba(32, 183, 199, 0.16));
+}
+
 .summary-item {
   display: flex;
   align-items: baseline;
   gap: 8px;
   padding: 8px 12px;
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.72);
-  border: 1px solid rgba(255, 255, 255, 0.72);
+  background: var(--card-bg);
+  border: 1px solid var(--border);
 }
 
 .summary-item span {
@@ -395,7 +399,7 @@ watch(
 }
 
 .summary-item strong {
-  color: #1f2a44;
+  color: var(--text);
   font-size: 18px;
 }
 
@@ -410,8 +414,8 @@ watch(
   flex-direction: column;
   gap: 10px;
   padding: 14px 16px;
-  background: #f8fafc;
-  border: 1px solid #e5ebf3;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
   border-radius: 14px;
 }
 
@@ -422,7 +426,7 @@ watch(
 .toolbar-label {
   font-size: 13px;
   font-weight: 600;
-  color: #1f2a44;
+  color: var(--text);
 }
 
 .search-input {
@@ -440,9 +444,9 @@ watch(
   gap: 10px;
   align-items: flex-start;
   padding: 14px 16px;
-  border: 1px solid #e5ebf3;
+  border: 1px solid var(--border);
   border-radius: 14px;
-  background: #fff;
+  background: var(--card-bg);
 }
 
 .preview-label {

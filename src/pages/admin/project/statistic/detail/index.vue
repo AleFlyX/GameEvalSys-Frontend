@@ -335,7 +335,7 @@ onMounted(() => {
 /* ==================== 全局布局 ==================== */
 .project-statistic-detail-container {
   padding: 32px 24px;
-  background-color: #f9fafb;
+  background-color: var(--bg-primary);
   min-height: 100vh;
 }
 
@@ -355,7 +355,7 @@ onMounted(() => {
 .page-title {
   font-size: 1.5rem;
   font-weight: 700;
-  color: #1f2937;
+  color: var(--text);
   margin: 0;
   flex: 1;
   min-width: 300px;
@@ -368,7 +368,7 @@ onMounted(() => {
   align-items: center;
   margin-bottom: 24px;
   padding: 16px;
-  background: #ffffff;
+  background: var(--card-bg);
   border-radius: 12px;
   max-width: 1400px;
   margin-left: auto;
@@ -377,7 +377,7 @@ onMounted(() => {
 
 .last-update {
   font-size: 0.875rem;
-  color: #9ca3af;
+  color: var(--text-disabled);
   margin-left: auto;
 }
 
@@ -385,14 +385,14 @@ onMounted(() => {
   max-width: 1400px;
   margin: 0 auto 20px;
   padding: 14px 16px;
-  background: #fffdf5;
-  border: 1px solid #f3e8c3;
+  background: rgba(245, 158, 11, 0.08);
+  border: 1px solid rgba(245, 158, 11, 0.2);
   border-radius: 12px;
 }
 
 .rule-summary-title {
   font-size: 13px;
-  color: #7c6b35;
+  color: var(--text);
   margin-bottom: 8px;
 }
 
@@ -404,7 +404,7 @@ onMounted(() => {
 }
 
 .rule-summary-desc {
-  color: #6b7280;
+  color: var(--text-secondary);
   font-size: 13px;
 }
 
@@ -416,7 +416,7 @@ onMounted(() => {
 }
 
 .statistic-tabs {
-  background: #ffffff;
+  background: var(--card-bg);
   border-radius: 12px;
   padding: 24px;
 }
@@ -428,7 +428,7 @@ onMounted(() => {
 .section-title {
   font-size: 1.125rem;
   font-weight: 600;
-  color: #1f2937;
+  color: var(--text);
   margin: 0 0 20px 0;
 }
 
@@ -448,7 +448,7 @@ onMounted(() => {
 
 /* ==================== 评分人表格 ==================== */
 .scorer-list {
-  background: #ffffff;
+  background: var(--card-bg);
   border-radius: 8px;
   display: flex;
   flex-direction: column;
@@ -460,6 +460,6 @@ onMounted(() => {
 }
 
 .scorer-list :deep(.el-table) {
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--border);
 }
 </style>

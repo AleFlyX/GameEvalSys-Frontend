@@ -7,8 +7,8 @@
     <div class="stat-cards-wrapper">
       <!-- 卡片1：总项目数 -->
       <StatCard class="stat-card--metric" :label="`总项目数 ${loading ? '(加载中...)' : ''}`"
-        :value="platformStats.totalProjects.toString()" sub="累计提报项目" label-placement="body" icon-bg="transparent"
-        :icon-size="40" :icon-radius="12">
+        :value="platformStats.totalProjects.toString()" sub="累计提报项目" icon-bg="transparent" :icon-size="40"
+        :icon-radius="12">
         <template #icon>
           <div class="stat-icon indigo-icon">
             <el-icon color="#6366f1" size="20">
@@ -23,8 +23,8 @@
 
       <!-- 卡片2：新增评分 -->
       <StatCard class="stat-card--metric" :label="`新增评分 ${loading ? '(加载中...)' : ''}`"
-        :value="platformStats.totalScores.toString()" sub="本周新增评审" label-placement="body" icon-bg="transparent"
-        :icon-size="40" :icon-radius="12">
+        :value="platformStats.totalScores.toString()" sub="本周新增评审" icon-bg="transparent" :icon-size="40"
+        :icon-radius="12">
         <template #icon>
           <div class="stat-icon emerald-icon">
             <el-icon color="#10b981" size="20">
@@ -39,7 +39,7 @@
 
       <!-- 卡片3：平均项目得分 -->
       <StatCard class="stat-card--metric" label="平均项目得分" :value="platformStats.averageScore.toFixed(2)" sub="满分由打分标准决定"
-        label-placement="body" icon-bg="transparent" :icon-size="40" :icon-radius="12">
+        icon-bg="transparent" :icon-size="40" :icon-radius="12">
         <template #icon>
           <div class="stat-icon amber-icon">
             <el-icon color="#f59e0b" size="20">
@@ -140,10 +140,22 @@ const platformStats = ref({
 })
 
 const loading = ref(false)
+const themeToken = ref(0)
+
+const getThemeColor = (name, fallback) => {
+  if (typeof window === 'undefined') {
+    return fallback
+  }
+
+  const value = window.getComputedStyle(document.documentElement).getPropertyValue(name).trim()
+  return value || fallback
+}
 
 // -------------------------- 2. 图表配置函数 --------------------------
 // 趋势图配置（响应式）
 const trendsChartOption = computed(() => {
+  themeToken.value
+
   // 从API响应中获取日期，格式化为"月-日"
   const dateList = platformStats.value.dates.map(date => {
     const d = new Date(date)
@@ -162,17 +174,17 @@ const trendsChartOption = computed(() => {
       data: dateList,
       axisLine: { show: false },
       axisTick: { show: false },
-      axisLabel: { color: '#9ca3af', fontSize: 10 }
+      axisLabel: { color: getThemeColor('--text-disabled', '#9ca3af'), fontSize: 10 }
     },
     yAxis: [
       {
         type: 'value',
         name: '项目数',
         position: 'left',
-        splitLine: { lineStyle: { color: '#f3f4f6' } },
+        splitLine: { lineStyle: { color: getThemeColor('--border', '#f3f4f6') } },
         axisLine: { show: false },
         axisTick: { show: false },
-        axisLabel: { color: '#9ca3af', fontSize: 10 }
+        axisLabel: { color: getThemeColor('--text-disabled', '#9ca3af'), fontSize: 10 }
       },
       {
         type: 'value',
@@ -181,21 +193,21 @@ const trendsChartOption = computed(() => {
         splitLine: { show: false },
         axisLine: { show: false },
         axisTick: { show: false },
-        axisLabel: { color: '#9ca3af', fontSize: 10 }
+        axisLabel: { color: getThemeColor('--text-disabled', '#9ca3af'), fontSize: 10 }
       }
     ],
     tooltip: {
       trigger: 'axis',
-      backgroundColor: '#fff',
-      borderColor: '#f3f4f6',
+      backgroundColor: getThemeColor('--card-bg', '#fff'),
+      borderColor: getThemeColor('--border', '#f3f4f6'),
       borderWidth: 1,
-      textStyle: { color: '#1f2937' },
+      textStyle: { color: getThemeColor('--text', '#1f2937') },
       padding: [8, 12]
     },
     legend: {
       data: ['项目数', '评分数'],
       top: 10,
-      textStyle: { color: '#6b7280' }
+      textStyle: { color: getThemeColor('--text-secondary', '#6b7280') }
     },
     series: [
       {
@@ -206,15 +218,15 @@ const trendsChartOption = computed(() => {
         yAxisIndex: 0,
         symbol: 'circle',
         symbolSize: 5,
-        itemStyle: { color: '#6366f1' },
-        lineStyle: { width: 2, color: '#6366f1' },
+        itemStyle: { color: getThemeColor('--el-color-primary', '#6366f1') },
+        lineStyle: { width: 2, color: getThemeColor('--el-color-primary', '#6366f1') },
         areaStyle: {
           color: {
             type: 'linear',
             x: 0, y: 0, x2: 0, y2: 1,
             colorStops: [
-              { offset: 0, color: '#6366f120' },
-              { offset: 1, color: '#6366f100' }
+              { offset: 0, color: `${getThemeColor('--el-color-primary', '#6366f1')}20` },
+              { offset: 1, color: `${getThemeColor('--el-color-primary', '#6366f1')}00` }
             ]
           }
         }
@@ -227,15 +239,15 @@ const trendsChartOption = computed(() => {
         yAxisIndex: 1,
         symbol: 'circle',
         symbolSize: 5,
-        itemStyle: { color: '#10b981' },
-        lineStyle: { width: 2, color: '#10b981' },
+        itemStyle: { color: getThemeColor('--el-color-success', '#10b981') },
+        lineStyle: { width: 2, color: getThemeColor('--el-color-success', '#10b981') },
         areaStyle: {
           color: {
             type: 'linear',
             x: 0, y: 0, x2: 0, y2: 1,
             colorStops: [
-              { offset: 0, color: '#10b98120' },
-              { offset: 1, color: '#10b98100' }
+              { offset: 0, color: `${getThemeColor('--el-color-success', '#10b981')}20` },
+              { offset: 1, color: `${getThemeColor('--el-color-success', '#10b981')}00` }
             ]
           }
         }
@@ -278,6 +290,13 @@ const initCharts = async () => {
 // 窗口大小变化时重绘图表
 const handleResize = () => {
   trendsChart && trendsChart.resize()
+}
+
+const syncThemeChart = () => {
+  themeToken.value += 1
+  if (trendsChart) {
+    trendsChart.setOption(trendsChartOption.value, true)
+  }
 }
 
 // 监听图表数据变化
@@ -329,12 +348,22 @@ onMounted(() => {
     loadPlatformStatistics()
     initCharts()
     window.addEventListener('resize', handleResize)
+
+    const observer = new MutationObserver(syncThemeChart)
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['data-theme', 'class']
+    })
+
+    trendsChartRef.value?.__themeObserver && trendsChartRef.value.__themeObserver.disconnect?.()
+    trendsChartRef.value.__themeObserver = observer
   })
 })
 
 // 清理事件监听
 onUnmounted(() => {
   window.removeEventListener('resize', handleResize)
+  trendsChartRef.value?.__themeObserver?.disconnect?.()
 })
 </script>
 
@@ -343,15 +372,16 @@ onUnmounted(() => {
 .home-container {
   /* min-height: 100vh; */
   /* overflow-y: scroll; */
-  background-color: #f9fafb;
+  /* background-color: #f9fafb; */
   padding: 32px 24px;
+  background: var(--bg-primary);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
 }
 
 .page-title {
   font-size: 2rem;
   font-weight: 700;
-  color: #1f2937;
+  color: var(--text);
   margin: 0 0 32px 0;
   max-width: 1200px;
   margin-left: auto;
@@ -377,27 +407,6 @@ onUnmounted(() => {
   .stat-cards-wrapper {
     grid-template-columns: repeat(3, 1fr);
   }
-}
-
-.stat-card--metric {
-  --stat-card-bg: #ffffff;
-  --stat-card-radius: 16px;
-  --stat-card-padding: 24px;
-  --stat-card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-  --stat-card-hover-transform: translateY(-2px);
-  --stat-card-hover-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
-  --stat-head-gap: 16px;
-  --stat-label-size: 0.875rem;
-  --stat-label-color: #6b7280;
-  --stat-label-weight: 500;
-  --stat-label-margin: 0 0 4px 0;
-  --stat-value-size: 2rem;
-  --stat-value-color: #1f2937;
-  --stat-value-weight: 700;
-  --stat-value-margin: 0 0 4px 0;
-  --stat-sub-size: 0.875rem;
-  --stat-sub-color: #9ca3af;
-  --stat-sub-margin: 0 0 16px 0;
 }
 
 /* 将原有的 .stat-icon 及相关颜色类替换为以下代码 */
@@ -462,8 +471,9 @@ onUnmounted(() => {
 
 /* 图表卡片 */
 .chart-card {
-  background: #ffffff;
+  background: var(--card-bg);
   border-radius: 16px;
+  border: 1px solid var(--border);
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
   padding: 24px;
 }
@@ -475,13 +485,13 @@ onUnmounted(() => {
 .chart-title {
   font-size: 1.25rem;
   font-weight: 700;
-  color: #1f2937;
+  color: var(--text);
   margin: 0 0 4px 0;
 }
 
 .chart-subtitle {
   font-size: 0.875rem;
-  color: #6b7280;
+  color: var(--text-secondary);
   margin: 0;
 }
 
@@ -507,8 +517,9 @@ onUnmounted(() => {
 
 /* 汇总卡片 */
 .summary-card {
-  background: #ffffff;
+  background: var(--card-bg);
   border-radius: 16px;
+  border: 1px solid var(--border);
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
   padding: 24px;
   transition: all 0.3s ease;
@@ -536,15 +547,15 @@ onUnmounted(() => {
 .card-title {
   font-size: 1rem;
   font-weight: 700;
-  color: #1f2937;
+  color: var(--text);
   margin: 0;
   flex: 1;
 }
 
 .card-badge {
   display: inline-block;
-  background: #ecfdf5;
-  color: #059669;
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
   padding: 4px 12px;
   border-radius: 20px;
   font-size: 0.75rem;
@@ -569,7 +580,7 @@ onUnmounted(() => {
 
 .summary-item .label {
   font-size: 0.875rem;
-  color: #6b7280;
+  color: var(--text-secondary);
   margin-bottom: 8px;
   font-weight: 500;
 }
@@ -577,19 +588,19 @@ onUnmounted(() => {
 .summary-item .value {
   font-size: 2rem;
   font-weight: 700;
-  color: #1f2937;
+  color: var(--text);
 }
 
 .summary-item .unit {
   font-size: 0.875rem;
-  color: #9ca3af;
+  color: var(--text-disabled);
   margin-top: 4px;
 }
 
 .divider {
   width: 1px;
   height: 60px;
-  background: #e5e7eb;
+  background: var(--border);
 }
 
 /* 洞察卡片和建议卡片 */
@@ -599,11 +610,11 @@ onUnmounted(() => {
 }
 
 .emerald-bg {
-  background-color: #d1fae5;
+  background-color: rgba(16, 185, 129, 0.12);
 }
 
 .indigo-bg {
-  background-color: #e0e7ff;
+  background-color: rgba(99, 102, 241, 0.12);
 }
 
 /* 列表样式 */
