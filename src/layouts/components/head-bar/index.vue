@@ -1,6 +1,6 @@
 <template>
   <div>
-    <header>
+    <header class="head-bar">
       <span class="title" :title="title">
         {{ title }}
       </span>
@@ -8,18 +8,49 @@
       <div class="header-right">
         <div class="not-login" v-if="!userStore.isLogin">
           <button class="header-btn" @click="goto('/login')">登录</button>
-          <!-- <button>注册</button> -->
         </div>
+
         <div class="personal-info" v-if="userStore.isLogin">
-          <div class="avatar" tabindex="0" aria-label="用户菜单">
-            <p class="avatar-text">{{ avatarText }}</p>
-            <ul class="dropdown">
-              <li @click="openProfileModal">个人信息</li>
-              <li @click="goto('/about')">关于OJ</li>
-              <li @click="logout()" style="color:#cc3300;">退出登录</li>
-            </ul>
-          </div>
-          <p class="username">{{ username }},欢迎</p>
+          <el-dropdown trigger="click" @command="handleCommand" placement="bottom-end">
+            <div class="user-trigger">
+              <el-avatar :size="34" class="avatar-gradient">
+                <span class="avatar-text">{{ avatarText }}</span>
+              </el-avatar>
+              <span class="username">{{ username }}</span>
+              <el-icon class="dropdown-icon">
+                <Setting />
+              </el-icon>
+            </div>
+
+            <template #dropdown>
+              <el-dropdown-menu class="modern-dropdown">
+                <div class="dropdown-header">
+                  <div class="header-info">
+                    <span class="header-name">{{ username }}</span>
+                    <span class="header-role">{{ userRoleName }}</span>
+                  </div>
+                </div>
+
+                <el-dropdown-item command="profile">
+                  <el-icon>
+                    <User />
+                  </el-icon>个人信息
+                </el-dropdown-item>
+
+                <el-dropdown-item command="about">
+                  <el-icon>
+                    <Link />
+                  </el-icon>关于OJ实验室
+                </el-dropdown-item>
+
+                <el-dropdown-item divided command="logout" class="danger-item">
+                  <el-icon>
+                    <SwitchButton />
+                  </el-icon>退出登录
+                </el-dropdown-item>
+              </el-dropdown-menu>
+            </template>
+          </el-dropdown>
         </div>
       </div>
     </header>
@@ -30,7 +61,7 @@
       </template>
       <template #form>
         <UserForm v-loading="submitPwdLoading" ref="profileFormRef" :init-data="profileData" :edit-mode="false"
-          :user-self-edit-mode="true" :read-only="true">
+          :user-self-edit-mode="true" :read-only="true" style="padding: 10px;">
         </UserForm>
       </template>
       <template #operations>
@@ -52,6 +83,7 @@ import { useUserStore } from "@/stores/modules/userStore";
 import { useLoading } from "@/composables/useLoading";
 import { useMessage } from "@/composables/useMessage";
 import { userApi } from "@/api/user";
+import { elementIconMap } from "@/utils/elementIcons";
 
 import BaseFormModal from "@/components/common/modal/BaseFormModal.vue";
 import UserForm from "@/components/business/user/user-form/UserForm.vue";
@@ -60,6 +92,8 @@ import { removeSpacesFromObject } from "@/utils/removeSpacesFromData";
 defineOptions({
   name: "HeadBar"
 });
+
+const { User, SwitchButton, Setting, Link } = elementIconMap;
 
 const route = useRoute();
 const router = useRouter();
@@ -72,6 +106,15 @@ const title = computed(() => {
 
 const username = computed(() => userStore.userInfo?.username || "");
 const avatarText = computed(() => (username.value?.[0] || "U").toUpperCase());
+const userRoleName = computed(() => {
+  const roleMap = {
+    super_admin: '超级管理员',
+    admin: '管理员',
+    scorer: '打分员',
+    normal: '普通用户'
+  };
+  return roleMap[userStore.userRole] || '用户';
+});
 
 const showProfileModal = ref(false);
 const profileFormRef = ref(null);
@@ -139,192 +182,183 @@ const logout = async () => {
   await logOutWithLoading(userStore.logout);
 }
 
+const handleCommand = (command) => {
+  if (command === 'profile') {
+    openProfileModal();
+  } else if (command === 'about') {
+    goto('/about');
+  } else if (command === 'logout') {
+    logout();
+  }
+};
+
 </script>
 <style scoped>
-header {
+.head-bar {
   position: relative;
   z-index: 100;
   width: 100%;
   box-sizing: border-box;
-  background-color: var(--light-background);
-  padding: 0 16px;
-  min-height: 56px;
+  background-color: var(--card-bg, #ffffff);
+  padding: 0 24px;
+  min-height: 60px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
-  overflow: visible;
+  border-bottom: 1px solid var(--border-color, #f0f0f0);
 }
 
 .title {
-  padding: 4px 0;
-  font-size: 20px;
-  line-height: 1.2;
-  font-weight: 700;
-  color: #1f2937;
-  letter-spacing: 0.2px;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary, #1f2937);
+  letter-spacing: 0.3px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-}
-
-.not-login {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.header-btn {
-  width: 80px;
-  height: 34px;
-  background: var(--primary);
-  border: none;
-  border-radius: 999px;
-  color: rgba(255, 255, 255, 0.95);
-  font-size: 14px;
-  font-weight: 600;
-  transition: all 0.22s ease;
-}
-
-.header-btn:hover {
-  cursor: pointer;
-  transform: translateY(-1px);
-  box-shadow: 0 6px 16px var(--primary-box-shadow);
 }
 
 .header-right {
-  min-height: 40px;
   display: flex;
   align-items: center;
-  justify-content: flex-end;
-  flex: 1;
-  overflow: visible;
 }
 
-.personal-info {
+/* User Trigger */
+.user-trigger {
   display: flex;
+  align-items: center;
   gap: 10px;
-  align-items: center;
-  position: relative;
-  overflow: visible;
+  padding: 4px 10px;
+  border-radius: 99px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+  border: none;
+  outline: none;
 }
 
-.personal-info .username {
+.user-trigger:hover {
+  background-color: var(--bg-hover, rgba(0, 0, 0, 0.04));
+}
+
+html[data-theme="dark"] .user-trigger:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+.avatar-gradient {
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  color: white;
+  border: 2px solid transparent;
+  box-shadow: 0 4px 10px rgba(37, 99, 235, 0.2);
+}
+
+.avatar-text {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.username {
   font-size: 14px;
-  font-weight: 600;
-  color: #374151;
-  max-width: 220px;
+  font-weight: 500;
+  color: var(--text-regular, #4b5563);
+  max-width: 120px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.avatar {
-  height: 35px;
-  width: 35px;
-  position: relative;
-  z-index: 120;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #36a2ff 0%, #1f7bd7 100%);
-  box-shadow: 0 4px 12px rgba(54, 162, 255, 0.4);
-  color: #fff;
-  cursor: pointer;
-  user-select: none;
-  outline: none;
-}
-
-.avatar-text {
+.dropdown-icon {
+  color: var(--text-secondary, #9ca3af);
   font-size: 14px;
-  font-weight: 700;
-  line-height: 1;
+  transition: transform 0.3s ease;
 }
 
-.avatar:hover,
-.avatar:focus-visible {
-  transform: translateY(-1px);
-  box-shadow: 0 8px 18px rgba(1, 166, 255, 0.55);
-  transition: all 0.24s ease;
+.user-trigger:hover .dropdown-icon {
+  color: var(--text-primary, #1f2937);
 }
 
-.dropdown {
-  left: 50%;
-  top: 100%;
-  width: 140px;
-  position: absolute;
-  padding-top: 8px;
-  opacity: 0;
-  transform: translate(-50%, -4px);
-  pointer-events: none;
-  transition: all 0.2s ease;
-  z-index: 2000;
-  margin: 0;
+/* Dropdown Menu overrides */
+:global(.modern-dropdown) {
+  padding: 6px 0 !important;
+  min-width: 180px;
 }
 
-.dropdown::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  right: 0;
-  left: 0;
-  height: 10px;
+:global(.modern-dropdown .dropdown-header) {
+  padding: 10px 16px 12px;
+  margin-bottom: 4px;
+  border-bottom: 1px solid var(--border-light, #f3f4f6);
 }
 
-.dropdown li {
-  list-style: none;
+html[data-theme="dark"] :global(.modern-dropdown .dropdown-header) {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+:global(.modern-dropdown .header-info) {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+:global(.modern-dropdown .header-name) {
+  font-size: 14px;
   font-weight: 600;
-  text-align: center;
-  margin-top: 4px;
-  border-radius: 8px;
-  line-height: 40px;
-  background-color: rgb(252, 252, 252);
-  box-shadow: 0 4px 12px var(--gray-box-shadow);
-  color: #374151;
+  color: var(--text-primary, #111827);
 }
 
-.dropdown li:hover {
-  background-color: rgb(214, 244, 255);
-  box-shadow: 0 6px 14px rgba(1, 166, 255, 0.45);
-  transition: 0.2s;
+:global(.modern-dropdown .header-role) {
+  font-size: 12px;
+  color: var(--text-secondary, #6b7280);
 }
 
-.avatar:hover .dropdown,
-.avatar:focus-within .dropdown,
-.personal-info:hover .dropdown,
-.personal-info:focus-within .dropdown,
-.dropdown:hover {
-  opacity: 1;
-  transform: translate(-50%, 0);
-  pointer-events: auto;
+:global(.modern-dropdown .danger-item) {
+  color: var(--danger, #ef4444);
+}
+
+:global(.modern-dropdown .danger-item:hover) {
+  color: var(--danger-hover, #dc2626) !important;
+  background-color: var(--danger-light, #fef2f2) !important;
+}
+
+html[data-theme="dark"] :global(.modern-dropdown .danger-item:hover) {
+  background-color: rgba(239, 68, 68, 0.1) !important;
+}
+
+.header-btn {
+  padding: 0 20px;
+  height: 36px;
+  background: var(--primary, #3b82f6);
+  border: none;
+  border-radius: 18px;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.header-btn:hover {
+  background: var(--primary-hover, #2563eb);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
 }
 
 @media (max-width: 768px) {
-  header {
-    min-height: 52px;
-    padding: 0 12px;
-    gap: 10px;
+  .head-bar {
+    padding: 0 16px;
+    min-height: 54px;
   }
 
   .title {
-    font-size: 17px;
-    max-width: 56vw;
+    font-size: 16px;
   }
 
-  .personal-info .username {
+  .username,
+  .dropdown-icon {
     display: none;
   }
 
-  .not-login {
-    gap: 8px;
-  }
-
-  .header-btn {
-    width: 72px;
-    height: 32px;
-    font-size: 13px;
+  .user-trigger {
+    padding: 2px;
   }
 }
 </style>
