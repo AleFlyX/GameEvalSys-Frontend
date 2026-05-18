@@ -42,9 +42,7 @@
   min-height: 100vh;
   padding: 32px 0 28px;
   box-sizing: border-box;
-  background:
-    radial-gradient(circle at top left, rgba(47, 107, 255, 0.08), transparent 28%),
-    linear-gradient(180deg, #f4f7fb 0%, #eff4fa 100%);
+  background: var(--bg-primary);
 }
 
 .panel-header,
@@ -82,12 +80,10 @@
   gap: 24px;
   box-sizing: border-box;
   border-radius: 24px;
-  border: 1px solid rgba(225, 233, 244, 0.95);
-  background: rgba(255, 255, 255, 0.9);
-  box-shadow:
-    0 20px 48px rgba(31, 42, 68, 0.08),
-    0 2px 10px rgba(31, 42, 68, 0.04);
-  backdrop-filter: blur(10px);
+  border: 1px solid var(--border);
+  background: var(--card-bg);
+  box-shadow: var(--card-shadow);
+  backdrop-filter: var(--card-backdrop);
 }
 
 .panel-footer {

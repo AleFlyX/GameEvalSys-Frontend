@@ -135,7 +135,7 @@ watch(
   min-height: 40px;
   font-size: 14px;
   font-weight: 600;
-  color: #253041;
+  color: var(--text, #253041);
   border-radius: 12px;
   margin: 2px 4px;
   padding: 0 12px;

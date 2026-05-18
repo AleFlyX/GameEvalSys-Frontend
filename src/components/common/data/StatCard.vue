@@ -134,7 +134,7 @@ html[data-theme="dark"] .stat-card:hover {
 
 .stat-label {
   font-size: var(--stat-label-size, 13px);
-  color: var(--text-secondary, #66758a);
+  color: var(--text-secondary);
   font-weight: var(--stat-label-weight, 400);
   margin: var(--stat-label-margin, 0);
 }
@@ -143,14 +143,14 @@ html[data-theme="dark"] .stat-card:hover {
   margin: var(--stat-value-margin, 16px 0 4px);
   font-size: var(--stat-value-size, 34px);
   font-weight: var(--stat-value-weight, 700);
-  color: var(--text-primary, #1f2f46);
+  color: var(--text);
   line-height: 1;
 }
 
 .stat-sub {
   margin: var(--stat-sub-margin, 0);
   font-size: var(--stat-sub-size, 12px);
-  color: var(--text-disabled, #9aa8bb);
+  color: var(--text-disabled);
 }
 
 @keyframes fadeUp {
