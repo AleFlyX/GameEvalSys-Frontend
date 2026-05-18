@@ -1,43 +1,61 @@
 <template>
   <div class="user-selection-table">
-    <!-- 工具栏：搜索 + 筛选 + 快捷操作 -->
-    <div class="toolbar">
-      <div class="search-filter">
-        <el-input v-model="searchKeyword" placeholder="搜索用户名或昵称..." clearable style="width: 250px"
-          @input="handleSearch">
-          <template #prefix>
-            <el-icon>
-              <search />
-            </el-icon>
-          </template>
-        </el-input>
+    <section class="selection-summary-panel">
+      <div class="summary-item">
+        <span>已选成员</span>
+        <strong>{{ selectedIds.length }}</strong>
+      </div>
+      <div class="summary-item">
+        <span>当前页已选</span>
+        <strong>{{ selectedRows.length }}</strong>
+      </div>
+      <div class="summary-item">
+        <span>搜索结果</span>
+        <strong>{{ total }}</strong>
+      </div>
+    </section>
 
-        <el-select v-model="selectedRole" placeholder="筛选角色" clearable style="width: 180px; margin-left: 10px"
-          @change="handleRoleFilterChange">
-          <el-option v-for="role in availableRoles" :key="role.value" :label="role.label" :value="role.value" />
-        </el-select>
+    <div class="toolbar-grid">
+      <div class="toolbar-card">
+        <div class="toolbar-label">搜索筛选</div>
+        <div class="search-filter">
+          <el-input v-model="searchKeyword" placeholder="搜索用户名或昵称..." clearable class="search-input"
+            @input="handleSearch">
+            <template #prefix>
+              <el-icon>
+                <search />
+              </el-icon>
+            </template>
+          </el-input>
 
-        <el-checkbox v-model="showDisabled" @change="handleShowDisabledChange" style="margin-left: 15px">
-          显示已禁用用户
-        </el-checkbox>
+          <el-select v-model="selectedRole" placeholder="筛选角色" clearable class="role-select"
+            @change="handleRoleFilterChange">
+            <el-option v-for="role in availableRoles" :key="role.value" :label="role.label" :value="role.value" />
+          </el-select>
+
+          <el-checkbox v-model="showDisabled" @change="handleShowDisabledChange">
+            显示已禁用用户
+          </el-checkbox>
+        </div>
       </div>
 
-      <div class="batch-actions">
-        <span class="selection-summary">已选: {{ selectedRows.length }} / {{ tableData.length }} 人</span>
-        <el-button size="small" type="primary" :disabled="tableData.length === 0" @click="handleSelectAll">
-          全选
-        </el-button>
-        <el-button size="small" :disabled="selectedRows.length === 0" @click="handleClearSelection">
-          清空
-        </el-button>
-        <el-button size="small" :disabled="selectedRows.length === 0 || tableData.length === selectedRows.length"
-          @click="handleInvertSelection">
-          反选
-        </el-button>
+      <div class="toolbar-card toolbar-card--actions">
+        <div class="toolbar-label">批量操作</div>
+        <div class="batch-actions">
+          <el-button size="small" type="primary" :disabled="tableData.length === 0" @click="handleSelectAll">
+            全选本页
+          </el-button>
+          <el-button size="small" :disabled="selectedRows.length === 0" @click="handleClearSelection">
+            清空本页
+          </el-button>
+          <el-button size="small" :disabled="selectedRows.length === 0 || tableData.length === selectedRows.length"
+            @click="handleInvertSelection">
+            反选本页
+          </el-button>
+        </div>
       </div>
     </div>
 
-    <!-- 用户表格 -->
     <div class="table-container">
       <el-table ref="tableRef" v-loading="loading" :data="tableData" row-key="id" style="width: 100%" stripe
         :reserve-selection="true" @selection-change="handleSelectionChange">
@@ -60,7 +78,6 @@
       </el-table>
     </div>
 
-    <!-- 分页 -->
     <div class="pagination-container">
       <el-pagination v-model:current-page="currentPage" v-model:page-size="pageSize" :page-sizes="[10, 20, 30, 50]"
         :disabled="false" :total="total" layout="sizes, prev, pager, next" @size-change="handleSizeChange"
@@ -313,55 +330,110 @@ defineExpose({
 .user-selection-table {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 16px;
   width: 100%;
 }
 
-.toolbar {
+.selection-summary-panel {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.summary-item {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding: 12px;
-  background-color: #f5f7fa;
-  border-radius: 4px;
-  flex-shrink: 0;
+  gap: 4px;
+  padding: 14px 16px;
+  background: var(--el-fill-color-light);
+  border: 1px solid var(--el-border-color-lighter);
+  border-radius: 12px;
+}
+
+.summary-item span {
+  color: var(--el-text-color-secondary);
+  font-size: 13px;
+}
+
+.summary-item strong {
+  color: var(--el-text-color-primary);
+  font-size: 22px;
+  line-height: 1.2;
+}
+
+.toolbar-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.4fr);
+  gap: 12px;
+}
+
+.toolbar-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 16px;
+  background: #fff;
+  border: 1px solid var(--el-border-color-lighter);
+  border-radius: 12px;
+}
+
+.toolbar-card--actions {
+  min-width: 0;
+}
+
+.toolbar-label {
+  color: var(--el-text-color-secondary);
+  font-size: 13px;
+  font-weight: 600;
 }
 
 .search-filter {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   flex-wrap: wrap;
+}
+
+.search-input {
+  width: 250px;
+}
+
+.role-select {
+  width: 180px;
 }
 
 .batch-actions {
   display: flex;
   align-items: center;
-  gap: 8px;
-  justify-content: flex-end;
+  gap: 10px;
   flex-wrap: wrap;
 }
 
-.selection-summary {
-  margin-right: 8px;
-  font-weight: 500;
-  color: #606266;
+.batch-actions :deep(.el-button) {
+  margin-left: 0;
+}
+
+.batch-actions :deep(.el-button:first-child) {
+  margin-left: auto;
+}
+
+.batch-actions :deep(.el-checkbox) {
   white-space: nowrap;
 }
 
 .table-container {
-  border: 1px solid #ebeef5;
-  border-radius: 4px;
-  overflow: auto;
+  border: 1px solid var(--el-border-color-lighter);
+  border-radius: 12px;
+  overflow: hidden;
   flex: 1;
   min-height: 200px;
-  max-height: 350px;
+  max-height: 360px;
 }
 
 .pagination-container {
   display: flex;
   justify-content: flex-end;
-  padding: 8px 0;
+  padding: 2px 2px 0;
   flex-shrink: 0;
 }
 
@@ -382,5 +454,22 @@ defineExpose({
 /* 优化分页样式 */
 :deep(.el-pagination) {
   justify-content: flex-end;
+}
+
+@media (max-width: 960px) {
+
+  .selection-summary-panel,
+  .toolbar-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .search-input,
+  .role-select {
+    width: 100%;
+  }
+
+  .batch-actions :deep(.el-button:first-child) {
+    margin-left: 0;
+  }
 }
 </style>
