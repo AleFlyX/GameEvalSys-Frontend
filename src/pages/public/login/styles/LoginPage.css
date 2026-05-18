@@ -9,69 +9,168 @@
   width: 100%;
   min-height: 100vh;
   min-height: 100dvh;
-  padding: 24px;
-  box-sizing: border-box;
   position: relative;
   overflow: hidden;
   background-color: var(--bg-primary);
-  background-image:
-    radial-gradient(circle at 14% 18%, var(--bg-gradient-1) 0%, rgba(14, 165, 233, 0) 45%),
-    radial-gradient(circle at 84% 82%, var(--bg-gradient-2) 0%, rgba(59, 130, 246, 0) 48%),
-    linear-gradient(145deg, #f8fbff 0%, #eef4ff 46%, #f9fbff 100%);
   display: flex;
-  align-items: center;
-  justify-content: center;
   transition: background-color 0.3s ease;
 }
 
 html[data-theme="dark"] .login-page {
-  background-color: var(--bg-primary);
+  background-color: var(--bg-color); /* better adaptability */
+}
+
+/* ============ 侧边面板区 ============ */
+.login-brand-panel {
+  flex: 1;
+  position: relative;
+  background: linear-gradient(135deg, #caf2ff 0%, #5476ff 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  color: #fff;
+  padding: 40px;
+}
+
+.brand-bg-pattern {
+  position: absolute;
+  inset: 0;
   background-image:
-    radial-gradient(circle at 14% 18%, var(--bg-gradient-1) 0%, rgba(10, 90, 200, 0) 45%),
-    radial-gradient(circle at 84% 82%, var(--bg-gradient-2) 0%, rgba(59, 130, 246, 0) 48%);
+    radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.15) 0%, transparent 40%),
+    radial-gradient(circle at 80% 70%, rgba(34, 211, 238, 0.3) 0%, transparent 45%);
+  pointer-events: none;
 }
 
-/* ============ 登录卡片 ============ */
+html[data-theme="dark"] .login-brand-panel {
+  background: linear-gradient(135deg, #09101d 0%, #0d1e34 100%);
+}
+
+html[data-theme="dark"] .brand-bg-pattern {
+  background-image:
+    radial-gradient(circle at 20% 30%, rgba(37, 99, 235, 0.3) 0%, transparent 40%),
+    radial-gradient(circle at 80% 70%, rgba(14, 165, 233, 0.15) 0%, transparent 45%);
+}
+
+.brand-content {
+  position: relative;
+  z-index: 1;
+  max-width: 480px;
+  animation: fade-up 0.6s ease;
+}
+
+.brand-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.logo-box {
+  width: 48px;
+  height: 48px;
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  color: white;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
+}
+
+html[data-theme="dark"] .logo-box {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  border: none;
+  box-shadow: 0 8px 16px rgba(37, 99, 235, 0.3);
+}
+
+.brand-title {
+  font-size: 32px;
+  font-weight: 600;
+  margin: 0;
+  letter-spacing: 0.5px;
+}
+
+.brand-slogan {
+  font-size: 18px;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.85);
+  margin-bottom: 48px;
+}
+
+.feature-list {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.feature-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.feature-item .el-icon {
+  font-size: 24px;
+  color: #fff;
+  margin-top: 2px;
+}
+
+html[data-theme="dark"] .feature-item .el-icon {
+  color: #60a5fa;
+}
+
+.feature-item h3 {
+  margin: 0 0 4px;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.feature-item p {
+  margin: 0;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.6);
+  line-height: 1.5;
+}
+
+/* ============ 登录表单区 ============ */
+.login-form-panel {
+  flex: 0 0 540px;
+  width: 540px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-primary);
+  padding: 40px;
+  position: relative;
+}
+
 .login-card {
-  width: min(100%, 420px);
-  padding: 40px 32px 30px;
-  background: var(--card-bg);
-  border: var(--card-border);
-  border-radius: 18px;
-  box-shadow: var(--card-shadow);
-  backdrop-filter: var(--card-backdrop);
+  width: 100%;
+  max-width: 400px;
   animation: fade-up 0.5s ease;
-  transition: all 0.3s ease;
-}
-
-.login-card:hover {
-  box-shadow:
-    var(--card-shadow),
-    0 0 20px rgba(37, 99, 235, 0.1);
-}
-
-html[data-theme="dark"] .login-card:hover {
-  box-shadow: var(--card-shadow);
 }
 
 /* ============ 标题和副标题 ============ */
+.login-card-header {
+  margin-bottom: 32px;
+}
+
 .login-title {
-  text-align: center;
-  margin: 0;
+  margin: 0 0 8px;
   color: var(--text);
   font-size: 28px;
   font-weight: 600;
   letter-spacing: 0.5px;
-  transition: color 0.3s ease;
 }
 
 .login-subtitle {
-  margin: 10px 0 22px;
-  text-align: center;
+  margin: 0;
   color: var(--text-secondary);
-  font-size: 16px;
-  font-weight: 400;
-  transition: color 0.3s ease;
+  font-size: 15px;
 }
 
 /* ============ 主题切换按钮 ============ */
@@ -148,6 +247,43 @@ html[data-theme="dark"] .login-card:hover {
 .el-form-item__error {
   color: var(--error);
   font-size: 12px;
+}
+
+/* ============ 响应式 ============ */
+@media (max-width: 992px) {
+  .login-brand-panel {
+    display: none;
+  }
+
+  .login-form-panel {
+    flex: 1;
+    width: 100%;
+    padding: 24px;
+    background-image:
+      radial-gradient(circle at 14% 18%, var(--bg-gradient-1) 0%, rgba(14, 165, 233, 0) 45%),
+      radial-gradient(circle at 84% 82%, var(--bg-gradient-2) 0%, rgba(59, 130, 246, 0) 48%),
+      linear-gradient(145deg, #f8fbff 0%, #eef4ff 46%, #f9fbff 100%);
+  }
+
+  html[data-theme="dark"] .login-form-panel {
+    background-image:
+      radial-gradient(circle at 14% 18%, var(--bg-gradient-1) 0%, rgba(10, 90, 200, 0) 45%),
+      radial-gradient(circle at 84% 82%, var(--bg-gradient-2) 0%, rgba(59, 130, 246, 0) 48%);
+  }
+
+  .login-card {
+    background: var(--card-bg);
+    border: var(--card-border);
+    border-radius: 18px;
+    box-shadow: var(--card-shadow);
+    backdrop-filter: var(--card-backdrop);
+    padding: 40px 32px 30px;
+  }
+
+  .login-title,
+  .login-subtitle {
+    text-align: center;
+  }
 }
 
 .el-input__wrapper {

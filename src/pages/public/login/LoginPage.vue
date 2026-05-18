@@ -11,21 +11,63 @@
       <span>{{ isDarkMode ? '浅色' : '暗黑' }}</span>
     </div>
 
-    <!-- 登录卡片 -->
-    <div class="login-card">
-      <h2 class="login-title">课题项目打分系统</h2>
-      <p class="login-subtitle">欢迎回来，请登录后继续使用</p>
+    <!-- 左侧品牌展示区 -->
+    <div class="login-brand-panel">
+      <div class="brand-bg-pattern"></div>
+      <div class="brand-content">
+        <div class="brand-header">
+          <BrandIcon size="large" :is-collapsed="true" />
+          <!-- <div class="logo-box">
+            <el-icon>
+              <DataAnalysis />
+            </el-icon>
+          </div> -->
+          <h1 class="brand-title">课题项目打分系统</h1>
+        </div>
+        <p class="brand-slogan">为项目评审提供高效、透明、标准化的评估体验</p>
 
-      <!-- 登录表单 -->
-      <LoginForm ref="formRef" v-model="loginForm" :rules="loginRules" :loading="isLoading"
-        :default-data="lastLoginAccount" @submit="handleFormSubmit" @forgot-password="handleForgotPassword">
-        <!-- 记住我复选框插槽 -->
-        <template #remember>
-          <RememberMeCheckbox :dark-mode="isDarkMode" v-model="rememberMe" :history-list="accountHistory"
-            :max-history="5" @select-account="handleSelectAccount" @remove-account="handleRemoveAccount"
-            @clear-history="handleClearHistory" />
-        </template>
-      </LoginForm>
+        <div class="feature-list">
+          <div class="feature-item">
+            <el-icon>
+              <DataLine />
+            </el-icon>
+            <div>
+              <h3>多维度评分体系</h3>
+              <p>支持多指标体系灵活配置</p>
+            </div>
+          </div>
+          <div class="feature-item">
+            <el-icon>
+              <Checked />
+            </el-icon>
+            <div>
+              <h3>评审流程标准化</h3>
+              <p>状态实时追踪，任务一目了然</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 右侧表单区 -->
+    <div class="login-form-panel">
+      <div class="login-card">
+        <div class="login-card-header">
+          <h2 class="login-title">欢迎回来</h2>
+          <p class="login-subtitle">请登录您的系统账号进行操作</p>
+        </div>
+
+        <!-- 登录表单 -->
+        <LoginForm ref="formRef" v-model="loginForm" :rules="loginRules" :loading="isLoading"
+          :default-data="lastLoginAccount" @submit="handleFormSubmit" @forgot-password="handleForgotPassword">
+          <!-- 记住我复选框插槽 -->
+          <template #remember>
+            <RememberMeCheckbox :dark-mode="isDarkMode" v-model="rememberMe" :history-list="accountHistory"
+              :max-history="5" @select-account="handleSelectAccount" @remove-account="handleRemoveAccount"
+              @clear-history="handleClearHistory" />
+          </template>
+        </LoginForm>
+      </div>
     </div>
 
     <!-- 滑块验证组件 -->
@@ -49,11 +91,12 @@ import SlideBlock from './components/slideBlock.vue';
 
 // 导入 Composables
 import { useLoginForm } from './composables/useLoginForm.js';
-import { useLoginTheme } from './composables/useLoginTheme.js';
+import { useTheme } from '../../../composables/useTheme.js';
 import { useLoginHistory } from './composables/useLoginHistory.js';
+import BrandIcon from '@/layouts/components/side-bar/components/BrandIcon.vue';
 
 // 获取图标
-const { Sunny, Moon } = elementIconMap;
+const { Sunny, Moon, DataLine, CircleCheck: Checked } = elementIconMap;
 
 // ============ 路由和状态管理 ============
 const router = useRouter();
@@ -67,7 +110,7 @@ const {
   toggleTheme,
   initTheme,
   initStorageListener
-} = useLoginTheme();
+} = useTheme();
 const {
   accountHistory,
   rememberMe,
