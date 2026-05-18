@@ -1,5 +1,5 @@
 <template>
-  <button class="btn" :class="[
+  <button :type="nativeType" class="btn" :class="[
     `btn--${type || 'default'}`,
     `btn--${size}`,
     {
@@ -18,6 +18,10 @@ const props = defineProps({
   type: {
     type: String,
     default: '',
+  },
+  nativeType: {
+    type: String,
+    default: 'button',
   },
   size: {
     type: String,
@@ -49,8 +53,8 @@ const handleClick = (e) => {
   gap: 8px;
   border-radius: 12px;
   border: 1px solid transparent;
-  background: #f8fafc;
-  color: #54657f;
+  background: var(--bg-secondary, #f8fafc);
+  color: var(--text-secondary, #54657f);
   font-weight: 600;
   cursor: pointer;
   white-space: nowrap;
@@ -86,15 +90,26 @@ const handleClick = (e) => {
 }
 
 .btn--default {
-  background-color: #f8fafc;
-  color: #54657f;
-  border-color: #dbe4f0;
+  background-color: var(--bg-secondary, #f8fafc);
+  color: var(--text-secondary, #54657f);
+  border-color: var(--border, #dbe4f0);
+}
+
+html[data-theme="dark"] .btn--default {
+  background-color: var(--bg-secondary, #2c2c2c);
+  /* color: var(--text-secondary, #97a6bb);
+  border-color: var(--border, #4c4c4c); */
 }
 
 .btn--default:hover:not(:disabled) {
-  background-color: #eef4fb;
-  border-color: #c9d7e8;
+  background-color: var(--bg-primary, #eef4fb);
+  border-color: var(--border, #c9d7e8);
   transform: translateY(-1px);
+}
+
+html[data-theme="dark"] .btn--default:hover:not(:disabled) {
+  background-color: var(--bg-hover, #2c2c2c);
+  border-color: var(--border-hover, #4c4c4c);
 }
 
 .btn--primary {
@@ -103,10 +118,18 @@ const handleClick = (e) => {
   box-shadow: 0 10px 24px rgba(47, 107, 255, 0.18);
 }
 
+html[data-theme="dark"] .btn--primary {
+  box-shadow: 0 10px 24px rgba(47, 107, 255, 0.4);
+}
+
 .btn--primary:hover:not(:disabled) {
   transform: translateY(-1px);
   filter: brightness(1.03);
   box-shadow: 0 14px 28px rgba(47, 107, 255, 0.24);
+}
+
+html[data-theme="dark"] .btn--primary:hover:not(:disabled) {
+  box-shadow: 0 14px 28px rgba(47, 107, 255, 0.5);
 }
 
 .btn--danger {
@@ -120,6 +143,10 @@ const handleClick = (e) => {
   filter: brightness(1.03);
 }
 
+html[data-theme="dark"] .btn--danger {
+  box-shadow: 0 10px 24px rgba(239, 107, 107, 0.4);
+}
+
 .btn--warning {
   background: linear-gradient(135deg, #f59e0b 0%, #f6b73c 100%);
   color: #fff;
@@ -131,29 +158,41 @@ const handleClick = (e) => {
   filter: brightness(1.03);
 }
 
+html[data-theme="dark"] .btn--warning {
+  box-shadow: 0 10px 24px rgba(245, 158, 11, 0.4);
+}
+
 .btn--link {
   min-height: auto;
   padding: 0;
   border: none;
   background: transparent;
-  color: #2f6bff;
+  color: var(--primary, #2f6bff);
   box-shadow: none;
 }
 
 .btn--link:hover:not(:disabled) {
-  color: #1f57df;
+  color: var(--primary-havy, #1f57df);
 }
 
 .btn--pro {
-  background: linear-gradient(180deg, #ffffff 0%, #eef3fb 100%);
-  color: #1f2a44;
-  border-color: #d8e2ef;
+  background: var(--card-bg, linear-gradient(180deg, #ffffff 0%, #eef3fb 100%));
+  color: var(--text-primary, #1f2a44);
+  border-color: var(--border, #d8e2ef);
   box-shadow: 0 12px 26px rgba(31, 42, 68, 0.08);
+}
+
+html[data-theme="dark"] .btn--pro {
+  box-shadow: 0 12px 26px rgba(0, 0, 0, 0.4);
 }
 
 .btn--pro:hover:not(:disabled) {
   transform: translateY(-1px);
   box-shadow: 0 16px 30px rgba(31, 42, 68, 0.12);
+}
+
+html[data-theme="dark"] .btn--pro:hover:not(:disabled) {
+  box-shadow: 0 16px 30px rgba(0, 0, 0, 0.5);
 }
 
 .btn:disabled,

@@ -41,8 +41,8 @@ defineProps({
 
 <style scoped>
 .base-card {
-  --card-surface: rgba(255, 255, 255, 0.92);
-  --card-border: rgba(225, 233, 244, 0.95);
+  --card-surface: var(--card-bg, rgba(255, 255, 255, 0.92));
+  --card-border: var(--border, rgba(225, 233, 244, 0.95));
   --card-shadow: 0 10px 28px rgba(31, 42, 68, 0.08);
   --card-radius: 16px;
   --card-padding: 18px;
@@ -51,22 +51,27 @@ defineProps({
   padding: var(--card-padding);
   box-sizing: border-box;
   background: var(--card-surface);
+  color: var(--text, inherit);
   border: 1px solid transparent;
   box-shadow: none;
   animation: fadeUp 0.5s ease both;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
+}
+
+html[data-theme="dark"] .base-card {
+  --card-shadow: 0 10px 28px rgba(0, 0, 0, 0.4);
 }
 
 .base-card.variant-soft {
-  --card-surface: rgba(248, 251, 255, 0.96);
+  --card-surface: var(--bg-secondary, rgba(248, 251, 255, 0.96));
 }
 
 .base-card.variant-outline {
-  background: rgba(255, 255, 255, 0.86);
+  background: var(--card-bg, rgba(255, 255, 255, 0.86));
 }
 
 .base-card.variant-highlight {
-  background: linear-gradient(180deg, rgba(246, 249, 255, 0.98), rgba(255, 255, 255, 0.96));
+  background: var(--card-bg, linear-gradient(180deg, rgba(246, 249, 255, 0.98), rgba(255, 255, 255, 0.96)));
 }
 
 .base-card__header,

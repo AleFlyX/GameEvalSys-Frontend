@@ -13,11 +13,10 @@
         <MyBtn v-if="showAddBtn" type="default" :size="buttonSize" @click="handleAdd">
           {{ addBtnText || '添加' }}
         </MyBtn>
+        <div v-if="$slots.operations" class="search-operations">
+          <slot name="operations" />
+        </div>
       </div>
-    </div>
-
-    <div v-if="$slots.operations" class="search-operations">
-      <slot name="operations" />
     </div>
   </form>
 </template>
@@ -173,10 +172,14 @@ defineExpose({
   align-items: center;
   padding: 0 14px;
   border-radius: 16px;
-  border: 1px solid rgba(219, 228, 240, 0.95);
-  background: linear-gradient(180deg, #ffffff 0%, #f9fbff 100%);
+  border: 1px solid var(--border, rgba(219, 228, 240, 0.95));
+  background: var(--card-bg, linear-gradient(180deg, #ffffff 0%, #f9fbff 100%));
   box-shadow: 0 10px 24px rgba(31, 42, 68, 0.06);
   transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+html[data-theme="dark"] .search-field {
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.4);
 }
 
 .search-field:focus-within {
@@ -190,11 +193,11 @@ defineExpose({
   border: none;
   outline: none;
   background: transparent;
-  color: #30415f;
+  color: var(--text-primary, #30415f);
 }
 
 .search-input::placeholder {
-  color: #97a6bb;
+  color: var(--text-disabled, #97a6bb);
 }
 
 .search-actions {
@@ -205,7 +208,7 @@ defineExpose({
 }
 
 .search-operations {
-  width: 100%;
+  /* width: 100%; */
 }
 
 @media (max-width: 640px) {
