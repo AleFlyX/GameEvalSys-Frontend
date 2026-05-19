@@ -2,10 +2,6 @@
   <!-- 此表是动态item，所以表中的数据都可以不用BaseForm安全克隆，拿到直接改就行 -->
   <el-form @submit.prevent v-loading="submitLoading" ref="baseFormRef" :model="formData" :rules="scoringFormRules"
     label-width="120px" :disabled="disabled">
-    <!-- 项目信息显示 -->
-    <el-form-item label="小组名称">
-      <el-text type="info" passive>{{ groupName }}</el-text>
-    </el-form-item>
 
     <!-- 动态生成的打分指标 -->
     <el-form-item v-for="(indicator, index) in indicators" :key="indicator.id" :label="indicator.name"
@@ -19,7 +15,7 @@
         </div>
         <span v-if="formatIndicatorDescription(indicator)" class="indicator-desc">{{
           formatIndicatorDescription(indicator)
-        }}</span>
+          }}</span>
       </div>
     </el-form-item>
 
@@ -53,10 +49,6 @@ const props = defineProps({
   disabled: {
     type: Boolean,
     default: false
-  },
-  groupName: {
-    type: String,
-    default: ''
   },
   projectId: {
     type: [String, Number],
