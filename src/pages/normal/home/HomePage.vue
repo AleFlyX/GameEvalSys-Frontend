@@ -50,7 +50,8 @@
       </ProgressCard>
 
 
-      <TasksPanel :pending-tasks="pendingTasks">
+      <TasksPanel :pending-tasks="pendingTasks" :focus-project-name="focusProjectName"
+        :focus-project-id="focusProjectId">
         <template #header>
           <div class="panel-header">
             <h2>待处理任务</h2>
@@ -98,7 +99,7 @@ const { isLoading: loading, start: startLoading, end: endLoading } = useLoading(
 const trendPoints = ref([]);                // 最近7天打分趋势数据点 [{ label, count }]
 const pendingTasks = ref([]);               // 待处理任务列表（当前焦点项目未评分的小组）
 const focusProjectName = ref('暂无项目');    // 当前聚焦的项目名称
-
+const focusProjectId = ref(null);              // 当前聚焦的项目ID
 const dashboardStats = reactive({
   totalProjects: 0,      // 可见项目总数
   ongoingProjects: 0,    // 进行中的项目数
@@ -346,7 +347,7 @@ const fetchProjectDetailData = async (project) => {
   }
 
   focusProjectName.value = project.name || `项目#${project.id}`;
-
+  focusProjectId.value = project.id;
   const [groupResponse, recordResponse] = await Promise.all([
     projectGroupApi.getProjectGroups(project.id),
     ScoringApi.getProjectScoringRecds(project.id, { page: 1, size: SCORE_RECORD_PAGE_SIZE }),
