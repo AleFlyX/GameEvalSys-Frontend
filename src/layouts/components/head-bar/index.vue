@@ -11,12 +11,21 @@
         </div>
 
         <div class="personal-info" v-if="userStore.isLogin">
+          <button class="theme-toggle-btn" @click="toggleTheme" :title="isDarkMode ? '切换到浅色模式' : '切换到深色模式'">
+            <el-icon v-if="isDarkMode">
+              <Sunny />
+            </el-icon>
+            <el-icon v-else>
+              <Moon />
+            </el-icon>
+          </button>
+
           <el-dropdown trigger="click" @command="handleCommand" placement="bottom-end">
             <div class="user-trigger">
               <el-avatar :size="34" class="avatar-gradient">
                 <span class="avatar-text">{{ avatarText }}</span>
               </el-avatar>
-              <span class="username">{{ username }}</span>
+              <span class="username">{{ name }}</span>
               <el-icon class="dropdown-icon">
                 <Setting />
               </el-icon>
@@ -26,7 +35,7 @@
               <el-dropdown-menu class="modern-dropdown">
                 <div class="dropdown-header">
                   <div class="header-info">
-                    <span class="header-name">{{ username }}</span>
+                    <span class="header-name">{{ name }}</span>
                     <span class="header-role">{{ userRoleName }}</span>
                   </div>
                 </div>
@@ -93,19 +102,34 @@ defineOptions({
   name: "HeadBar"
 });
 
-const { User, SwitchButton, Setting, Link } = elementIconMap;
+const { User, SwitchButton, Setting, Link, Sunny, Moon } = elementIconMap;
 
 const route = useRoute();
 const router = useRouter();
 const userStore = useUserStore();
 const message = useMessage();
+import { useTheme } from "@/composables/useTheme";
+import { onMounted } from 'vue';
+
+const { isDarkMode, toggleTheme: baseToggleTheme, initTheme } = useTheme();
+
+// 组件挂载时如果需要可以再次验证，由于应用通常只需要初始化一次，可以在全局，也可以在head-bar
+onMounted(() => {
+  initTheme();
+});
+
+// 为保证稳定性，这里我们只是包装一下切换逻辑：
+const toggleTheme = () => {
+  const nextTheme = isDarkMode.value ? 'light' : 'dark';
+  baseToggleTheme(nextTheme);
+};
 
 const title = computed(() => {
   return route.meta?.title || "";
 });
 
-const username = computed(() => userStore.userInfo?.username || "");
-const avatarText = computed(() => (username.value?.[0] || "U").toUpperCase());
+const name = computed(() => userStore.userInfo?.name || "");
+const avatarText = computed(() => (name.value?.[0] || "U").toUpperCase());
 const userRoleName = computed(() => {
   const roleMap = {
     super_admin: '超级管理员',
@@ -206,13 +230,13 @@ const handleCommand = (command) => {
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  border-bottom: 1px solid var(--border-color, #f0f0f0);
+  border-bottom: 1px solid var(--border, #f0f0f0);
 }
 
 .title {
   font-size: 18px;
   font-weight: 600;
-  color: var(--text-primary, #1f2937);
+  color: var(--text, #1f2937);
   letter-spacing: 0.3px;
   white-space: nowrap;
   overflow: hidden;
@@ -222,6 +246,43 @@ const handleCommand = (command) => {
 .header-right {
   display: flex;
   align-items: center;
+}
+
+.personal-info {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+/* Theme Toggle Button */
+.theme-toggle-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background-color: var(--bg-secondary, #f3f4f6);
+  color: var(--text-secondary, #4b5563);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.theme-toggle-btn:hover {
+  background-color: var(--el-color-primary-light-9, #ecf5ff);
+  color: var(--el-color-primary, #409eff);
+}
+
+html[data-theme="dark"] .theme-toggle-btn {
+  background-color: rgba(255, 255, 255, 0.05);
+  color: #e5e7eb;
+}
+
+html[data-theme="dark"] .theme-toggle-btn:hover {
+  background-color: rgba(64, 158, 255, 0.15);
+  color: #409eff;
 }
 
 /* User Trigger */
