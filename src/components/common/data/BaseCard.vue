@@ -1,17 +1,19 @@
 <template>
   <article :class="[
     'base-card',
+    rootClass,
     `shadow-${shadow}`,
     `variant-${variant}`,
     {
       'base-card--interactive': interactive,
+      'base-card--entered': isEntered,
     },
-  ]">
+  ]" :style="cardStyle">
     <header v-if="$slots.header" class="base-card__header">
       <slot name="header" />
     </header>
 
-    <section class="base-card__body">
+    <section :class="[bodyClass, `base-card__body`]" :style="bodyStyle">
       <slot />
       <slot name="body" />
     </section>
@@ -23,12 +25,22 @@
 </template>
 
 <script setup>
+import { onMounted, ref } from 'vue';
+
+const isEntered = ref(false);
+
+onMounted(() => {
+  requestAnimationFrame(() => {
+    isEntered.value = true;
+  });
+});
+
 defineProps({
   shadow: {
     type: String,
     default: 'always', // always | hover | never
   },
-  variant: {
+  variant: { // 卡片风格，提供多种预设样式，适用于不同场景
     type: String,
     default: 'default', // default | soft | outline | highlight
   },
@@ -36,6 +48,10 @@ defineProps({
     type: Boolean,
     default: false,
   },
+  rootClass: { type: [String, Object, Array], default: '', },
+  bodyClass: { type: [String, Object, Array], default: '', },
+  cardStyle: { type: Object, default: () => ({}) },
+  bodyStyle: { type: Object, default: () => ({}), },
 })
 </script>
 
@@ -47,15 +63,25 @@ defineProps({
   --card-radius: 16px;
   --card-padding: 18px;
   --card-gap: 14px;
+  --card-enter-offset: 8px;
+  --card-hover-offset: 0px;
+  --card-hover-scale: 1;
   border-radius: var(--card-radius);
   padding: var(--card-padding);
   box-sizing: border-box;
   background: var(--card-surface);
-  color: var(--text, inherit);
+  color: var(--text);
   border: 1px solid transparent;
   box-shadow: none;
-  animation: fadeUp 0.5s ease both;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
+  opacity: 0;
+  transform: translateY(var(--card-enter-offset)) translateY(var(--card-hover-offset)) scale(var(--card-hover-scale));
+  transition: transform 0.25s ease, opacity 0.25s ease, box-shadow 0.2s ease, border-color 0.2s ease, background 0.2s ease, color 0.2s ease, filter 0.2s ease;
+  will-change: transform, opacity, box-shadow;
+}
+
+.base-card--entered {
+  --card-enter-offset: 0px;
+  opacity: 1;
 }
 
 html[data-theme="dark"] .base-card {
@@ -104,10 +130,9 @@ html[data-theme="dark"] .base-card {
   border-color: var(--card-border);
 }
 
-.base-card.shadow-hover:hover,
-.base-card--interactive:hover {
+.base-card.shadow-hover:hover {
   box-shadow: var(--card-shadow);
-  transform: translateY(-2px);
+  --card-hover-offset: -3px;
 }
 
 .base-card.shadow-never {
@@ -116,17 +141,18 @@ html[data-theme="dark"] .base-card {
 
 .base-card--interactive {
   cursor: pointer;
+  --card-hover-offset: -1px;
 }
 
-@keyframes fadeUp {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
+.base-card--interactive:hover {
+  --card-hover-offset: -5px;
+  --card-hover-scale: 1.01;
+  box-shadow: 0 14px 32px rgba(31, 42, 68, 0.12);
+  filter: brightness(1.02);
+}
 
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.base-card--interactive:active {
+  --card-hover-offset: 0px;
+  --card-hover-scale: 0.99;
 }
 </style>
