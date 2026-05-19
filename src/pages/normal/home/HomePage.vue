@@ -1,28 +1,31 @@
 <template>
   <div class="home-page" v-loading="loading">
-    <section class="hero-panel">
-      <div class="hero-copy">
+    <div class="home-hero">
+      <BaseCard class="hero-copy" shadow="always">
         <p class="hero-eyebrow">PROJECT EVALUATE DASHBOARD</p>
         <h1 class="hero-title">
-          欢迎回来，<span>{{ userName }}</span>
+          欢迎回来，<span>{{ name }}</span>
         </h1>
         <p class="hero-desc">
           {{ roleLabel }} · 当前聚焦项目：{{ focusProjectName }}
         </p>
-      </div>
-      <div class="hero-actions">
-        <el-button type="primary" @click="handleGoScoring">
-          开始评分
-        </el-button>
-        <!-- <el-button @click="fetchHomeData">
-          刷新数据
-        </el-button> -->
-      </div>
-    </section>
+      </BaseCard>
+
+      <BaseCard class="hero-highlight" shadow="always">
+        <span class="highlight-label">当前待处理</span>
+        <strong>{{ dashboardStats.pendingGroups }}</strong>
+        <p>建议优先进入进行中的项目处理待评分小组。</p>
+        <div class="hero-actions">
+          <el-button type="primary" size="large" @click="handleGoScoring">
+            开始评分
+          </el-button>
+        </div>
+      </BaseCard>
+    </div>
 
     <section class="stats-grid">
       <StatCard v-for="card in statCards" :key="card.key" :label="card.label" :value="card.value" :sub="card.sub"
-        :icon="card.icon" />
+        :icon="card.icon" icon-bg="var(--primary-light)" icon-color="var(--primary-havy)" />
     </section>
 
     <section class="dashboard-grid">
@@ -36,6 +39,7 @@
         </template>
       </TrendMap>
 
+      <!-- 任务面板 -->
       <ProgressCard :dashboard-stats="dashboardStats">
         <template #header>
           <div class="panel-header">
@@ -44,6 +48,7 @@
           </div>
         </template>
       </ProgressCard>
+
 
       <TasksPanel :pending-tasks="pendingTasks">
         <template #header>
@@ -76,6 +81,7 @@ import { ScoringApi } from '@/api/scoring';
 import { useMessage } from '@/composables/useMessage';
 import { useUserStore } from '@/stores/modules/userStore';
 import { useLoading } from '@/composables/useLoading';
+import BaseCard from '@/components/common/data/BaseCard.vue';
 import StatCard from '@/components/common/data/StatCard.vue';
 import { formatTime } from '@/utils/format';
 import TrendMap from './components/trendMap.vue';
@@ -105,8 +111,8 @@ const PROJECT_PAGE_SIZE = 100;          // 项目列表分页大小
 const SCORE_RECORD_PAGE_SIZE = 200;     // 评分记录分页大小
 const roleSet = ['super_admin', 'admin', 'scorer'];  // 拥有评分权限的角色集合
 
-const userName = computed(() => {
-  return userStore.userInfo?.username || userStore.userInfo?.name || '用户';
+const name = computed(() => {
+  return userStore.userInfo?.name || '用户';
 });
 
 const roleLabel = computed(() => {

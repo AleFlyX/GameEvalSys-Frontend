@@ -16,19 +16,25 @@
         </div>
       </BaseCard>
 
-      <BaseCard class="hero-summary" shadow="always">
-        <div class="summary-item">
-          <span>全部小组</span>
-          <strong>{{ groupList.length }}</strong>
-        </div>
-        <div class="summary-item">
-          <span>未评分</span>
-          <strong>{{ pendingCount }}</strong>
-        </div>
-        <div class="summary-item">
-          <span>已评分</span>
-          <strong>{{ scoredCount }}</strong>
-        </div>
+      <BaseCard root-class="hero-summary" shadow="always">
+        <BaseCard shadow="hover">
+          <div class="summary-item">
+            <span>全部小组</span>
+            <strong>{{ groupList.length }}</strong>
+          </div>
+        </BaseCard>
+        <BaseCard shadow="hover">
+          <div class="summary-item">
+            <span>未评分</span>
+            <strong>{{ pendingCount }}</strong>
+          </div>
+        </BaseCard>
+        <BaseCard shadow="hover">
+          <div class="summary-item">
+            <span>已评分</span>
+            <strong>{{ scoredCount }}</strong>
+          </div>
+        </BaseCard>
       </BaseCard>
     </section>
 
@@ -50,7 +56,7 @@
       </div>
     </BaseCard>
 
-    <section class="task-section">
+    <BaseCard class="task-section">
       <div class="section-head">
         <div>
           <h3>{{ currentSectionTitle }}</h3>
@@ -59,47 +65,10 @@
       </div>
 
       <el-empty v-if="filteredGroups.length === 0" description="当前筛选下暂无小组数据" />
-
       <div v-else class="group-card-list">
-        <BaseCard v-for="group in filteredGroups" :key="group.id" class="group-card"
-          :class="`status-${group.scoreStatus}`" shadow="hover">
-          <div class="group-card-main">
-            <div class="group-card-top">
-              <div>
-                <div class="group-id">小组 ID · {{ group.id }}</div>
-                <h4>{{ group.name }}</h4>
-              </div>
-              <!-- <el-tag class="status" effect="light" round :type="getScoreStatusTag(group.scoreStatus)">
-                {{ formatScoreStatus(group.scoreStatus) }}
-              </el-tag> -->
-            </div>
-
-            <div class="group-card-meta">
-              <div class="meta-box">
-                <span>当前阶段</span>
-                <strong>{{ group.scoreStatus === 'scored' ? '已完成评分' : '等待处理' }}</strong>
-              </div>
-              <div class="meta-box">
-                <span>任务建议</span>
-                <strong>{{ group.scoreStatus === 'scored' ? '可复核或查看结果' : '建议立即评分' }}</strong>
-              </div>
-            </div>
-          </div>
-
-          <div class="group-card-actions">
-            <el-tag effect="light" round :type="getScoreStatusTag(group.scoreStatus)">
-              {{ formatScoreStatus(group.scoreStatus) }}
-            </el-tag>
-            <el-button type="primary" @click="handleScoring(group)">
-              {{ group.scoreStatus === 'scored' ? '重新评分' : '开始评分' }}
-            </el-button>
-            <el-button v-if="group.scoreStatus === 'scored'" @click="handleViewScore(group)">
-              查看评分
-            </el-button>
-          </div>
-        </BaseCard>
+        <ScoringGroupCard :groups="filteredGroups" @score="handleScoring" @view-score="handleViewScore" />
       </div>
-    </section>
+    </BaseCard>
 
     <ScoreProject v-model:visible="showScoringFormDialog" :project-id="projectId" :project-name="projectName"
       :group-data="selectedGroup" @refresh="handleRefresh" />
@@ -117,13 +86,13 @@ import ScoreProject from './components/ScoreProject.vue';
 import MyBtn from '@/components/common/form/MyBtn.vue';
 import ScoringDetails from './components/ScoringDetails.vue';
 import BaseCard from '@/components/common/data/BaseCard.vue';
+import ScoringGroupCard from './components/ScoringGroupCard.vue';
 
 import { useProjectStore } from '@/stores/modules/projectStore';
 import { useScoreStore } from '@/stores/modules/scoreStore';
 import { useGroupScoringProject } from './composables/useGroupScoringProject';
 import { useGroupScoringFilters } from './composables/useGroupScoringFilters';
 import { useGroupScoringRecords } from './composables/useGroupScoringRecords';
-import { useHandleDataStatus } from './composables/useHandleDataStatus';
 
 defineOptions({
   name: 'GroupScoringPage'
@@ -157,8 +126,6 @@ const {
   handleSearch,
   handleResetSearch,
 } = useGroupScoringFilters(groupList);
-
-const { formatScoreStatus, getScoreStatusTag } = useHandleDataStatus();
 
 const pendingCount = computed(() => groupList.value.filter((group) => group.scoreStatus !== 'scored').length);
 const scoredCount = computed(() => groupList.value.filter((group) => group.scoreStatus === 'scored').length);
@@ -202,7 +169,6 @@ onMounted(() => {
 .hero-summary,
 .toolbar-panel,
 .task-section {
-  background: rgba(255, 255, 255, 0.92);
   border: 1px solid rgba(227, 234, 245, 0.95);
   backdrop-filter: blur(8px);
 }
@@ -214,6 +180,7 @@ onMounted(() => {
 
 .back-link {
   display: inline-flex;
+  align-self: flex-start;
   align-items: center;
   gap: 6px;
   margin-bottom: 18px;
@@ -238,18 +205,17 @@ onMounted(() => {
   margin: 0;
   font-size: 30px;
   line-height: 1.25;
-  color: #1f2a44;
+  color: var(--text);
 }
 
 .hero-copy p:last-child {
   margin: 0;
   line-height: 1.7;
-  color: #6e7f9b;
+  color: var(--text-secondary);
 }
 
 .hero-summary {
   display: grid;
-  grid-template-columns: 1fr;
   gap: 14px;
   border-radius: 28px;
   padding: 22px;
@@ -257,20 +223,18 @@ onMounted(() => {
 
 .summary-item {
   display: flex;
+  flex-direction: row;
   align-items: center;
   justify-content: space-between;
-  padding: 14px 16px;
-  border-radius: 18px;
-  background: linear-gradient(135deg, #f7faff 0%, #eef5ff 100%);
 }
 
 .summary-item span {
-  color: #72839f;
+  color: var(--text-secondary);
 }
 
 .summary-item strong {
   font-size: 28px;
-  color: #1f2a44;
+  color: var(--text);
 }
 
 .toolbar-panel,
@@ -332,12 +296,12 @@ onMounted(() => {
 .section-head h3 {
   margin: 0;
   font-size: 22px;
-  color: #1f2a44;
+  color: var(--text);
 }
 
 .section-head p {
   margin: 8px 0 0;
-  color: #7c8aa5;
+  color: var(--text-secondary);
   line-height: 1.7;
 }
 
@@ -345,96 +309,6 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   gap: 16px;
-}
-
-.group-card {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 20px;
-  border-radius: 24px;
-  border: 1px solid #e6edf7;
-  background: linear-gradient(180deg, #ffffff 0%, #fbfcff 100%);
-  padding: 22px 24px;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.group-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 18px 32px rgba(31, 42, 68, 0.1);
-}
-
-.group-card.status-not_scored {
-  border-color: rgba(47, 107, 255, 0.24);
-  box-shadow: 0 12px 26px rgba(47, 107, 255, 0.08);
-}
-
-.group-card.status-scored {
-  border-color: rgba(34, 197, 94, 0.2);
-}
-
-.group-card-main {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  gap: 16px;
-  min-width: 0;
-}
-
-.group-card-top {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 16px;
-}
-
-.group-id {
-  margin-bottom: 8px;
-  font-size: 12px;
-  color: #96a4bb;
-}
-
-.group-card-top h4 {
-  margin: 0;
-  font-size: 22px;
-  line-height: 1.4;
-  color: #1f2a44;
-  word-break: break-word;
-}
-
-.group-card-meta {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 220px));
-  gap: 12px;
-}
-
-.meta-box {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  padding: 14px 16px;
-  border-radius: 18px;
-  background: #f7faff;
-}
-
-.meta-box span {
-  font-size: 12px;
-  color: #8ea0bc;
-}
-
-.meta-box strong {
-  color: #30415f;
-}
-
-.group-card-actions {
-  display: flex;
-  gap: 20px;
-  align-items: center;
-  flex-shrink: 0;
-}
-
-.group-card-actions .el-button {
-  min-width: 104px;
 }
 
 @media (max-width: 960px) {
@@ -450,14 +324,6 @@ onMounted(() => {
     flex-direction: column;
     align-items: stretch;
   }
-
-  .group-card-actions {
-    width: 100%;
-  }
-
-  .group-card-actions .el-button {
-    flex: 1;
-  }
 }
 
 @media (max-width: 640px) {
@@ -472,13 +338,6 @@ onMounted(() => {
 
   .hero-copy h2 {
     font-size: 24px;
-  }
-
-  .group-card-top,
-  .group-card-meta,
-  .group-card-actions {
-    display: flex;
-    flex-direction: column;
   }
 }
 </style>
