@@ -10,13 +10,14 @@
       </div>
     </template>
     <template #operations>
-      <button @click="handleConfirm()" class="primary-btn" :disabled="disableBehavior">创建</button>
-      <button @click="handleClose()">取消</button>
+      <MyBtn type="primary" @click="handleConfirm()" :disabled="disableBehavior">创建</MyBtn>
+      <MyBtn @click="handleClose()">取消</MyBtn>
     </template>
   </BaseFormModal>
 </template>
 
 <script setup>
+import MyBtn from '@/components/common/form/MyBtn.vue';
 import { ref } from 'vue';
 import { useMessage } from '@/composables/useMessage';
 import BaseFormModal from '@/components/common/modal/BaseFormModal.vue';

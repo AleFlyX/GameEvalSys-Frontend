@@ -7,12 +7,13 @@
       <p>确定要 {{ keywords }} 评审团 <strong>{{ props.data.name }}</strong> 吗？</p>
     </template>
     <template #operations>
-      <button class="primary-btn" @click="handleConfirm()" :disabled="disableBtn">确认</button>
-      <button class="cancel-btn" @click="handleClose()">取消</button>
+      <MyBtn type="primary"  @click="handleConfirm()" :disabled="disableBtn">确认</MyBtn>
+      <MyBtn type="default"  @click="handleClose()">取消</MyBtn>
     </template>
   </BaseConfirmModal>
 </template>
 <script setup>
+import MyBtn from '@/components/common/form/MyBtn.vue';
 import { ref } from 'vue'
 import BaseConfirmModal from '@/components/common/modal/BaseConfirmModal.vue';
 import { reviewerGroupApi } from '@/api/reviewer-group';

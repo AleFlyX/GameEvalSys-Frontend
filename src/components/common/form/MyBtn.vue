@@ -15,7 +15,7 @@
 
 <script setup>
 const props = defineProps({
-  type: {
+  type: { // 按钮类型 primary, danger, warning, link, pro
     type: String,
     default: '',
   },

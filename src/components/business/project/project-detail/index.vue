@@ -39,12 +39,13 @@
       </div>
     </template>
     <template #footer>
-      <button class="cancel-btn" @click="$emit('update:visible', false)">关闭</button>
+      <MyBtn type="default"  @click="$emit('update:visible', false)">关闭</MyBtn>
     </template>
   </BaseDialogModal>
 </template>
 
 <script setup>
+import MyBtn from '@/components/common/form/MyBtn.vue';
 import BaseDialogModal from '@/components/common/modal/BaseDialogModal.vue';
 
 defineOptions({

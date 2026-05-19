@@ -17,12 +17,12 @@
 
     </template>
     <template #operations>
-      <button class="primary-btn" @click="handleSubmit" :disabled="isSubmitting">
+      <MyBtn type="primary" class="primary-btn" @click="handleSubmit" :disabled="isSubmitting">
         {{ isSubmitting ? '提交中...' : '确认' }}
-      </button>
-      <button class="cancel-btn" @click="handleCancel" :disabled="isSubmitting">
+      </MyBtn>
+      <MyBtn class="cancel-btn" @click="handleCancel" :disabled="isSubmitting">
         取消
-      </button>
+      </MyBtn>
     </template>
   </BaseFormModal>
 </template>

@@ -36,13 +36,14 @@
       </div>
     </template>
     <template #footer>
-      <button class="cancel-btn" @click="handleClose()">关闭</button>
+      <MyBtn type="default"  @click="handleClose()">关闭</MyBtn>
     </template>
 
   </BaseDialogModal>
 </template>
 
 <script setup>
+import MyBtn from '@/components/common/form/MyBtn.vue';
 import BaseDialogModal from '@/components/common/modal/BaseDialogModal.vue';
 defineProps({
   selectedGroup: {

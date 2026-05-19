@@ -7,12 +7,13 @@
       用户: {{ props.data.name }} id: {{ props.data.id }}
     </template>
     <template #operations>
-      <button class="primary-btn" @click="handleConfirm()" :disabled="disableBtn">确认</button>
-      <button class="cancel-btn" @click="handleClose()">取消</button>
+      <MyBtn type="primary"  @click="handleConfirm()" :disabled="disableBtn">确认</MyBtn>
+      <MyBtn type="default"  @click="handleClose()">取消</MyBtn>
     </template>
   </BaseConfirmModal>
 </template>
 <script setup>
+import MyBtn from '@/components/common/form/MyBtn.vue';
 import { ref } from 'vue'
 import BaseConfirmModal from '@/components/common/modal/BaseConfirmModal.vue';
 import { userApi } from '@/api/user'

@@ -39,8 +39,8 @@
     </template>
 
     <template #operations>
-      <button class="primary-btn" @click="handleConfirm">确认选择</button>
-      <button class="cancel-btn" @click="handleVisibleChange(false)">取消</button>
+      <MyBtn type="primary" class="primary-btn" @click="handleConfirm">确认选择</MyBtn>
+      <MyBtn type="default" @click="handleVisibleChange(false)">取消</MyBtn>
     </template>
   </SelectionModalShell>
 </template>
@@ -174,5 +174,4 @@ watch(
 );
 </script>
 
-<style scoped>
-</style>
+<style scoped></style>

@@ -17,10 +17,12 @@
     </template>
 
     <template #operations>
-      <button @click="handleConfirm" class="primary-btn" :disabled="submitting">
+      <MyBtn type="primary" @click="handleConfirm" :disabled="submitting">
         {{ isEditMode ? '保存' : '确认' }}
-      </button>
-      <button @click="closeFormModal" :disabled="submitting">取消</button>
+      </MyBtn>
+      <MyBtn @click="closeFormModal" :disabled="submitting">
+        取消
+      </MyBtn>
     </template>
   </BaseFormModal>
 </template>

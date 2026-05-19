@@ -20,11 +20,12 @@
       </div>
     </template>
     <template #footer>
-      <button class="cancel-btn" @click="$emit('update:visible', false)">关闭</button>
+      <MyBtn type="default"  @click="$emit('update:visible', false)">关闭</MyBtn>
     </template>
   </BaseDialogModal>
 </template>
 <script setup>
+import MyBtn from '@/components/common/form/MyBtn.vue';
 import { ref, watch } from 'vue';
 import { getIndicatorsFromStandard } from '@/utils/scoringStandard';
 import ScoringModalHeader from './ScoringModalHeader.vue';

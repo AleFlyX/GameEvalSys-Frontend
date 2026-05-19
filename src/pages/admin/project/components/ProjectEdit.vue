@@ -10,13 +10,14 @@
       </div>
     </template>
     <template #operations>
-      <button @click="handleConfirm()" class="primary-btn" :disabled="disableBehavior">保存</button>
+      <MyBtn type="primary" @click="handleConfirm()"  :disabled="disableBehavior">保存</MyBtn>
       <button @click="handleClose()">取消</button>
     </template>
   </BaseFormModal>
 </template>
 
 <script setup>
+import MyBtn from '@/components/common/form/MyBtn.vue';
 import { ref } from 'vue';
 import { ElMessage } from 'element-plus';
 import BaseFormModal from '@/components/common/modal/BaseFormModal.vue';

@@ -7,12 +7,15 @@
       <p>确定要<strong>{{ data.isEnabled ? '启用' : '禁用' }}</strong>项目 <strong>{{ data.name }}</strong> 吗？此操作不可撤销。</p>
     </template>
     <template #operations>
-      <button :class="modalType" @click="handleConfirm()" :disabled="disableBtn">确认</button>
-      <button class="cancel-btn" @click="handleClose()">取消</button>
+      <MyBtn :type="data.isEnabled ? 'primary' : 'danger'" :class="modalType" @click="handleConfirm()"
+        :disabled="disableBtn">
+        {{ data.isEnabled ? '启用' : '禁用' }}</MyBtn>
+      <MyBtn type="default" @click="handleClose()">取消</MyBtn>
     </template>
   </BaseConfirmModal>
 </template>
 <script setup>
+import MyBtn from '@/components/common/form/MyBtn.vue';
 import { ref, computed } from 'vue'
 import BaseConfirmModal from '@/components/common/modal/BaseConfirmModal.vue';
 import { projectApi } from '@/api/project';
