@@ -15,7 +15,7 @@
         </div>
         <span v-if="formatIndicatorDescription(indicator)" class="indicator-desc">{{
           formatIndicatorDescription(indicator)
-          }}</span>
+        }}</span>
       </div>
     </el-form-item>
 
@@ -194,20 +194,21 @@ const handleSubmit = async () => {
 
   if (!formData.value.scores || formData.value.scores.length === 0) {
     ElMessage.error('未初始化打分指标');
-    return;
+    return Promise.reject(new Error('Validation failed: no scoring indicators initialized')); // 阻止提交并抛出错误
   }
 
   const allScoresFilled = formData.value.scores.every(score => score !== null && score !== undefined && score !== '');
   if (!allScoresFilled) {
+    console.log('handleSubmit - 有指标未评分');
     ElMessage.error('请为所有指标评分');
-    return;
+    return Promise.reject(new Error('Validation failed: not all indicators scored')); // 阻止提交并抛出错误
   }
 
   // 验证表单其他字段
   const valid = await baseFormRef.value?.validate().catch(() => false);
   if (!valid) {
     ElMessage.error('请填写所有必填项');
-    return;
+    return Promise.reject(new Error('Validation failed: form validation failed')); // 阻止提交并抛出错误
   }
 
   startSubmitLoading();

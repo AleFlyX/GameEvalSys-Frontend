@@ -60,7 +60,6 @@ const handleConfirm = async () => {
   try {
     // console.log(scoringFormRef.value)
     await scoringFormRef.value.submit();
-
     handleClose();
   } catch (err) {
     console.log(err)
