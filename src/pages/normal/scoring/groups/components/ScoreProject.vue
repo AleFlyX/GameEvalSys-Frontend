@@ -75,40 +75,54 @@ const handleConfirm = async () => {
 .scoring-form-modal {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 18px;
 }
 
 .task-context-panel {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-  padding: 14px 16px;
+  gap: 14px;
+  padding: 16px 18px;
   background: linear-gradient(135deg, rgba(47, 107, 255, 0.08), rgba(32, 183, 199, 0.08));
   border: 1px solid rgba(47, 107, 255, 0.12);
-  border-radius: 16px;
+  border-radius: 14px;
 }
 
 .context-item {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
 }
 
 .context-item span {
   font-size: 12px;
+  font-weight: 500;
   color: #7b8798;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
 }
 
 .context-item strong {
   color: #1f2a44;
-  font-size: 15px;
+  font-size: 16px;
+  font-weight: 600;
   line-height: 1.4;
   word-break: break-word;
 }
 
 @media (max-width: 768px) {
+  .scoring-form-modal {
+    gap: 16px;
+  }
+
   .task-context-panel {
     grid-template-columns: 1fr;
+    gap: 12px;
+    padding: 14px 16px;
+  }
+
+  .context-item strong {
+    font-size: 15px;
   }
 }
 </style>

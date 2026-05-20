@@ -20,7 +20,7 @@
       </div>
     </template>
     <template #footer>
-      <MyBtn type="default"  @click="$emit('update:visible', false)">关闭</MyBtn>
+      <MyBtn type="default" @click="$emit('update:visible', false)">关闭</MyBtn>
     </template>
   </BaseDialogModal>
 </template>
@@ -88,30 +88,34 @@ watch(
 .scoring-detail {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 18px;
   padding: 8px 0 0;
 }
 
 .score-summary-card {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
-  padding: 16px 18px;
-  border-radius: 16px;
+  padding: 18px 20px;
+  border-radius: 14px;
   background: linear-gradient(135deg, rgba(47, 107, 255, 0.08), rgba(32, 183, 199, 0.08));
   border: 1px solid rgba(47, 107, 255, 0.12);
 }
 
 .summary-label {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
   color: #55637a;
 }
 
 .summary-value {
-  font-size: 28px;
+  font-size: 32px;
+  font-weight: 700;
   line-height: 1;
   color: #e53935;
+  letter-spacing: -0.5px;
 }
 
 .indicator-list {
@@ -126,23 +130,42 @@ watch(
   justify-content: space-between;
   gap: 16px;
   padding: 14px 16px;
-  border-radius: 14px;
+  border-radius: 12px;
   background: #f8fafc;
   border: 1px solid #e5ebf3;
+  transition: all 0.2s ease;
+}
+
+.detail-item:hover {
+  background: #f0f4fa;
+  border-color: #d8e1f0;
+}
+
+.empty-state {
+  padding: 32px 16px;
+  text-align: center;
+  color: #7b8798;
+  font-size: 14px;
 }
 
 @media (max-width: 768px) {
-  .dialog-title-wrap h3 {
-    font-size: 20px;
+  .scoring-detail {
+    gap: 16px;
+  }
+
+  .score-summary-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
   }
 
   .detail-item {
-    align-items: flex-start;
     flex-direction: column;
+    align-items: flex-start;
   }
 
-  .score-value {
-    min-width: 64px;
+  .summary-value {
+    font-size: 28px;
   }
 }
 </style>

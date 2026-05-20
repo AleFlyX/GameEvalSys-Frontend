@@ -25,15 +25,16 @@ defineProps({
 .scoring-modal-header {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
 }
 
 .title-text {
   margin: 0;
   font-size: 22px;
-  line-height: 1.35;
+  line-height: 1.3;
   font-weight: 700;
   color: #1f2a44;
+  letter-spacing: -0.3px;
 }
 
 .description-text {
@@ -41,15 +42,20 @@ defineProps({
   font-size: 13px;
   line-height: 1.6;
   color: #7b8798;
+  font-weight: 400;
 }
 
 .extra-area {
-  margin-top: 4px;
+  margin-top: 6px;
 }
 
 @media (max-width: 768px) {
   .title-text {
     font-size: 20px;
+  }
+
+  .description-text {
+    font-size: 12px;
   }
 }
 </style>

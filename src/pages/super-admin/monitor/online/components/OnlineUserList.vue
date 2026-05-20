@@ -194,10 +194,6 @@ function getStatusLabel(row) {
   border-bottom: none;
 }
 
-.online-row:hover {
-  background: #fbfcfe;
-}
-
 .identity-col {
   display: flex;
   align-items: center;

@@ -36,7 +36,7 @@
 
   /* 文本 */
   --text: #0f172a;
-  --text-secondary: rgba(0, 0, 0, 0.8);
+  --text-secondary: rgba(0, 0, 0, 0.6);
   --text-disabled: rgba(0, 0, 0, 0.48);
 
   /* 输入框 */

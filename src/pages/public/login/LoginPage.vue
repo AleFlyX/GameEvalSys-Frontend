@@ -93,7 +93,7 @@ import SlideBlock from './components/slideBlock.vue';
 import { useLoginForm } from './composables/useLoginForm.js';
 import { useTheme } from '../../../composables/useTheme.js';
 import { useLoginHistory } from './composables/useLoginHistory.js';
-import BrandIcon from '@/layouts/components/side-bar/components/BrandIcon.vue';
+import BrandIcon from '@/components/icons/BrandIcon.vue';
 
 // 获取图标
 const { Sunny, Moon, DataLine, CircleCheck: Checked } = elementIconMap;

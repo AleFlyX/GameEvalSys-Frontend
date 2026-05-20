@@ -58,12 +58,28 @@ defineEmits(['update:visible']);
 
 .dialog-body {
   min-height: 0;
+  flex: 1;
   padding: 4px 2px 0;
   overflow-y: auto;
+  /* overflow-x: hidden; */
+}
+
+.operation {
+  padding: 18px 0 0;
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  border-top: 1px solid var(--border, rgba(230, 236, 244, 0.88));
 }
 
 :deep(.dark-modal) .dialog-title {
   color: #f7f9fc;
+}
+
+:deep(.dark-modal) .operation {
+  border-top-color: rgba(86, 98, 120, 0.4);
 }
 
 @media (max-width: 768px) {
@@ -73,6 +89,10 @@ defineEmits(['update:visible']);
 
   .dialog-title {
     font-size: 20px;
+  }
+
+  .operation {
+    flex-wrap: wrap;
   }
 }
 </style>
