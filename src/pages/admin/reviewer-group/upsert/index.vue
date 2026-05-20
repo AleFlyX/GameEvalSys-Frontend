@@ -1,20 +1,27 @@
 <template>
   <PagePanel>
+    <div class="upsert-topbar">
+      <BackButton :custom-handler="handleCancel" class="upsert-back-btn" />
+      <div class="upsert-header">
+        <h2>{{ isEdit ? '编辑评审组' : '创建评审组' }}</h2>
+        <p class="subtitle">{{ isEdit ? '修改评审组成员及描述信息' : '配置新的评审组及指派成员' }}</p>
+      </div>
+    </div>
+
     <template #main-table>
-      <h3 style="margin: 15px;">{{ isEdit ? '编辑评审组' : '创建评审组' }}</h3>
       <div class="form-wrapper" v-loading="detailLoading">
         <ReviewerGroupForm ref="formRef" :init-data="formData" label-width="100px"
-          style="width:800px;max-width:90vw; height: 100%;">
+          style="width: 100%; max-width: 800px;">
         </ReviewerGroupForm>
       </div>
     </template>
 
     <template #footer>
-      <div class="operations">
-        <MyBtn type="primary" :loading="submitLoading" @click="handleSubmit">
-          {{ isEdit ? '更新' : '创建' }}
-        </MyBtn>
-        <MyBtn @click="handleCancel">取消</MyBtn>
+      <div class="form-actions">
+        <el-button type="primary" :loading="submitLoading" @click="handleSubmit">
+          {{ isEdit ? '保存更改' : '确认创建' }}
+        </el-button>
+        <el-button @click="handleCancel">取消</el-button>
       </div>
     </template>
   </PagePanel>
@@ -25,6 +32,7 @@ import { ref, computed, onMounted, watch } from 'vue';
 import { reviewerGroupApi } from '@/api/reviewer-group';
 
 import PagePanel from '@/layouts/PagePanel.vue';
+import BackButton from '@/components/common/BackButton.vue';
 import ReviewerGroupForm from '../components/ReviewerGroupForm.vue';
 import { showMsgBox } from '@/utils/ConfirmBox';
 import { useRoute, useRouter } from 'vue-router';
@@ -142,25 +150,70 @@ watch(
 </script>
 
 <style scoped>
-.form-wrapper {
+.upsert-topbar {
   display: flex;
-  justify-content: center;
-}
-
-.operations {
-  width: 30%;
-  padding: 10px;
-  display: flex;
-  justify-content: center;
   align-items: center;
   gap: 20px;
+  padding: 12px 16px;
+  background: var(--card-bg);
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
 }
 
-.operations>* {
+html[data-theme="dark"] .upsert-topbar {
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.upsert-back-btn {
+  flex: 0 0 auto;
+}
+
+.upsert-header {
   flex: 1;
 }
 
+.upsert-header h2 {
+  margin: 0 0 4px 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.upsert-header .subtitle {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.form-wrapper {
+  padding: 10px 0;
+  min-height: 400px;
+  display: flex;
+  justify-content: center;
+}
+
+.form-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  padding-top: 24px;
+  border-top: 1px solid var(--border);
+  margin-top: 20px;
+  width: 100%;
+}
+
+html[data-theme="dark"] .form-actions {
+  border-top-color: rgba(255, 255, 255, 0.08);
+}
+
+.form-actions :deep(.el-button) {
+  min-width: 100px;
+  border-radius: 8px;
+  height: 38px;
+}
+
 :deep(.el-form-item) {
-  margin-bottom: 16px;
+  margin-bottom: 24px;
 }
 </style>

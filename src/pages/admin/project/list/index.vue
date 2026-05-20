@@ -6,8 +6,9 @@
         style="margin-right: 16px; display: inline-block; min-width: 180px;" />
     </template>
 
+    <SearchInput size="middle" @search="handleSearch" @add="showAddProjectDialog = true"></SearchInput>
+
     <template #main-table>
-      <SearchInput size="middle" @search="handleSearch" @add="showAddProjectDialog = true"></SearchInput>
       <el-table :data="projectList" v-loading="loading">
         <DataTableColums :col-rules="PROJECT_LIST_RULES" ellipsis></DataTableColums>
         <el-table-column>

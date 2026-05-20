@@ -3,21 +3,15 @@
   <p>groupsChanged:: {{ isDataAdjusted.groupIdsChanged }}</p>
   <p>scorerIdsChanged:: {{ isDataAdjusted.scorerIdsChanged }}</p>
   <button @click="isDataChanged(formData)">isDataChanged??</button> -->
-  <div style="height:auto;display: flex;align-items: center;">
-    <MyBtn type="link" @click="handleGoBack" style="font-size: large;">
-      <div style="height: 80px;display: flex;align-items: center; margin-right: 15px;">
-        <el-icon>
-          <ArrowLeft />
-        </el-icon>
-        返回
-      </div>
-    </MyBtn>
-    <div class="project-edit-header">
-      <h2>编辑项目: {{ projectName }}</h2>
-      <p class="subtitle">填写项目基本信息、小组分配和评审团配置</p>
-    </div>
-  </div>
   <PagePanel>
+    <div class="project-edit-topbar">
+      <BackButton :custom-handler="handleGoBack" class="project-edit-back-btn" />
+      <div class="project-edit-header">
+        <h2>编辑项目: {{ projectName }}</h2>
+        <p class="subtitle">填写项目基本信息、小组分配和评审团配置</p>
+      </div>
+    </div>
+
     <template #main-table>
       <div class="project-edit-container">
         <el-tabs v-model="activeTab" @tab-click="onTabChange" v-loading="initLoading || isSaving">
@@ -298,35 +292,73 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+.project-edit-topbar {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 12px 16px;
+  background: var(--card-bg);
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+}
+
+html[data-theme="dark"] .project-edit-topbar {
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.project-edit-back-btn {
+  flex: 0 0 auto;
+}
+
 .project-edit-header {
-  border-bottom: 1px solid var(--el-border-color);
+  flex: 1;
 }
 
 .project-edit-header h2 {
-  margin: 0 0 8px 0;
+  margin: 0 0 4px 0;
   font-size: 20px;
-  color: var(--el-text-color-primary);
+  font-weight: 600;
+  color: var(--text);
 }
 
 .project-edit-header .subtitle {
   margin: 0;
-  font-size: 14px;
-  color: var(--el-text-color-regular);
+  font-size: 13px;
+  color: var(--text-secondary);
 }
 
 .project-edit-container {
-  background: #fff;
-  padding: 20px;
-  border-radius: 4px;
+  background: transparent;
+  padding: 0;
+}
+
+/* Modernize el-tabs */
+.project-edit-container :deep(.el-tabs__nav-wrap::after) {
+  height: 1px;
+  background-color: var(--border);
+}
+
+html[data-theme="dark"] .project-edit-container :deep(.el-tabs__nav-wrap::after) {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+.project-edit-container :deep(.el-tabs__item) {
+  font-size: 15px;
+  padding: 0 24px;
+  height: 48px;
+  line-height: 48px;
+  color: var(--text-secondary);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.project-edit-container :deep(.el-tabs__item.is-active) {
+  color: var(--el-color-primary);
+  font-weight: 600;
 }
 
 .tab-content {
-  padding: 20px 0;
-}
-
-.groups-tips,
-.reviewer-tips {
-  margin-top: 24px;
+  padding: 24px 0;
 }
 
 .form-actions {
@@ -334,14 +366,18 @@ onUnmounted(() => {
   gap: 12px;
   justify-content: flex-end;
   padding-top: 24px;
+  border-top: 1px solid var(--border);
+  margin-top: 20px;
+}
+
+html[data-theme="dark"] .form-actions {
+  border-top-color: rgba(255, 255, 255, 0.08);
 }
 
 .form-actions :deep(.el-button) {
   min-width: 100px;
-}
-
-.reviewer-members {
-  margin-top: 24px;
+  border-radius: 8px;
+  height: 38px;
 }
 
 .reviewer-members h4 {
@@ -349,7 +385,7 @@ onUnmounted(() => {
   margin-bottom: 16px;
   font-size: 14px;
   font-weight: 600;
-  color: var(--el-text-color-primary);
+  color: var(--text);
 }
 
 .empty-state {
@@ -357,7 +393,15 @@ onUnmounted(() => {
   justify-content: center;
   align-items: center;
   min-height: 200px;
-  color: var(--el-text-color-placeholder);
+  color: var(--text-disabled);
   font-size: 14px;
+  background: var(--bg-secondary);
+  border-radius: 12px;
+  border: 1px dashed var(--border);
+}
+
+html[data-theme="dark"] .empty-state {
+  background: rgba(255, 255, 255, 0.02);
+  border-color: rgba(255, 255, 255, 0.05);
 }
 </style>

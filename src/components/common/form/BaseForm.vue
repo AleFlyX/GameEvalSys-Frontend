@@ -1,5 +1,5 @@
 <template>
-  <el-form @submit.prevent ref="formRef" :rules="formRules" :model="formData" v-bind="$attrs">
+  <el-form class="basic-form" @submit.prevent ref="formRef" :rules="formRules" :model="formData" v-bind="$attrs">
     <slot>
     </slot>
   </el-form>
@@ -63,3 +63,8 @@ defineExpose({
   formData
 })
 </script>
+<style scoped>
+.basic-form {
+  margin: 10px;
+}
+</style>

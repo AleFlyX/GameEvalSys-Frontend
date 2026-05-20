@@ -3,45 +3,47 @@
     <template #header>
       <StatCard label="总用户数" :value="userOverview.totalUsers" sub="平台用户总数" icon="User" />
       <StatCard label="管理员" :value="userOverview.adminUsers" sub="管理员和超级管理员总数" icon="Avatar" />
-      <StatCard label="打分用户" :value="userOverview.scorerUsers" sub="运行打分用户数" icon="Edit" icon-color="#66cc66" icon-bg="#e6ffe6" />
-      <StatCard label="普通用户" :value="userOverview.normalUsers" sub="普通不参与打分用户" icon="Collection" icon-color="#ffaa00" icon-bg="#ffeecc" />
+      <StatCard label="打分用户" :value="userOverview.scorerUsers" sub="运行打分用户数" icon="Edit" icon-color="#66cc66"
+        icon-bg="#e6ffe6" />
+      <StatCard label="普通用户" :value="userOverview.normalUsers" sub="普通不参与打分用户" icon="Collection" icon-color="#ffaa00"
+        icon-bg="#ffeecc" />
     </template>
 
-    <template #main-table>
-      <SearchInput size="middle" placeholder="搜索用户名或姓名..." @search="handleSearch" @add="openCreateModal">
-        <template #operations>
-          <div class="toolbar-operations">
-            <div class="select-filter">
-              <el-select v-model="filterParams.role" class="role-filter" clearable placeholder="筛选角色"
-                @change="handleFilterChange">
-                <el-option value="" label="全部"></el-option>
-                <el-option value="normal" label="普通用户"></el-option>
-                <el-option value="scorer" label="打分用户"></el-option>
-                <el-option value="admin" label="管理员"></el-option>
-                <el-option value="super_admin" label="超级管理员"></el-option>
-              </el-select>
-              <el-checkbox v-model="filterParams.showDisabled" @change="handleFilterChange">
-                查看被禁用用户
-              </el-checkbox>
-            </div>
-
-            <div class="batch-actions">
-              <span class="selection-summary">已选 {{ selectedRows.length }} 项</span>
-              <el-button size="small" :disabled="selectedDisabledCount === 0" @click="handleBatchStatus(true)">
-                批量启用
-              </el-button>
-              <el-button size="small" type="warning" :disabled="selectedEnabledCount === 0"
-                @click="handleBatchStatus(false)">
-                批量禁用
-              </el-button>
-              <el-button size="small" type="danger" :disabled="!hasSelection" @click="handleBatchDelete">
-                批量删除
-              </el-button>
-            </div>
+    <SearchInput size="middle" placeholder="搜索用户名或姓名..." @search="handleSearch" @add="openCreateModal">
+      <template #operations>
+        <div class="toolbar-operations">
+          <div class="select-filter">
+            <el-select v-model="filterParams.role" class="role-filter" clearable placeholder="筛选角色"
+              @change="handleFilterChange">
+              <el-option value="" label="全部"></el-option>
+              <el-option value="normal" label="普通用户"></el-option>
+              <el-option value="scorer" label="打分用户"></el-option>
+              <el-option value="admin" label="管理员"></el-option>
+              <el-option value="super_admin" label="超级管理员"></el-option>
+            </el-select>
+            <el-checkbox v-model="filterParams.showDisabled" @change="handleFilterChange">
+              查看被禁用用户
+            </el-checkbox>
           </div>
-        </template>
-      </SearchInput>
 
+          <div class="batch-actions">
+            <span class="selection-summary">已选 {{ selectedRows.length }} 项</span>
+            <el-button size="small" :disabled="selectedDisabledCount === 0" @click="handleBatchStatus(true)">
+              批量启用
+            </el-button>
+            <el-button size="small" type="warning" :disabled="selectedEnabledCount === 0"
+              @click="handleBatchStatus(false)">
+              批量禁用
+            </el-button>
+            <el-button size="small" type="danger" :disabled="!hasSelection" @click="handleBatchDelete">
+              批量删除
+            </el-button>
+          </div>
+        </div>
+      </template>
+    </SearchInput>
+
+    <template #main-table>
       <el-table ref="userTableRef" v-loading="loading || batchLoading" :data="tableData" row-key="id"
         style="width: 100%;" stripe @selection-change="handleSelectionChange">
         <el-table-column type="selection" width="55" align="center" />

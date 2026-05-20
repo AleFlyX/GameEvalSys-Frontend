@@ -49,7 +49,7 @@ defineProps({
   position: relative;
   /* 为了 footer 的绝对定位 */
   padding: 1.5rem;
-  background-color: rgba(255, 255, 255, 0.8);
+  background-color: var(--card-bg, rgba(255, 255, 255, 0.8));
   backdrop-filter: blur(10px);
   border-radius: 12px;
   overflow: hidden;
@@ -58,10 +58,18 @@ defineProps({
   cursor: pointer;
 }
 
+html[data-theme="dark"] .card {
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+}
+
 .card:hover {
   transform: translateY(-5px) scale(1.02);
   box-shadow: 0 10px 24px rgba(45, 49, 66, 0.12);
   filter: brightness(1.02);
+}
+
+html[data-theme="dark"] .card:hover {
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.5);
 }
 
 .card-header {
@@ -70,13 +78,13 @@ defineProps({
   align-items: center;
   margin-bottom: 1.5rem;
   padding-bottom: 0.8rem;
-  border-bottom: 1px solid rgba(45, 49, 66, 0.1);
+  border-bottom: 1px solid var(--border, rgba(45, 49, 66, 0.1));
 }
 
 .card-title {
   font-size: 1.1rem;
   font-weight: 500;
-  color: #2D3142;
+  color: var(--text-primary, #2D3142);
 }
 
 .card-icon {
@@ -95,7 +103,7 @@ defineProps({
   left: 1.5rem;
   right: 1.5rem;
   font-size: 0.8rem;
-  color: #9FA8A3;
+  color: var(--text-disabled, #9FA8A3);
   opacity: 0.8;
   text-align: right;
 }
@@ -114,7 +122,7 @@ defineProps({
   width: 100%;
   height: 100%;
   border-radius: 50%;
-  background: conic-gradient(#88D18A var(--progress), rgba(45, 49, 66, 0.1) 0);
+  background: conic-gradient(#88D18A var(--progress), var(--bg-secondary, rgba(45, 49, 66, 0.1)) 0);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -127,7 +135,7 @@ defineProps({
   width: 85%;
   height: 85%;
   border-radius: 50%;
-  background-color: rgba(255, 255, 255, 0.9);
+  background-color: var(--card-bg, rgba(255, 255, 255, 0.9));
 }
 
 .ring-text {
@@ -139,7 +147,7 @@ defineProps({
   z-index: 2;
   font-size: 2rem;
   font-weight: 500;
-  color: #2D3142;
+  color: var(--text-primary, #2D3142);
   /* 防止数字之间有不必要的空格 */
   white-space: nowrap;
 }
@@ -149,7 +157,7 @@ defineProps({
   margin-top: 1.5rem;
   /* 稍微增加间距 */
   font-size: 0.9rem;
-  color: #6B7280;
+  color: var(--text-secondary, #6B7280);
 }
 
 .positive {

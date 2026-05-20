@@ -69,7 +69,7 @@ const handleClick = () => {
   min-height: 40px;
   font-size: 14px;
   font-weight: 500;
-  color: #253041;
+  color: var(--text, #253041);
   border-radius: 12px;
   margin: 2px 4px;
   padding: 0 12px;
@@ -120,7 +120,7 @@ const handleClick = () => {
   margin-left: 20px;
   font-size: 13px;
   font-weight: 450;
-  color: #4b5565;
+  color: var(--text-secondary, #4b5565);
 }
 
 .menu-item.sub-item.active {

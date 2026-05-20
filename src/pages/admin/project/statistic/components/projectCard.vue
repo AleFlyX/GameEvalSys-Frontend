@@ -100,7 +100,7 @@ const selectProject = (project) => {
 <style scoped>
 /* ==================== 项目卡片 ==================== */
 .project-card {
-  background-color: #ffffffe1;
+  /* background-color: #ffffffe1; */
   padding: 20px;
   cursor: pointer;
   min-height: 260px;
@@ -112,7 +112,7 @@ const selectProject = (project) => {
 
 .project-card:hover {
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
-  border-color: #d1d5db;
+  border-color: var(--border);
   transform: translateY(-2px);
 }
 
@@ -133,7 +133,7 @@ const selectProject = (project) => {
 .project-name {
   font-size: 1.125rem;
   font-weight: 600;
-  color: #1f2937;
+  color: var(--text);
   margin: 0;
   flex: 1;
   word-break: break-word;
@@ -146,8 +146,9 @@ const selectProject = (project) => {
 
 .project-description {
   font-size: 0.875rem;
-  color: #6b7280;
+  color: var(--text-secondary);
   margin: 0 0 12px 0;
+  line-clamp: 2;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -165,7 +166,7 @@ const selectProject = (project) => {
   align-items: center;
   gap: 6px;
   font-size: 0.875rem;
-  color: #6b7280;
+  color: var(--text-secondary);
 }
 
 .meta-item :deep(.el-icon) {

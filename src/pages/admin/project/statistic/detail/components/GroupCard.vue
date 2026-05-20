@@ -36,7 +36,7 @@
           <span class="meta-label">处理后</span>
           <span class="meta-value meta-value--primary">{{
             formatScore(group.processedAverageScore || group.averageScore)
-            }}</span>
+          }}</span>
         </span>
         <span class="meta-sep">·</span>
         <span class="meta-item" :class="{ 'meta-item--warning': (group.abnormalCount ?? 0) > 0 }">
@@ -105,7 +105,7 @@ const handleOpenGroupModal = (group) => {
 
 .group-name {
   font-weight: 600;
-  color: #1f2937;
+  color: var(--text);
   font-size: 0.95rem;
   white-space: nowrap;
   overflow: hidden;
@@ -114,7 +114,7 @@ const handleOpenGroupModal = (group) => {
 
 .group-id {
   font-size: 0.75rem;
-  color: #9ca3af;
+  color: var(--text-disabled);
   flex-shrink: 0;
 }
 
@@ -136,7 +136,7 @@ const handleOpenGroupModal = (group) => {
 .group-score :deep(.el-progress-bar__outer) {
   height: 10px;
   border-radius: 6px;
-  background-color: #e8ecf1;
+  background-color: var(--bg-secondary);
 }
 
 .group-score :deep(.el-progress-bar__inner) {
@@ -148,14 +148,14 @@ const handleOpenGroupModal = (group) => {
 .score-value {
   font-weight: 700;
   font-size: 1.15rem;
-  color: #1f2937;
+  color: var(--text);
   white-space: nowrap;
   letter-spacing: -0.01em;
 }
 
 .score-total {
   font-size: 0.8rem;
-  color: #9ca3af;
+  color: var(--text-disabled);
   white-space: nowrap;
   margin-left: -4px;
 }
@@ -173,7 +173,7 @@ const handleOpenGroupModal = (group) => {
 
 .footer-divider {
   height: 1px;
-  background: linear-gradient(to right, #e5e7eb 0%, #e5e7eb 60%, transparent 100%);
+  background: linear-gradient(to right, var(--border) 0%, var(--border) 60%, transparent 100%);
   margin-bottom: 10px;
 }
 
@@ -184,7 +184,7 @@ const handleOpenGroupModal = (group) => {
   align-items: center;
   gap: 2px 4px;
   font-size: 0.72rem;
-  color: #6b7280;
+  color: var(--text-secondary);
   line-height: 1.6;
 }
 
@@ -195,22 +195,22 @@ const handleOpenGroupModal = (group) => {
   white-space: nowrap;
   padding: 1px 6px;
   border-radius: 4px;
-  background: #f3f4f6;
+  background: var(--bg-secondary);
   transition: background 0.2s;
 }
 
 .meta-item:hover {
-  background: #e5e7eb;
+  background: rgba(148, 163, 184, 0.18);
 }
 
 /* 恶意评分 > 0 时高亮 */
 .meta-item--warning {
-  background: #fef2f2;
+  background: rgba(220, 38, 38, 0.12);
   color: #dc2626;
 }
 
 .meta-item--warning:hover {
-  background: #fde8e8;
+  background: rgba(220, 38, 38, 0.18);
 }
 
 .meta-item--warning .meta-value {
@@ -219,24 +219,24 @@ const handleOpenGroupModal = (group) => {
 }
 
 .meta-label {
-  color: #9ca3af;
+  color: var(--text-disabled);
   font-weight: 400;
 }
 
 .meta-value {
-  color: #4b5563;
+  color: var(--text);
   font-weight: 500;
 }
 
 /* 处理后分数高亮 */
 .meta-value--primary {
-  color: #3b82f6;
+  color: var(--el-color-primary);
   font-weight: 600;
 }
 
 /* 分隔符 */
 .meta-sep {
-  color: #d1d5db;
+  color: var(--border);
   font-size: 0.65rem;
   margin: 0 1px;
   user-select: none;

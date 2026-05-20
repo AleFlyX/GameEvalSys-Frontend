@@ -29,7 +29,7 @@
         <span class="meta-label">处理后</span>
         <span class="meta-value meta-value--primary">{{
           formatScore(indicator.processedAverageScore || indicator.averageScore)
-          }}</span>
+        }}</span>
       </span>
       <span class="meta-sep">·</span>
       <span class="meta-item" :class="{ 'meta-item--warning': (indicator.abnormalCount ?? 0) > 0 }">
@@ -97,13 +97,13 @@ const getIndicatorMaxScore = (indicatorId) => {
 
 .indicator-name {
   font-weight: 600;
-  color: #1f2937;
+  color: var(--text);
   font-size: 0.95rem;
 }
 
 .indicator-id {
   font-size: 0.75rem;
-  color: #9ca3af;
+  color: var(--text-disabled);
 }
 
 .indicator-score {
@@ -116,7 +116,7 @@ const getIndicatorMaxScore = (indicatorId) => {
 .score-value {
   font-weight: 700;
   font-size: 1.15rem;
-  color: #1f2937;
+  color: var(--text);
   white-space: nowrap;
   letter-spacing: -0.01em;
 }
@@ -132,7 +132,7 @@ const getIndicatorMaxScore = (indicatorId) => {
   align-items: center;
   gap: 2px 4px;
   font-size: 0.72rem;
-  color: #6b7280;
+  color: var(--text-secondary);
   line-height: 1.6;
 }
 
@@ -143,22 +143,22 @@ const getIndicatorMaxScore = (indicatorId) => {
   white-space: nowrap;
   padding: 1px 6px;
   border-radius: 4px;
-  background: #f3f4f6;
+  background: var(--bg-secondary);
   transition: background 0.2s;
 }
 
 .meta-item:hover {
-  background: #e5e7eb;
+  background: rgba(148, 163, 184, 0.18);
 }
 
 /* 恶意评分 > 0 时高亮 */
 .meta-item--warning {
-  background: #fef2f2;
+  background: rgba(220, 38, 38, 0.12);
   color: #dc2626;
 }
 
 .meta-item--warning:hover {
-  background: #fde8e8;
+  background: rgba(220, 38, 38, 0.18);
 }
 
 .meta-item--warning .meta-value {
@@ -167,24 +167,24 @@ const getIndicatorMaxScore = (indicatorId) => {
 }
 
 .meta-label {
-  color: #9ca3af;
+  color: var(--text-disabled);
   font-weight: 400;
 }
 
 .meta-value {
-  color: #4b5563;
+  color: var(--text);
   font-weight: 500;
 }
 
 /* 处理后分数高亮 */
 .meta-value--primary {
-  color: #3b82f6;
+  color: var(--el-color-primary);
   font-weight: 600;
 }
 
 /* 分隔符 */
 .meta-sep {
-  color: #d1d5db;
+  color: var(--border);
   font-size: 0.65rem;
   margin: 0 1px;
   user-select: none;

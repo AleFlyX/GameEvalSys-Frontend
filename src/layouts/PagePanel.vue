@@ -7,11 +7,13 @@
     </header>
 
     <section class="panel-content">
-      <slot>
-        <!-- 其他小组件区域 -->
-      </slot>
+      <div v-if="$slots.default" class="panel-toolbar">
+        <slot>
+          <!-- 其他小组件区域 -->
+        </slot>
+      </div>
 
-      <main class="data-list">
+      <main class="data-list" :class="bgCard ? 'bg-card' : ''">
         <slot name="main-table">
           <!-- el table组件 -->
         </slot>
@@ -31,6 +33,12 @@
 </template>
 
 <script setup>
+defineProps({
+  bgCard: {
+    type: Boolean,
+    default: true
+  }
+});
 </script>
 
 <style scoped>
@@ -40,9 +48,7 @@
   min-height: 100vh;
   padding: 32px 0 28px;
   box-sizing: border-box;
-  background:
-    radial-gradient(circle at top left, rgba(47, 107, 255, 0.08), transparent 28%),
-    linear-gradient(180deg, #f4f7fb 0%, #eff4fa 100%);
+  background: var(--bg-primary);
 }
 
 .panel-header,
@@ -64,21 +70,29 @@
   gap: var(--panel-gap);
 }
 
+.panel-toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
 .data-list {
   width: 100%;
   min-height: 320px;
-  padding: 28px 32px 24px;
   display: flex;
   flex-direction: column;
   gap: 24px;
   box-sizing: border-box;
+}
+
+.bg-card {
+  padding: 28px 32px 24px;
   border-radius: 24px;
-  border: 1px solid rgba(225, 233, 244, 0.95);
-  background: rgba(255, 255, 255, 0.9);
-  box-shadow:
-    0 20px 48px rgba(31, 42, 68, 0.08),
-    0 2px 10px rgba(31, 42, 68, 0.04);
-  backdrop-filter: blur(10px);
+  border: 1px solid var(--border);
+  background: var(--card-bg);
+  box-shadow: var(--card-shadow);
+  backdrop-filter: var(--card-backdrop);
 }
 
 .panel-footer {
@@ -92,6 +106,10 @@
   .admin-panel {
     --panel-max-width: calc(100% - 24px);
     padding-top: 20px;
+  }
+
+  .panel-toolbar {
+    gap: 12px;
   }
 
   .data-list {

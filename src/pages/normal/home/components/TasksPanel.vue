@@ -8,13 +8,16 @@
         <div v-if="pendingTasks.length === 0" class="task-empty">
           当前没有待处理任务
         </div>
-        <div v-for="task in pendingTasks" :key="task.id" class="task-item">
-          <span class="task-dot"></span>
-          <div class="task-content">
-            <p class="task-name">{{ task.name }}</p>
-            <p class="task-deadline">{{ task.deadline }}</p>
+        <BaseCard v-for="task in pendingTasks" :key="task.id" variant="soft" interactive
+          @click="JumpToScoring(task.id)">
+          <div class="task-item">
+            <span class="task-dot"></span>
+            <div class="task-content">
+              <p class="task-name">{{ task.name }}</p>
+              <p class="task-deadline">{{ task.deadline }}</p>
+            </div>
           </div>
-        </div>
+        </BaseCard>
       </div>
     </template>
   </BaseCard>
@@ -22,13 +25,35 @@
 
 <script setup>
 import BaseCard from '@/components/common/data/BaseCard.vue';
-
-defineProps({
+import { useRouter } from 'vue-router';
+const props = defineProps({
   pendingTasks: {
     type: Array,
     default: () => []
+  },
+  focusProjectName: {
+    type: String,
+    default: '暂无项目'
+  },
+  focusProjectId: {
+    type: [String, Number],
+    default: null
   }
 });
+
+const router = useRouter();
+const JumpToScoring = (groupId) => {
+  // 实现跳转到评分页面的逻辑
+  router.push({
+    name: 'projectScoring',
+    params: { projectId: Number(props.focusProjectId) || props.focusProjectId, },
+    query: {
+      projectName: props.focusProjectName,
+      groupId: groupId,
+      openModal: true,
+    }
+  });
+};
 </script>
 
 <style scoped>
@@ -51,9 +76,6 @@ defineProps({
   display: flex;
   align-items: flex-start;
   gap: 10px;
-  padding: 10px;
-  border-radius: 10px;
-  background: #f7fbff;
 }
 
 .task-dot {

@@ -2,22 +2,20 @@
   <PagePanel>
     <template #header>
       <StatCard label="总项目组数" :value="overViewCardsMap.totalGroups" icon="User" iconColor="var(--primary-havy)"
-        iconBg="var(--primary-light)" width="23%"
-        style="margin-right: 16px; display: inline-block; min-width: 180px;" />
+        iconBg="var(--primary-light)" style="margin-right: 16px; display: inline-block; min-width: 180px;" />
       <StatCard label="活跃小组" :value="overViewCardsMap.activeGroups" icon="UserFilled" iconColor="var(--success)"
-        iconBg="var(--success-light)" width="23%"
-        style="margin-right: 16px; display: inline-block; min-width: 180px;" />
+        iconBg="var(--success-light)" style="margin-right: 16px; display: inline-block; min-width: 180px;" />
       <StatCard label="总成员数" :value="overViewCardsMap.totalMembers" icon="Users" iconColor="var(--warning)"
-        iconBg="var(--warning-light)" width="23%"
-        style="margin-right: 16px; display: inline-block; min-width: 180px;" />
+        iconBg="var(--warning-light)" style="margin-right: 16px; display: inline-block; min-width: 180px;" />
       <StatCard label="平均小组大小" :value="overViewCardsMap.avgGroupSize" icon="Management" iconColor="var(--info)"
-        iconBg="var(--info-light)" width="23%" style="display: inline-block; min-width: 180px;" />
+        iconBg="var(--info-light)" style="display: inline-block; min-width: 180px;" />
 
     </template>
-    <template #main-table>
-      <SearchInput size="middle" placeholder="搜索项目小组名称..." @search="handleSearch" @add="handleAdd">
-      </SearchInput>
 
+    <SearchInput size="middle" placeholder="搜索项目小组名称..." @search="handleSearch" @add="handleAdd">
+    </SearchInput>
+
+    <template #main-table>
       <el-table :data="tableData" stripe style="width: 100%">
         <DataTableColums :col-rules="COLUMN_RULES"></DataTableColums>
         <el-table-column label="操作" width="auto" fixed="right">

@@ -1,5 +1,6 @@
 <template>
   <article class="stat-card" :style="customCardsStyle">
+    <!-- 卡片头部 -->
     <div class="stat-head stat-card-header">
       <div class="stat-icon-wrap" :style="iconWrapStyle">
         <slot name="icon">
@@ -15,10 +16,13 @@
         <slot name="head-extra"></slot>
       </div>
     </div>
+    <!-- 卡片主体 -->
     <p v-if="label && labelPlacement === 'body'" class="stat-label">
       {{ label }}
     </p>
+    <!-- 卡片值 -->
     <p v-if="value !== '' && value !== null" class="stat-value">{{ value }}</p>
+    <!-- 卡片副标题 -->
     <p v-if="sub" class="stat-sub stat-sub-label">{{ sub }}</p>
     <slot name="footer"></slot>
   </article>
@@ -31,7 +35,7 @@ import { getElementIcon } from '@/utils/elementIcons';
 
 const props = defineProps({
   width: { type: [String, Number], default: "" },
-  height: { type: [String, Number], default: "100%" },
+  height: { type: [String, Number], default: "" },
   label: { type: String, default: '' },
   value: { type: [String, Number], default: '' }, // 主要数据
   sub: { type: String, default: '' }, // 底部内容
@@ -61,31 +65,50 @@ const iconStyle = computed(() => ({
 }));
 
 const customCardsStyle = computed(() => {
-  if (props.width && props.height) {
-    return {
-      'width': props.width,
-      'height': props.height,
-    }
+  const styles = {};
+
+  if (props.width !== '' && props.width !== null && props.width !== undefined) {
+    styles.width = typeof props.width === 'number' ? `${props.width}px` : props.width;
   }
-  return {}
+
+  if (props.height !== '' && props.height !== null && props.height !== undefined) {
+    styles.height = typeof props.height === 'number' ? `${props.height}px` : props.height;
+  }
+
+  return styles;
 });
-console.log(customCardsStyle.value)
 </script>
 
 <style scoped>
 .stat-card {
-  border-radius: var(--stat-card-radius, 16px);
-  padding: var(--stat-card-padding, 18px);
-  background: var(--stat-card-bg, rgba(255, 255, 255, 0.82));
-  box-shadow: var(--stat-card-shadow, 0 10px 24px rgba(31, 47, 70, 0.08));
+  --stat-card-radius: 16px;
+  --stat-card-padding: 18px;
+  --stat-card-bg: var(--card-bg, rgba(255, 255, 255, 0.92));
+  --stat-card-border: var(--border, rgba(225, 233, 244, 0.95));
+  --stat-card-shadow: 0 10px 28px rgba(31, 47, 70, 0.08);
+  /* Could use var(--card-shadow) */
+  --stat-card-transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+  border-radius: var(--stat-card-radius);
+  padding: var(--stat-card-padding);
+  background: var(--stat-card-bg);
+  border: 1px solid var(--stat-card-border);
+  box-shadow: var(--stat-card-shadow);
   backdrop-filter: blur(10px);
   animation: fadeUp 0.5s ease both;
-  transition: var(--stat-card-transition, all 0.2s ease);
+  transition: var(--stat-card-transition);
+}
+
+html[data-theme="dark"] .stat-card {
+  --stat-card-shadow: 0 10px 28px rgba(0, 0, 0, 0.4);
 }
 
 .stat-card:hover {
-  transform: var(--stat-card-hover-transform, translateY(0));
-  box-shadow: var(--stat-card-hover-shadow, var(--stat-card-shadow, 0 10px 24px rgba(31, 47, 70, 0.08)));
+  transform: var(--stat-card-hover-transform, translateY(-2px));
+  box-shadow: var(--stat-card-hover-shadow, 0 14px 32px rgba(31, 47, 70, 0.1));
+}
+
+html[data-theme="dark"] .stat-card:hover {
+  --stat-card-hover-shadow: 0 14px 32px rgba(0, 0, 0, 0.5);
 }
 
 .stat-head {
@@ -111,7 +134,7 @@ console.log(customCardsStyle.value)
 
 .stat-label {
   font-size: var(--stat-label-size, 13px);
-  color: var(--stat-label-color, #66758a);
+  color: var(--text-secondary);
   font-weight: var(--stat-label-weight, 400);
   margin: var(--stat-label-margin, 0);
 }
@@ -120,14 +143,14 @@ console.log(customCardsStyle.value)
   margin: var(--stat-value-margin, 16px 0 4px);
   font-size: var(--stat-value-size, 34px);
   font-weight: var(--stat-value-weight, 700);
-  color: var(--stat-value-color, #1f2f46);
+  color: var(--text);
   line-height: 1;
 }
 
 .stat-sub {
   margin: var(--stat-sub-margin, 0);
   font-size: var(--stat-sub-size, 12px);
-  color: var(--stat-sub-color, #9aa8bb);
+  color: var(--text-disabled);
 }
 
 @keyframes fadeUp {

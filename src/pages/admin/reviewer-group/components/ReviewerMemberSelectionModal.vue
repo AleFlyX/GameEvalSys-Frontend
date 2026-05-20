@@ -1,48 +1,54 @@
 <template>
-  <Teleport to="body">
-    <BaseFormModal :visible="visible" width="82%" min-height="75%" :allow-mask-close="false"
-      @update:visible="handleVisibleChange">
-      <template #title>
-        选择评审组成员
-      </template>
+  <SelectionModalShell :visible="visible" width="82%" min-height="75%" :allow-mask-close="false"
+    @update:visible="handleVisibleChange">
+    <template #title>
+      <div class="dialog-title-wrap">
+        <h3>选择评审组成员</h3>
+        <p>支持按用户名、昵称和角色筛选，已选成员会在表单中同步回显</p>
+      </div>
+    </template>
 
-      <template #form>
-        <div class="member-selection-modal">
-          <div class="toolbar">
-            <span class="selection-summary">已选 {{ selectedIdsDraft.length }} 位成员</span>
-            <el-button size="small" :disabled="selectedIdsDraft.length === 0" @click="handleClearAllSelection">
-              清空全部
-            </el-button>
-          </div>
+    <template #summary>
+      <div class="summary-item">
+        <span>已选成员</span>
+        <strong>{{ selectedIdsDraft.length }}</strong>
+      </div>
+    </template>
 
-          <div v-if="selectedUsersDraft.length" class="selected-preview">
-            <span class="preview-label">已选成员：</span>
-            <div class="tag-list">
-              <el-tag v-for="user in selectedUsersDraft" :key="user.id" closable @close="removeSelectedUser(user.id)">
-                {{ user.name || user.username || `用户${user.id}` }}
-              </el-tag>
-            </div>
-          </div>
+    <template #toolbar>
+      <div class="toolbar-actions">
+        <el-button size="small" :disabled="selectedIdsDraft.length === 0"
+          @click="() => { selectedIdsDraft = [] }">清空全部</el-button>
+      </div>
+    </template>
 
-          <div class="table-shell">
-            <UserSelectionTable v-model:selectedIds="selectedIdsDraft"
-              :allowed-roles="['scorer', 'admin', 'super_admin']" :show-disabled-users="false" />
-          </div>
+    <template #preview>
+      <div v-if="selectedUsersDraft.length" class="selected-preview">
+        <span class="preview-label">已选成员：</span>
+        <div class="tag-list">
+          <el-tag v-for="user in selectedUsersDraft" :key="user.id" closable @close="removeSelectedUser(user.id)">
+            {{ user.name || user.username || `用户${user.id}` }}
+          </el-tag>
         </div>
-      </template>
+      </div>
+    </template>
 
-      <template #operations>
-        <button class="primary-btn" @click="handleConfirm">确认选择</button>
-        <button class="cancel-btn" @click="handleVisibleChange(false)">取消</button>
-      </template>
-    </BaseFormModal>
-  </Teleport>
+    <template #table>
+      <UserSelectionTable v-model:selectedIds="selectedIdsDraft" :allowed-roles="['scorer', 'admin', 'super_admin']"
+        :show-disabled-users="false" />
+    </template>
+
+    <template #operations>
+      <MyBtn type="primary" class="primary-btn" @click="handleConfirm">确认选择</MyBtn>
+      <MyBtn type="default" @click="handleVisibleChange(false)">取消</MyBtn>
+    </template>
+  </SelectionModalShell>
 </template>
 
 <script setup>
 import { computed, ref, watch } from 'vue';
-import BaseFormModal from '@/components/common/modal/BaseFormModal.vue';
 import UserSelectionTable from '@/components/business/user/user-selection-modal/UserSelectionTable.vue';
+import SelectionModalShell from '@/components/common/modal/SelectionModalShell.vue';
 import { userApi } from '@/api/user';
 import { useMessage } from '@/composables/useMessage';
 
@@ -113,10 +119,6 @@ const ensureSelectedUsersLoaded = async () => {
   }
 };
 
-const handleClearAllSelection = () => {
-  selectedIdsDraft.value = [];
-};
-
 const removeSelectedUser = (userId) => {
   selectedIdsDraft.value = selectedIdsDraft.value.filter(id => id !== userId);
 };
@@ -172,50 +174,4 @@ watch(
 );
 </script>
 
-<style scoped>
-.member-selection-modal {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.toolbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-  padding: 12px;
-  background: var(--el-fill-color-light);
-  border-radius: 8px;
-}
-
-.selection-summary {
-  color: var(--el-text-color-regular);
-  font-size: 14px;
-}
-
-.selected-preview {
-  display: flex;
-  gap: 10px;
-  align-items: flex-start;
-  padding: 12px;
-  border: 1px solid var(--el-border-color-lighter);
-  border-radius: 8px;
-}
-
-.preview-label {
-  color: var(--el-text-color-regular);
-  line-height: 32px;
-  white-space: nowrap;
-}
-
-.tag-list {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.table-shell {
-  min-height: 420px;
-}
-</style>
+<style scoped></style>

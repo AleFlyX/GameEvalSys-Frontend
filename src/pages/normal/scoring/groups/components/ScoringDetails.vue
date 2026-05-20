@@ -2,30 +2,34 @@
   <!-- 查看打分详情 -->
   <BaseDialogModal v-bind="$attrs" @update:visible="$emit('update:visible', $event)">
     <template #header>
-      <h3>{{ selectedGroup?.name }} - 打分详情</h3>
+      <ScoringModalHeader :title="`${selectedGroup?.name || ''} - 打分详情`" description="按当前评分标准展示每项指标的得分与范围。" />
     </template>
     <template #body>
       <div v-if="selectedGroup" class="scoring-detail">
-        <div class="detail-item" v-for="indicator in scoringDetailsRes" :key="indicator.id">
+        <section class="score-summary-card">
+          <span class="summary-label">总分</span>
+          <strong class="summary-value">{{ totalScore }}</strong>
+        </section>
 
-          <label>{{ indicator.name }}: </label>
-          <span class="score-value"><strong>{{ indicator.score }}</strong></span>
-          <span class="score-range">--分值范围({{ indicator.minScore }} - {{ indicator.maxScore }})</span>
+        <div class="indicator-list">
+          <ScoringIndicatorRow v-for="indicator in scoringDetailsRes" :key="indicator.id" :indicator="indicator" />
         </div>
-        <div class="total-score">
-          <label>总分:</label>
-          <span style="color: red;"> <strong>{{ totalScore }}</strong></span>
-        </div>
+      </div>
+      <div v-else class="empty-state">
+        暂无打分详情
       </div>
     </template>
     <template #footer>
-      <button @click="$emit('update:visible', false)">关闭</button>
+      <MyBtn type="default" @click="$emit('update:visible', false)">关闭</MyBtn>
     </template>
   </BaseDialogModal>
 </template>
 <script setup>
-import { ref, watch, onMounted } from 'vue';
+import MyBtn from '@/components/common/form/MyBtn.vue';
+import { ref, watch } from 'vue';
 import { getIndicatorsFromStandard } from '@/utils/scoringStandard';
+import ScoringModalHeader from './ScoringModalHeader.vue';
+import ScoringIndicatorRow from './ScoringIndicatorRow.vue';
 const props = defineProps({
   selectedGroup: {
     type: Object,
@@ -79,66 +83,89 @@ watch(
   },
   { immediate: true }
 )
-
-onMounted(() => {
-  console.log("6465465465456", props.selectedGroup, props.scoringDetails)
-})
-
 </script>
 <style scoped>
 .scoring-detail {
-  padding: 12px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 8px 0 0;
+}
+
+.score-summary-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 20px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(47, 107, 255, 0.08), rgba(32, 183, 199, 0.08));
+  border: 1px solid rgba(47, 107, 255, 0.12);
+}
+
+.summary-label {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  color: #55637a;
+}
+
+.summary-value {
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 1;
+  color: #e53935;
+  letter-spacing: -0.5px;
+}
+
+.indicator-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .detail-item {
   display: flex;
-  margin-bottom: 16px;
   align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: #f8fafc;
+  border: 1px solid #e5ebf3;
+  transition: all 0.2s ease;
 }
 
-.detail-item label {
-  font-weight: 600;
-  min-width: 100px;
-  margin-right: 20px;
+.detail-item:hover {
+  background: #f0f4fa;
+  border-color: #d8e1f0;
 }
 
-.score-value {
-  color: var(--primary);
-  font-weight: 600;
-  font-size: 16px;
-  margin: 0 10px;
+.empty-state {
+  padding: 32px 16px;
+  text-align: center;
+  color: #7b8798;
+  font-size: 14px;
 }
 
-.score-range {
-  color: #909399;
-  font-size: 12px;
-}
+@media (max-width: 768px) {
+  .scoring-detail {
+    gap: 16px;
+  }
 
-.total-score {
-  display: flex;
-  margin-top: 20px;
-  padding-top: 16px;
-  border-top: 1px solid #ebeef5;
-  align-items: center;
-}
+  .score-summary-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
 
-.total-score label {
-  font-weight: 600;
-  min-width: 100px;
-  margin-right: 20px;
-}
+  .detail-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 
-.total-score span {
-  color: var(--danger);
-  font-weight: 600;
-  font-size: 18px;
-}
-
-.modal-footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-  padding-top: 12px;
-  border-top: 1px solid #f0f0f0;
+  .summary-value {
+    font-size: 28px;
+  }
 }
 </style>

@@ -1,28 +1,31 @@
 <template>
   <div class="home-page" v-loading="loading">
-    <section class="hero-panel">
-      <div class="hero-copy">
+    <div class="home-hero">
+      <BaseCard class="hero-copy" shadow="always">
         <p class="hero-eyebrow">PROJECT EVALUATE DASHBOARD</p>
         <h1 class="hero-title">
-          欢迎回来，<span>{{ userName }}</span>
+          欢迎回来，<span>{{ name }}</span>
         </h1>
         <p class="hero-desc">
           {{ roleLabel }} · 当前聚焦项目：{{ focusProjectName }}
         </p>
-      </div>
-      <div class="hero-actions">
-        <el-button type="primary" @click="handleGoScoring">
-          开始评分
-        </el-button>
-        <!-- <el-button @click="fetchHomeData">
-          刷新数据
-        </el-button> -->
-      </div>
-    </section>
+      </BaseCard>
+
+      <BaseCard class="hero-highlight" shadow="always">
+        <span class="highlight-label">当前待处理</span>
+        <strong>{{ dashboardStats.pendingGroups }}</strong>
+        <p>建议优先进入进行中的项目处理待评分小组。</p>
+        <div class="hero-actions">
+          <MyBtn size="large" @click="handleGoScoring">
+            开始评分
+          </MyBtn>
+        </div>
+      </BaseCard>
+    </div>
 
     <section class="stats-grid">
       <StatCard v-for="card in statCards" :key="card.key" :label="card.label" :value="card.value" :sub="card.sub"
-        :icon="card.icon" />
+        :icon="card.icon" icon-bg="var(--primary-light)" icon-color="var(--primary-havy)" />
     </section>
 
     <section class="dashboard-grid">
@@ -36,6 +39,7 @@
         </template>
       </TrendMap>
 
+      <!-- 任务面板 -->
       <ProgressCard :dashboard-stats="dashboardStats">
         <template #header>
           <div class="panel-header">
@@ -45,7 +49,9 @@
         </template>
       </ProgressCard>
 
-      <TasksPanel :pending-tasks="pendingTasks">
+
+      <TasksPanel :pending-tasks="pendingTasks" :focus-project-name="focusProjectName"
+        :focus-project-id="focusProjectId">
         <template #header>
           <div class="panel-header">
             <h2>待处理任务</h2>
@@ -76,6 +82,7 @@ import { ScoringApi } from '@/api/scoring';
 import { useMessage } from '@/composables/useMessage';
 import { useUserStore } from '@/stores/modules/userStore';
 import { useLoading } from '@/composables/useLoading';
+import BaseCard from '@/components/common/data/BaseCard.vue';
 import StatCard from '@/components/common/data/StatCard.vue';
 import { formatTime } from '@/utils/format';
 import TrendMap from './components/trendMap.vue';
@@ -92,7 +99,7 @@ const { isLoading: loading, start: startLoading, end: endLoading } = useLoading(
 const trendPoints = ref([]);                // 最近7天打分趋势数据点 [{ label, count }]
 const pendingTasks = ref([]);               // 待处理任务列表（当前焦点项目未评分的小组）
 const focusProjectName = ref('暂无项目');    // 当前聚焦的项目名称
-
+const focusProjectId = ref(null);              // 当前聚焦的项目ID
 const dashboardStats = reactive({
   totalProjects: 0,      // 可见项目总数
   ongoingProjects: 0,    // 进行中的项目数
@@ -105,8 +112,8 @@ const PROJECT_PAGE_SIZE = 100;          // 项目列表分页大小
 const SCORE_RECORD_PAGE_SIZE = 200;     // 评分记录分页大小
 const roleSet = ['super_admin', 'admin', 'scorer'];  // 拥有评分权限的角色集合
 
-const userName = computed(() => {
-  return userStore.userInfo?.username || userStore.userInfo?.name || '用户';
+const name = computed(() => {
+  return userStore.userInfo?.name || '用户';
 });
 
 const roleLabel = computed(() => {
@@ -340,7 +347,7 @@ const fetchProjectDetailData = async (project) => {
   }
 
   focusProjectName.value = project.name || `项目#${project.id}`;
-
+  focusProjectId.value = project.id;
   const [groupResponse, recordResponse] = await Promise.all([
     projectGroupApi.getProjectGroups(project.id),
     ScoringApi.getProjectScoringRecds(project.id, { page: 1, size: SCORE_RECORD_PAGE_SIZE }),

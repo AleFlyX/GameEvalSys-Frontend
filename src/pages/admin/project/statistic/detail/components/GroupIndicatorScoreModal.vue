@@ -49,12 +49,13 @@
       </div>
     </template>
     <template #footer>
-      <button class="cancel-btn" @click="emit('update:visible', false)">关闭</button>
+      <MyBtn type="default"  @click="emit('update:visible', false)">关闭</MyBtn>
     </template>
   </BaseDialogModal>
 </template>
 
 <script setup>
+import MyBtn from '@/components/common/form/MyBtn.vue';
 import BaseDialogModal from "@/components/common/modal/BaseDialogModal.vue";
 
 defineOptions({
@@ -129,12 +130,12 @@ const formatScore = (score) => {
 
 .indicator-cell .id {
   font-size: 12px;
-  color: #909399;
+  color: var(--text-disabled);
 }
 
 .score {
   font-weight: 600;
-  color: #1f2937;
+  color: var(--text);
 }
 
 .meta-pair {
@@ -142,6 +143,6 @@ const formatScore = (score) => {
   flex-direction: column;
   gap: 4px;
   font-size: 12px;
-  color: #6b7280;
+  color: var(--text-secondary);
 }
 </style>

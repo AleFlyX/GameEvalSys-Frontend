@@ -17,10 +17,13 @@
         :editable="addMode || editMode" />
     </template>
     <template #operations>
-      <button v-if="addMode || editMode" @click="handleConfirm()" class="primary-btn" :disabled="isSubmitting">
+      <MyBtn type="primary" v-if="addMode || editMode" @click="handleConfirm()" class="primary-btn"
+        :disabled="isSubmitting">
         确认
-      </button>
-      <button @click="handleClose()">取消</button>
+      </MyBtn>
+      <MyBtn type="default" @click="handleClose()">
+        取消
+      </MyBtn>
     </template>
   </BaseFormModal>
 </template>

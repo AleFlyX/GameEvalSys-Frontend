@@ -3,8 +3,7 @@
     <el-checkbox v-model="checked" :label="`记住我（保存最近 ${maxHistory} 个账号）`" @change="handleChange" />
 
     <!-- 账号历史快速选择 -->
-    <el-popover :effect="darkMode ? 'dark' : 'light'" v-if="historyCount > 0" placement="bottom" :width="280"
-      trigger="click">
+    <el-popover v-if="historyCount > 0" placement="bottom" :width="280" trigger="click">
       <template #reference>
         <el-link type="primary" :underline="false" class="account-history-link">
           {{ historyCount }} 个已保存账号

@@ -1,91 +1,113 @@
 <template>
-  <Teleport to="body">
-    <BaseFormModal :visible="visible" width="78%" min-height="72%" :allow-mask-close="false"
-      @update:visible="handleVisibleChange">
-      <template #title>
-        选择项目内受评分的小组
-      </template>
+  <SelectionModalShell :visible="visible" width="78%" min-height="72%" :allow-mask-close="false"
+    @update:visible="handleVisibleChange">
+    <template #title>
+      <div class="dialog-title-wrap">
+        <h3>选择项目内受评分的小组</h3>
+        <p>支持按名称搜索、批量选择和已选内容回收</p>
+      </div>
+    </template>
 
-      <template #form>
-        <div class="group-selection-modal">
-          <div class="toolbar">
-            <div class="search-row">
-              <el-input v-model="searchKeyword" placeholder="搜索小组名称" clearable style="width: 280px"
-                @input="handleSearch">
-                <template #prefix>
-                  <el-icon>
-                    <Search />
-                  </el-icon>
-                </template>
-              </el-input>
-            </div>
+    <template #summary>
+      <div class="summary-item">
+        <span>已选小组</span>
+        <strong>{{ selectedIdsDraft.length }}</strong>
+      </div>
+      <div class="summary-item">
+        <span>当前页已选</span>
+        <strong>{{ currentPageSelectedRows.length }}</strong>
+      </div>
+      <div class="summary-item">
+        <span>搜索结果</span>
+        <strong>{{ total }}</strong>
+      </div>
+    </template>
 
-            <div class="batch-row">
-              <span class="selection-summary">已选 {{ selectedIdsDraft.length }} 个小组</span>
-              <el-button size="small" type="primary" :disabled="tableData.length === 0"
-                @click="handleSelectAllCurrentPage">
-                全选本页
-              </el-button>
-              <el-button size="small" type="primary" plain :loading="selectAllLoading" :disabled="total === 0"
-                @click="handleSelectAllByFilter">
-                全选搜索结果
-              </el-button>
-              <el-button size="small" :disabled="currentPageSelectedRows.length === 0" @click="handleClearCurrentPage">
-                清空本页
-              </el-button>
-              <el-button size="small" :disabled="tableData.length === 0" @click="handleInvertCurrentPage">
-                反选本页
-              </el-button>
-              <el-button size="small" :disabled="selectedIdsDraft.length === 0" @click="handleClearAllSelection">
-                清空全部
-              </el-button>
-            </div>
-          </div>
+    <template #toolbar>
+      <div class="toolbar-grid">
+        <div class="toolbar-card">
+          <div class="toolbar-label">搜索</div>
+          <el-input v-model="searchKeyword" placeholder="搜索小组名称" clearable class="search-input" @input="handleSearch">
+            <template #prefix>
+              <el-icon>
+                <Search />
+              </el-icon>
+            </template>
+          </el-input>
+        </div>
 
-          <div class="selected-preview" v-if="selectedGroupsDraft.length">
-            <span class="preview-label">已选小组：</span>
-            <div class="tag-list">
-              <el-tag v-for="group in selectedGroupsDraft" :key="group.id" closable
-                @close="removeSelectedGroup(group.id)">
-                {{ group.name }}
-              </el-tag>
-            </div>
-          </div>
-
-          <div class="table-container">
-            <el-table ref="tableRef" v-loading="loading" :data="tableData" row-key="id" stripe style="width: 100%"
-              :reserve-selection="true" @selection-change="handleSelectionChange">
-              <el-table-column type="selection" width="50" align="center" />
-              <el-table-column prop="id" label="小组ID" min-width="100" />
-              <el-table-column prop="name" label="小组名称" min-width="180" show-overflow-tooltip />
-              <el-table-column prop="description" label="描述" min-width="220" show-overflow-tooltip />
-              <el-table-column prop="createTime" label="创建时间" min-width="180" show-overflow-tooltip />
-            </el-table>
-          </div>
-
-          <div class="pagination-container">
-            <el-pagination v-model:current-page="currentPage" v-model:page-size="pageSize"
-              :page-sizes="[10, 20, 30, 50]" :total="total" layout="sizes, prev, pager, next"
-              @size-change="handleSizeChange" @current-change="handleCurrentChange" />
+        <div class="toolbar-card toolbar-card--actions">
+          <div class="toolbar-label">批量操作</div>
+          <div class="batch-row">
+            <el-button size="small" type="primary" :disabled="tableData.length === 0"
+              @click="handleSelectAllCurrentPage">
+              全选本页
+            </el-button>
+            <el-button size="small" type="primary" plain :loading="selectAllLoading" :disabled="total === 0"
+              @click="handleSelectAllByFilter">
+              全选搜索结果
+            </el-button>
+            <el-button size="small" :disabled="currentPageSelectedRows.length === 0" @click="handleClearCurrentPage">
+              清空本页
+            </el-button>
+            <el-button size="small" :disabled="tableData.length === 0" @click="handleInvertCurrentPage">
+              反选本页
+            </el-button>
+            <el-button size="small" :disabled="selectedIdsDraft.length === 0" @click="handleClearAllSelection">
+              清空全部
+            </el-button>
           </div>
         </div>
-      </template>
+      </div>
+    </template>
 
-      <template #operations>
-        <button class="primary-btn" @click="handleConfirm">确认选择</button>
-        <button class="cancel-btn" @click="handleVisibleChange(false)">取消</button>
-      </template>
-    </BaseFormModal>
-  </Teleport>
+    <template #preview>
+      <div class="selected-preview" v-if="selectedGroupsDraft.length">
+        <span class="preview-label">已选小组：</span>
+        <div class="tag-list">
+          <el-tag v-for="group in selectedGroupsDraft" :key="group.id" closable @close="removeSelectedGroup(group.id)">
+            {{ group.name }}
+          </el-tag>
+        </div>
+      </div>
+    </template>
+
+    <template #table>
+      <div class="table-container">
+        <el-table ref="tableRef" v-loading="loading" :data="tableData" row-key="id" stripe style="width: 100%"
+          :reserve-selection="true" @selection-change="handleSelectionChange">
+          <el-table-column type="selection" width="50" align="center" />
+          <el-table-column prop="id" label="小组ID" min-width="100" />
+          <el-table-column prop="name" label="小组名称" min-width="180" show-overflow-tooltip />
+          <el-table-column prop="description" label="描述" min-width="220" show-overflow-tooltip />
+          <el-table-column prop="createTime" label="创建时间" min-width="180" show-overflow-tooltip />
+        </el-table>
+      </div>
+    </template>
+
+    <template #pagination>
+      <div class="pagination-container">
+        <el-pagination v-model:current-page="currentPage" v-model:page-size="pageSize" :page-sizes="[10, 20, 30, 50]"
+          :total="total" layout="sizes, prev, pager, next" @size-change="handleSizeChange"
+          @current-change="handleCurrentChange" />
+      </div>
+    </template>
+
+    <template #operations>
+      <MyBtn type="primary"  @click="handleConfirm">确认选择</MyBtn>
+      <MyBtn type="default"  @click="handleVisibleChange(false)">取消</MyBtn>
+    </template>
+  </SelectionModalShell>
 </template>
 
 <script setup>
+import MyBtn from '@/components/common/form/MyBtn.vue';
 import { computed, nextTick, ref, watch } from 'vue';
 import { Search } from '@element-plus/icons-vue';
-import BaseFormModal from '@/components/common/modal/BaseFormModal.vue';
 import { projectGroupApi } from '@/api/project-group';
 import { useMessage } from '@/composables/useMessage';
 import { useElPagination } from '@/composables/useElPagination';
+import SelectionModalShell from '@/components/common/modal/SelectionModalShell.vue';
 
 const props = defineProps({
   visible: {
@@ -326,43 +348,106 @@ watch(
 </script>
 
 <style scoped>
+.dialog-title-wrap h3 {
+  margin: 0;
+  font-size: 22px;
+  line-height: 1.35;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.dialog-title-wrap p {
+  margin: 8px 0 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
 .group-selection-modal {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
   min-height: 0;
 }
 
-.toolbar {
+.selection-summary-panel {
   display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 12px;
-  background: var(--el-fill-color-light);
-  border-radius: 8px;
   flex-wrap: wrap;
+  gap: 12px;
+  padding: 14px 16px;
+  background: linear-gradient(135deg, rgba(47, 107, 255, 0.08), rgba(32, 183, 199, 0.08));
+  border: 1px solid rgba(47, 107, 255, 0.12);
+  border-radius: 16px;
 }
 
-.search-row,
+html[data-theme="dark"] .selection-summary-panel {
+  background: linear-gradient(135deg, rgba(47, 107, 255, 0.16), rgba(32, 183, 199, 0.16));
+}
+
+.summary-item {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+}
+
+.summary-item span {
+  color: var(--el-text-color-regular);
+  font-size: 13px;
+}
+
+.summary-item strong {
+  color: var(--text);
+  font-size: 18px;
+}
+
+.toolbar-grid {
+  display: grid;
+  grid-template-columns: minmax(260px, 1fr) minmax(0, 2fr);
+  gap: 12px;
+}
+
+.toolbar-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 16px;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+}
+
+.toolbar-card--actions {
+  min-width: 0;
+}
+
+.toolbar-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.search-input {
+  width: 100%;
+}
+
 .batch-row {
   display: flex;
-  align-items: center;
   gap: 8px;
   flex-wrap: wrap;
-}
-
-.selection-summary {
-  color: var(--el-text-color-regular);
-  font-size: 14px;
 }
 
 .selected-preview {
   display: flex;
   gap: 10px;
   align-items: flex-start;
-  padding: 12px;
-  border: 1px solid var(--el-border-color-lighter);
-  border-radius: 8px;
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--card-bg);
 }
 
 .preview-label {
@@ -378,15 +463,33 @@ watch(
 }
 
 .table-container {
-  border: 1px solid var(--el-border-color-lighter);
-  border-radius: 8px;
+  border: 1px solid #e5ebf3;
+  border-radius: 16px;
   overflow: auto;
   min-height: 280px;
   max-height: 52vh;
+  background: #fff;
+  box-shadow: 0 12px 24px rgba(31, 42, 68, 0.06);
 }
 
 .pagination-container {
   display: flex;
   justify-content: flex-end;
+}
+
+@media (max-width: 960px) {
+  .toolbar-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .dialog-title-wrap h3 {
+    font-size: 20px;
+  }
+
+  .batch-row {
+    width: 100%;
+  }
 }
 </style>

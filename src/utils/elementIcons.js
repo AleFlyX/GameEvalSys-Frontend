@@ -5,10 +5,13 @@ import {
   Checked,
   Clock,
   Coin,
+  CircleCheck,
   Cellphone,
   Collection,
   ChatSquare,
+  DataLine,
   DataAnalysis,
+  Download,
   Document,
   Edit,
   Failed,
@@ -16,6 +19,7 @@ import {
   Grid,
   Histogram,
   HomeFilled,
+  Link,
   Lock,
   Moon,
   Monitor,
@@ -31,6 +35,7 @@ import {
   TrendCharts,
   User,
   UserFilled,
+  Warning
 } from "@element-plus/icons-vue";
 
 export const elementIconMap = {
@@ -40,16 +45,20 @@ export const elementIconMap = {
   Checked,
   Clock,
   Coin,
+  CircleCheck,
   Cellphone,
   Collection,
   ChatSquare,
+  DataLine,
   DataAnalysis,
+  Download,
   Document,
   Edit,
   Failed,
   FolderOpened,
   Grid,
   Histogram,
+  Link,
   Lock,
   HomeFilled,
   Moon,
@@ -67,6 +76,7 @@ export const elementIconMap = {
   User,
   UserFilled,
   Users: UserFilled,
+  Warning
 };
 
 export function getElementIcon(iconName, fallback = User) {

@@ -20,7 +20,6 @@
             {{ formatTime(scope.row.lastActiveAt, 'YYYY-MM-DD HH:mm:ss') }}
           </template>
         </el-table-column>
-        align="center" />
         <el-table-column label="操作" width="110" align="center">
           <template #default="scope">
             <el-button link type="danger" size="small" :disabled="scope.row.status !== 'active'"

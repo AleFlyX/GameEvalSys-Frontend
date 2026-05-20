@@ -2,10 +2,6 @@
   <!-- 此表是动态item，所以表中的数据都可以不用BaseForm安全克隆，拿到直接改就行 -->
   <el-form @submit.prevent v-loading="submitLoading" ref="baseFormRef" :model="formData" :rules="scoringFormRules"
     label-width="120px" :disabled="disabled">
-    <!-- 项目信息显示 -->
-    <el-form-item label="小组名称">
-      <el-text type="info" passive>{{ groupName }}</el-text>
-    </el-form-item>
 
     <!-- 动态生成的打分指标 -->
     <el-form-item v-for="(indicator, index) in indicators" :key="indicator.id" :label="indicator.name"
@@ -19,7 +15,7 @@
         </div>
         <span v-if="formatIndicatorDescription(indicator)" class="indicator-desc">{{
           formatIndicatorDescription(indicator)
-        }}</span>
+          }}</span>
       </div>
     </el-form-item>
 
@@ -53,10 +49,6 @@ const props = defineProps({
   disabled: {
     type: Boolean,
     default: false
-  },
-  groupName: {
-    type: String,
-    default: ''
   },
   projectId: {
     type: [String, Number],
@@ -202,20 +194,21 @@ const handleSubmit = async () => {
 
   if (!formData.value.scores || formData.value.scores.length === 0) {
     ElMessage.error('未初始化打分指标');
-    return;
+    return Promise.reject(new Error('Validation failed: no scoring indicators initialized')); // 阻止提交并抛出错误
   }
 
   const allScoresFilled = formData.value.scores.every(score => score !== null && score !== undefined && score !== '');
   if (!allScoresFilled) {
+    console.log('handleSubmit - 有指标未评分');
     ElMessage.error('请为所有指标评分');
-    return;
+    return Promise.reject(new Error('Validation failed: not all indicators scored')); // 阻止提交并抛出错误
   }
 
   // 验证表单其他字段
   const valid = await baseFormRef.value?.validate().catch(() => false);
   if (!valid) {
     ElMessage.error('请填写所有必填项');
-    return;
+    return Promise.reject(new Error('Validation failed: form validation failed')); // 阻止提交并抛出错误
   }
 
   startSubmitLoading();
@@ -276,34 +269,69 @@ watch(() => props.projectId, () => {
 .indicator-container {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: #f8fafc;
+  border: 1px solid #e5ebf3;
 }
 
 .score-input-group {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
+  justify-content: space-between;
 }
 
 .score-range {
-  font-size: 12px;
-  color: #909399;
+  font-size: 13px;
+  color: #7b8798;
   white-space: nowrap;
+  flex: 0 0 auto;
 }
 
 .indicator-desc {
   font-size: 12px;
-  color: #606266;
-  font-style: italic;
+  color: #7b8798;
+  line-height: 1.5;
 }
 
 .total-score {
-  font-size: 18px;
-  font-weight: bold;
-  color: var(--danger);
+  font-size: 20px;
+  font-weight: 700;
+  color: #e53935;
+  line-height: 1.2;
 }
 
 :deep(.el-form-item) {
   margin-bottom: 16px;
+}
+
+:deep(.el-form-item:last-child) {
+  margin-bottom: 0;
+}
+
+:deep(.el-input-number) {
+  width: 100%;
+  flex: 1;
+}
+
+:deep(.el-input-number .el-input__wrapper) {
+  border-radius: 8px;
+}
+
+@media (max-width: 768px) {
+  .indicator-container {
+    padding: 12px 14px;
+  }
+
+  .score-input-group {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .score-range {
+    order: -1;
+  }
 }
 </style>

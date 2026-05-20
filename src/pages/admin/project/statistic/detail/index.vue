@@ -2,12 +2,7 @@
   <div class="project-statistic-detail-container">
     <!-- 返回和标题 -->
     <div class="detail-header">
-      <el-button link @click="goBack">
-        <el-icon>
-          <ArrowLeft />
-        </el-icon>
-        返回列表
-      </el-button>
+      <BackButton></BackButton>
       <h1 class="page-title">{{ projectName }} - 打分统计详情</h1>
       <el-button type="primary" @click="handleExport(true)" :loading="exporting">
         <el-icon>
@@ -93,7 +88,17 @@
               </SearchInput>
               <el-table v-if="statisticData.scorerDistribution?.length" :data="statisticData.scorerDistribution" stripe
                 style="width: 95%">
-                <el-table-column prop="userName" label="评分人" />
+                <el-table-column prop="userName" label="评分人">
+                  <template #default="{ row }">
+                    <div class="scorer-icon" style="display: inline-flex; align-items: center; gap: 4px;">
+                      <el-icon>
+                        <CircleCheck v-if="row.count === statisticData.groupAverage.length" color="#67C23A" />
+                        <Warning v-else color="#F56C6C" />
+                      </el-icon>
+                    </div>
+                    {{ row.userName || '匿名用户' }}
+                  </template>
+                </el-table-column>
                 <el-table-column prop="scoreRange" label="打分范围" />
                 <el-table-column prop="count" label="打分次数" width="" align="center">
                   <template #default="{ row }">
@@ -124,7 +129,8 @@
 import { ref, onMounted, computed } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { ElMessage } from "element-plus";
-import { ArrowLeft, Download, Refresh } from "@element-plus/icons-vue";
+import { elementIconMap } from "@/utils/elementIcons";
+const { Warning, CircleCheck, Download, Refresh } = elementIconMap;
 import {
   getProjectScoringStatistic,
   exportProjectStatisticData,
@@ -282,8 +288,10 @@ const openGroupScoreDetailModal = async (group) => {
 
 const getPercentage = (count) => {
   const total = statisticData.value.scorerDistribution?.reduce((sum, item) => sum + item.count, 0) || 0;
+  console.log('getPercentage - count:', count, 'total:', total); // 调试输出
+  console.log('getPercentage - percentage:', total > 0 ? (count / total).toFixed(4) : 0); // 调试输出
   // return total > 0 ? Math.round((count / total) * 100) : 0;
-  return total > 0 ? (count / total).toFixed(4) : 0;
+  return total > 0 ? ((count / total) * 100).toFixed(2) : 0;
 };
 
 const handleExport = async (isProject = true, isAbnormal = false) => {
@@ -317,12 +325,6 @@ const handleExport = async (isProject = true, isAbnormal = false) => {
   }
 };
 
-const goBack = () => {
-  router.push({
-    name: "projectStatisticList",
-  });
-};
-
 onMounted(() => {
   loadProjectDetail();
   loadStatisticData();
@@ -335,7 +337,7 @@ onMounted(() => {
 /* ==================== 全局布局 ==================== */
 .project-statistic-detail-container {
   padding: 32px 24px;
-  background-color: #f9fafb;
+  background-color: var(--bg-primary);
   min-height: 100vh;
 }
 
@@ -355,7 +357,7 @@ onMounted(() => {
 .page-title {
   font-size: 1.5rem;
   font-weight: 700;
-  color: #1f2937;
+  color: var(--text);
   margin: 0;
   flex: 1;
   min-width: 300px;
@@ -368,7 +370,7 @@ onMounted(() => {
   align-items: center;
   margin-bottom: 24px;
   padding: 16px;
-  background: #ffffff;
+  background: var(--card-bg);
   border-radius: 12px;
   max-width: 1400px;
   margin-left: auto;
@@ -377,7 +379,7 @@ onMounted(() => {
 
 .last-update {
   font-size: 0.875rem;
-  color: #9ca3af;
+  color: var(--text-disabled);
   margin-left: auto;
 }
 
@@ -385,14 +387,14 @@ onMounted(() => {
   max-width: 1400px;
   margin: 0 auto 20px;
   padding: 14px 16px;
-  background: #fffdf5;
-  border: 1px solid #f3e8c3;
+  background: rgba(245, 158, 11, 0.08);
+  border: 1px solid rgba(245, 158, 11, 0.2);
   border-radius: 12px;
 }
 
 .rule-summary-title {
   font-size: 13px;
-  color: #7c6b35;
+  color: var(--text);
   margin-bottom: 8px;
 }
 
@@ -404,7 +406,7 @@ onMounted(() => {
 }
 
 .rule-summary-desc {
-  color: #6b7280;
+  color: var(--text-secondary);
   font-size: 13px;
 }
 
@@ -416,7 +418,7 @@ onMounted(() => {
 }
 
 .statistic-tabs {
-  background: #ffffff;
+  background: var(--card-bg);
   border-radius: 12px;
   padding: 24px;
 }
@@ -428,7 +430,7 @@ onMounted(() => {
 .section-title {
   font-size: 1.125rem;
   font-weight: 600;
-  color: #1f2937;
+  color: var(--text);
   margin: 0 0 20px 0;
 }
 
@@ -448,7 +450,7 @@ onMounted(() => {
 
 /* ==================== 评分人表格 ==================== */
 .scorer-list {
-  background: #ffffff;
+  background: var(--card-bg);
   border-radius: 8px;
   display: flex;
   flex-direction: column;
@@ -460,6 +462,6 @@ onMounted(() => {
 }
 
 .scorer-list :deep(.el-table) {
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--border);
 }
 </style>

@@ -19,7 +19,7 @@
       </MenuItem>
 
       <!-- 数据统计和管理面板都在 /admin 下，但它们只应该响应各自的路由集合。 -->
-      <MenuFolder v-if="userStore.isSuperAdmin" base-index="/admin" label="数据统计"
+      <MenuFolder v-if="userStore.isAdmin" base-index="/admin" label="数据统计"
         :active-paths="visibleStatisticMenus.map((item) => item.path)" :collapsed="isCollapsed">
         <template #prefix>
           <el-icon>
@@ -109,7 +109,7 @@ import { admin } from "@/router/modules/adminRoutes";
 import { superAdmin } from "@/router/modules/superAdminRoutes";
 import { useUserStore } from "@/stores/modules/userStore";
 import { elementIconMap } from "@/utils/elementIcons";
-import BrandIcon from "./components/BrandIcon.vue";
+import BrandIcon from "../../../components/icons/BrandIcon.vue";
 import MenuItem from "./components/menuItem.vue";
 import MenuFolder from "./components/menuFolder.vue";
 
@@ -134,12 +134,26 @@ const collapsedMenus = computed(() => {
 
   if (userStore.isAdmin) {
     menus.push(
-      ...visibleAdminMenus.value.map((item) => ({
-        key: `admin-${item.path}`,
-        path: item.path,
-        label: item.meta?.title || item.name,
-        icon: item.meta?.icon,
-      }))
+      ...visibleAdminMenus.value.map(
+        (item) => (
+          {
+            key: `admin-${item.path}`,
+            path: item.path,
+            label: item.meta?.title || item.name,
+            icon: item.meta?.icon,
+          }
+        )
+      ),
+      ...visibleStatisticMenus.value.map(
+        (item) => (
+          {
+            key: `statistic-${item.path}`,
+            path: item.path,
+            label: item.meta?.title || item.name,
+            icon: item.meta?.icon,
+          }
+        )
+      )
     );
   }
 
@@ -189,21 +203,17 @@ const toggleSidebar = () => {
 
 <style scoped>
 .sidebar-menu {
-  --sidebar-border: rgba(15, 23, 42, 0.08);
-  --sidebar-shadow: 0 20px 45px rgba(15, 23, 42, 0.08);
-
   display: flex;
   flex-direction: column;
   gap: 10px;
   padding: 14px 10px 12px;
-  background: linear-gradient(170deg, rgba(255, 255, 255, 0.96), rgba(245, 247, 250, 0.9));
-  backdrop-filter: saturate(160%) blur(16px);
-  color: #1f2937;
+  background: var(--bg-primary);
+  color: var(--text);
   height: 100%;
   width: 258px;
-  transition: width 0.3s ease, box-shadow 0.3s ease;
-  box-shadow: var(--sidebar-shadow);
-  border-right: 1px solid var(--sidebar-border);
+  transition: width 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+  box-shadow: var(--card-shadow);
+  border-right: 1px solid var(--border);
   /* 为确保滚动体验，x轴不产生多余滚动，且不影响垂直滚动行为 */
   overflow-x: hidden;
   box-sizing: border-box;
@@ -225,7 +235,7 @@ const toggleSidebar = () => {
   font-size: 16px;
   font-weight: 600;
   letter-spacing: 0.2px;
-  color: #111827;
+  color: var(--text);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -234,9 +244,9 @@ const toggleSidebar = () => {
 .collapse-btn {
   width: 30px;
   height: 30px;
-  border: 1px solid rgba(15, 23, 42, 0.1);
+  border: 1px solid var(--border);
   border-radius: 9px;
-  background: rgba(255, 255, 255, 0.7);
+  background: var(--card-bg);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -245,16 +255,16 @@ const toggleSidebar = () => {
 }
 
 .collapse-btn:hover {
-  border-color: rgba(10, 132, 255, 0.35);
-  box-shadow: 0 8px 16px rgba(15, 23, 42, 0.1);
-  background: rgba(255, 255, 255, 0.92);
+  border-color: var(--el-color-primary);
+  box-shadow: var(--btn-shadow);
+  background: var(--card-bg);
 }
 
 .collapse-chev {
   width: 7px;
   height: 7px;
-  border-right: 2px solid #475569;
-  border-bottom: 2px solid #475569;
+  border-right: 2px solid var(--text-secondary);
+  border-bottom: 2px solid var(--text-secondary);
   transform: rotate(135deg);
   transition: transform 0.2s ease;
 }

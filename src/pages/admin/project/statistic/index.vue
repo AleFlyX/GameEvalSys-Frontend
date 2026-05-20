@@ -1,11 +1,12 @@
 <template>
-  <div class="project-statistic-list-container" v-loading="isListLoading">
-    <!-- 页面标题 -->
-    <div class="page-header">
-      <h1 class="page-title">项目打分统计</h1>
-      <p class="page-subtitle">选择项目查看详细的打分数据统计</p>
-    </div>
-
+  <PagePanel :bg-card="false">
+    <template #header>
+      <!-- 页面标题 -->
+      <div class="page-header">
+        <h1 class="page-title">项目打分统计</h1>
+        <p class="page-subtitle">选择项目查看详细的打分数据统计</p>
+      </div>
+    </template>
     <!-- 搜索和筛选区域 -->
     <div class="search-filter-area">
       <el-input v-model="searchKeywords" placeholder="搜索项目名称..." clearable class="search-input" @input="handleSearch">
@@ -32,27 +33,37 @@
 
     <!-- 加载状态 -->
     <el-skeleton v-if="isListSkeleton" :rows="5" animated />
+    <template #main-table>
 
-    <!-- 项目列表 -->
-    <div class="projects-grid">
+      <!-- 项目列表 -->
+      <div class="projects-grid">
 
-      <div class="project-cards" v-for="project in filteredProjects" :key="project.id">
-        <ProjectCard :project="project"></ProjectCard>
+        <div class="project-cards" v-for="project in filteredProjects" :key="project.id">
+          <ProjectCard :project="project"></ProjectCard>
+        </div>
+
+        <!-- 空状态 -->
+        <div v-if="filteredProjects.length === 0 && !(isListLoading | isListSkeleton)" class="empty-state">
+          <el-empty description="暂无项目" />
+        </div>
       </div>
-
-      <!-- 空状态 -->
-      <div v-if="filteredProjects.length === 0 && !(isListLoading | isListSkeleton)" class="empty-state">
-        <el-empty description="暂无项目" />
+    </template>
+    <template #footer>
+      <!-- 分页器 -->
+      <div v-if="filteredProjects.length > 0" class="pagination-wrapper">
+        <el-pagination v-model:current-page="currentPage" v-model:page-size="pageSize" :page-sizes="defaultPageSizes"
+          :total="total" layout="total, sizes, prev, pager, next, jumper" @current-change="handleCurrentChange"
+          @size-change="handleSizeChange" :disabled="disabled" />
       </div>
-    </div>
+    </template>
+  </PagePanel>
+  <!-- <div class="project-statistic-list-container" v-loading="isListLoading">
 
-    <!-- 分页器 -->
-    <div v-if="filteredProjects.length > 0" class="pagination-wrapper">
-      <el-pagination v-model:current-page="currentPage" v-model:page-size="pageSize" :page-sizes="defaultPageSizes"
-        :total="total" layout="total, sizes, prev, pager, next, jumper" @current-change="handleCurrentChange"
-        @size-change="handleSizeChange" :disabled="disabled" />
-    </div>
-  </div>
+
+
+
+
+  </div> -->
 </template>
 
 <script setup>
@@ -64,6 +75,7 @@ import { getProjectList } from "@/api/project";
 import { useElPagination } from "@/composables/useElPagination";
 import { useLoading } from "@/composables/useLoading";
 import { debounce } from "@/utils/debounce";
+import PagePanel from "@/layouts/PagePanel.vue";
 
 defineOptions({
   name: "ProjectStatisticListPage"
@@ -179,28 +191,29 @@ onMounted(() => {
 /* ==================== 全局布局 ==================== */
 .project-statistic-list-container {
   padding: 32px 24px;
-  background-color: #f9fafb;
+  /* background-color: #f9fafb; */
   min-height: 100vh;
+  background: var(--bg-primary);
 }
 
 /* ==================== 页面标题 ==================== */
 .page-header {
   margin-bottom: 32px;
-  max-width: 1400px;
-  margin-left: auto;
+  /* max-width: 1400px; */
+  /* margin-left: auto; */
   margin-right: auto;
 }
 
 .page-title {
   font-size: 2rem;
   font-weight: 700;
-  color: #1f2937;
+  color: var(--text);
   margin: 0 0 8px 0;
 }
 
 .page-subtitle {
   font-size: 0.95rem;
-  color: #6b7280;
+  color: var(--text-secondary);
   margin: 0;
 }
 
@@ -209,9 +222,8 @@ onMounted(() => {
   display: flex;
   gap: 16px;
   margin-bottom: 24px;
-  max-width: 1400px;
-  margin-left: auto;
-  margin-right: auto;
+  /* margin-left: auto;
+  margin-right: auto; */
   flex-wrap: wrap;
 }
 
@@ -229,7 +241,7 @@ onMounted(() => {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 24px;
-  max-width: 1400px;
+  /* max-width: 1400px; */
   margin-left: auto;
   margin-right: auto;
 }
@@ -253,7 +265,7 @@ onMounted(() => {
   margin-left: auto;
   margin-right: auto;
   padding: 16px;
-  background: #ffffff;
+  background: var(--card-bg);
   border-radius: 12px;
 }
 

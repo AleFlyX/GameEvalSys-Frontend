@@ -1,5 +1,4 @@
 import { computed } from 'vue';
-
 /**
  * 项目上下文：统一管理项目 id、名称和详情预热。
  * @param {import('vue-router').RouteLocationNormalizedLoaded} route
@@ -21,6 +20,13 @@ export const useGroupScoringProject = (route, projectStore) => {
     return cachedProject?.name || '项目';
   });
 
+  // 是否通过route跳转并打开
+  const openModalFromRoute = computed(() => Boolean(route.query.openModal));
+  const groupId = computed(() => {
+    const id = Number(route.query.groupId);
+    return Number.isFinite(id) && id > 0 ? id : null;
+  });
+
   const warmupProjectDetails = async () => {
     if (!projectId.value) return null;
 
@@ -32,6 +38,8 @@ export const useGroupScoringProject = (route, projectStore) => {
   };
 
   return {
+    groupId,
+    openModalFromRoute,
     projectId,
     projectName,
     warmupProjectDetails,
