@@ -127,7 +127,7 @@
 
 <script setup>
 import { ref, onMounted, computed } from "vue";
-import { useRouter, useRoute } from "vue-router";
+import { useRoute } from "vue-router";
 import { ElMessage } from "element-plus";
 import { elementIconMap } from "@/utils/elementIcons";
 const { Warning, CircleCheck, Download, Refresh } = elementIconMap;
@@ -150,7 +150,6 @@ defineOptions({
   name: "ProjectStatisticDetailPage",
 });
 
-const router = useRouter();
 const route = useRoute();
 const scoreStore = useScoreStore();
 

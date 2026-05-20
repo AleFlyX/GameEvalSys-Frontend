@@ -57,9 +57,7 @@ import { useRouter, useRoute } from 'vue-router';
 import { useMessage } from '@/composables/useMessage';
 import { useLoading } from '@/composables/useLoading';
 
-import { ArrowLeft } from '@element-plus/icons-vue';
 import PagePanel from '@/layouts/PagePanel.vue';
-import MyBtn from '@/components/common/form/MyBtn.vue';
 import ProjectForm from '../components/ProjectForm.vue';
 import ProjectGroups from './components/ProjectGroups.vue';
 import ProjectReviewGroups from './components/ProjectReviewGroups.vue';
