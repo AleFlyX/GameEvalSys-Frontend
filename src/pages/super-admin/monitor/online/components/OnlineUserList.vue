@@ -39,7 +39,7 @@
 
       <div class="status-col">
         <el-tag size="large" round effect="light" :type="getStatusTagType(row)">{{ getStatusLabel(row) }}</el-tag>
-        <div class="status-sub">会话数 {{ row.onlineCount ?? 0 }}</div>
+        <div class="status-sub">活跃会话数 {{ row.onlineCount ?? 0 }}</div>
       </div>
 
       <div class="actions-col">

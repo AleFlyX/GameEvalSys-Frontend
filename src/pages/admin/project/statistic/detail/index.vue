@@ -2,12 +2,7 @@
   <div class="project-statistic-detail-container">
     <!-- 返回和标题 -->
     <div class="detail-header">
-      <el-button link @click="goBack">
-        <el-icon>
-          <ArrowLeft />
-        </el-icon>
-        返回列表
-      </el-button>
+      <BackButton></BackButton>
       <h1 class="page-title">{{ projectName }} - 打分统计详情</h1>
       <el-button type="primary" @click="handleExport(true)" :loading="exporting">
         <el-icon>
@@ -93,7 +88,17 @@
               </SearchInput>
               <el-table v-if="statisticData.scorerDistribution?.length" :data="statisticData.scorerDistribution" stripe
                 style="width: 95%">
-                <el-table-column prop="userName" label="评分人" />
+                <el-table-column prop="userName" label="评分人">
+                  <template #default="{ row }">
+                    <div class="scorer-icon" style="display: inline-flex; align-items: center; gap: 4px;">
+                      <el-icon>
+                        <CircleCheck v-if="row.count === statisticData.groupAverage.length" color="#67C23A" />
+                        <Warning v-else color="#F56C6C" />
+                      </el-icon>
+                    </div>
+                    {{ row.userName || '匿名用户' }}
+                  </template>
+                </el-table-column>
                 <el-table-column prop="scoreRange" label="打分范围" />
                 <el-table-column prop="count" label="打分次数" width="" align="center">
                   <template #default="{ row }">
@@ -124,7 +129,8 @@
 import { ref, onMounted, computed } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { ElMessage } from "element-plus";
-import { ArrowLeft, Download, Refresh } from "@element-plus/icons-vue";
+import { elementIconMap } from "@/utils/elementIcons";
+const { Warning, CircleCheck, Download, Refresh } = elementIconMap;
 import {
   getProjectScoringStatistic,
   exportProjectStatisticData,
@@ -282,8 +288,10 @@ const openGroupScoreDetailModal = async (group) => {
 
 const getPercentage = (count) => {
   const total = statisticData.value.scorerDistribution?.reduce((sum, item) => sum + item.count, 0) || 0;
+  console.log('getPercentage - count:', count, 'total:', total); // 调试输出
+  console.log('getPercentage - percentage:', total > 0 ? (count / total).toFixed(4) : 0); // 调试输出
   // return total > 0 ? Math.round((count / total) * 100) : 0;
-  return total > 0 ? (count / total).toFixed(4) : 0;
+  return total > 0 ? ((count / total) * 100).toFixed(2) : 0;
 };
 
 const handleExport = async (isProject = true, isAbnormal = false) => {
@@ -315,12 +323,6 @@ const handleExport = async (isProject = true, isAbnormal = false) => {
   } finally {
     exporting.value = false;
   }
-};
-
-const goBack = () => {
-  router.push({
-    name: "projectStatisticList",
-  });
 };
 
 onMounted(() => {

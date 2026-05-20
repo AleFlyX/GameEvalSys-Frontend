@@ -187,9 +187,15 @@ const getProjectStageText = (project) => {
 .hero-copy {
   background:
     radial-gradient(circle at top left, rgba(47, 107, 255, 0.16), transparent 36%),
-    linear-gradient(135deg, #ffffff 0%, #f2f7ff 100%);
-  border: 1px solid rgba(47, 107, 255, 0.08);
+    linear-gradient(135deg, var(--card-bg) 0%, #f2f7ff 100%);
+  border: 1px solid var(--border);
   padding: 28px 30px;
+}
+
+html[data-theme="dark"] .hero-copy {
+  background:
+    radial-gradient(circle at top left, rgba(47, 107, 255, 0.08), transparent 36%),
+    linear-gradient(135deg, var(--card-bg) 0%, rgba(255, 255, 255, 0.05) 100%);
 }
 
 .eyebrow {
@@ -204,23 +210,27 @@ const getProjectStageText = (project) => {
   margin: 0;
   font-size: 28px;
   line-height: 1.3;
-  color: #1f2a44;
+  color: var(--text);
 }
 
 .hero-desc {
   margin: 12px 0 0;
   max-width: 640px;
   line-height: 1.75;
-  color: #6e7f9b;
+  color: var(--text-secondary);
 }
 
 .hero-highlight {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  background: linear-gradient(160deg, #2f6bff 0%, #20b7c7 100%);
+  background: linear-gradient(160deg, var(--el-color-primary) 0%, #20b7c7 100%);
   color: #fff;
   padding: 24px 24px 22px;
+}
+
+html[data-theme="dark"] .hero-highlight {
+  background: linear-gradient(160deg, var(--el-color-primary) 0%, #1a8a96 100%);
 }
 
 .highlight-label {
@@ -255,12 +265,12 @@ const getProjectStageText = (project) => {
 .section-head h3 {
   margin: 0;
   font-size: 22px;
-  color: #1f2a44;
+  color: var(--text);
 }
 
 .section-head p {
   margin: 8px 0 0;
-  color: #7c8aa5;
+  color: var(--text-secondary);
 }
 
 .project-grid {
@@ -274,10 +284,14 @@ const getProjectStageText = (project) => {
   flex-direction: column;
   gap: 18px;
   border-radius: 24px;
-  background: linear-gradient(180deg, #ffffff 0%, #fbfcff 100%);
-  border: 1px solid #e8eef8;
+  background: linear-gradient(180deg, var(--card-bg) 0%, rgba(251, 252, 255, 0.6) 100%);
+  border: 1px solid var(--border);
   padding: 22px;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+html[data-theme="dark"] .project-card {
+  background: linear-gradient(180deg, var(--card-bg) 0%, rgba(255, 255, 255, 0.02) 100%);
 }
 
 .project-card:hover {

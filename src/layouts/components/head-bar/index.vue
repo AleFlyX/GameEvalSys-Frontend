@@ -74,12 +74,12 @@
         </UserForm>
       </template>
       <template #operations>
-        <button @click="handleProfileSave" class="primary-btn" :disabled="submitPwdLoading">
+        <MyBtn @click="handleProfileSave" type="primary" :disabled="submitPwdLoading">
           修改密码
-        </button>
-        <button @click="closeProfileModal" class="cancel-btn" :disabled="submitPwdLoading">
+        </MyBtn>
+        <MyBtn @click="closeProfileModal" :disabled="submitPwdLoading">
           关闭
-        </button>
+        </MyBtn>
       </template>
     </BaseFormModal>
   </div>
