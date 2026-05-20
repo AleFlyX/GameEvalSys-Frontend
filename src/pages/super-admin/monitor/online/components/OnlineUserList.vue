@@ -4,63 +4,64 @@
       暂无在线用户
     </div>
 
-    <div v-for="(row, index) in list" :key="row.id || `${row.username}-${index}`" class="online-row">
-      <div class="identity-col">
-        <div class="user-avatar" :class="row.isEnabled ? 'is-enabled' : 'is-disabled'">
-          <el-icon>
-            <component :is="getElementIcon(getDeviceType(row))" />
-          </el-icon>
-        </div>
-        <div class="identity-copy">
-          <div class="user-name-line">
-            <span class="user-name">{{ row.name || '-' }}</span>
-            <el-tag size="small" effect="light" :type="getRoleTagType(row)">{{ getRoleTag(row) }}</el-tag>
+    <BaseCard v-else v-for="(row, index) in list" :key="row.id || `${row.username}-${index}`"
+      :variant="isDarkMode ? 'default' : 'soft'">
+
+      <div class="online-row">
+        <div class="identity-col">
+          <div class="user-avatar" :class="row.isEnabled ? 'is-enabled' : 'is-disabled'">
+            <el-icon>
+              <component :is="getElementIcon(getDeviceType(row))" />
+            </el-icon>
           </div>
-          <!-- <div class="user-email">{{ formatEmail(row) }}</div> -->
-          <div class="user-email">{{ row.username }}</div>
-          <div class="user-role">{{ formatRole(row) }}</div>
+          <div class="identity-copy">
+            <div class="user-name-line">
+              <span class="user-name">{{ row.name || '-' }}</span>
+              <el-tag size="small" effect="light" :type="getRoleTagType(row)">{{ getRoleTag(row) }}</el-tag>
+            </div>
+            <!-- <div class="user-email">{{ formatEmail(row) }}</div> -->
+            <div class="user-email">{{ row.username }}</div>
+            <div class="user-role">{{ formatRole(row) }}</div>
+          </div>
+        </div>
+        <div class="network-col">
+          <div class="primary-text">{{ formatIp(row) }}</div>
+          <div class="secondary-text">{{ formatLocation(row) }}</div>
+        </div>
+        <div class="time-col">
+          <div class="primary-text">{{ formatLastLogin(row) }}</div>
+          <div class="secondary-text">登录时间</div>
+        </div>
+        <div class="time-col">
+          <div class="primary-text">{{ formatLastActive(row) }}</div>
+          <div class="secondary-text">最近活跃</div>
+        </div>
+        <div class="status-col">
+          <el-tag size="large" round effect="light" :type="getStatusTagType(row)">{{ getStatusLabel(row) }}</el-tag>
+          <div class="status-sub">活跃会话数 {{ row.onlineCount ?? 0 }}</div>
+        </div>
+        <div class="actions-col">
+          <el-button link type="primary" class="row-action-btn" @click="emitOpenSessions(row)">
+            <el-icon>
+              <component :is="getElementIcon('Search')" />
+            </el-icon>
+          </el-button>
+          <el-button link type="danger" class="row-action-btn" @click="emitKickAll(row)">
+            <el-icon>
+              <component :is="getElementIcon('SwitchButton')" />
+            </el-icon>
+          </el-button>
         </div>
       </div>
-
-      <div class="network-col">
-        <div class="primary-text">{{ formatIp(row) }}</div>
-        <div class="secondary-text">{{ formatLocation(row) }}</div>
-      </div>
-
-      <div class="time-col">
-        <div class="primary-text">{{ formatLastLogin(row) }}</div>
-        <div class="secondary-text">登录时间</div>
-      </div>
-
-      <div class="time-col">
-        <div class="primary-text">{{ formatLastActive(row) }}</div>
-        <div class="secondary-text">最近活跃</div>
-      </div>
-
-      <div class="status-col">
-        <el-tag size="large" round effect="light" :type="getStatusTagType(row)">{{ getStatusLabel(row) }}</el-tag>
-        <div class="status-sub">活跃会话数 {{ row.onlineCount ?? 0 }}</div>
-      </div>
-
-      <div class="actions-col">
-        <el-button link type="primary" class="row-action-btn" @click="emitOpenSessions(row)">
-          <el-icon>
-            <component :is="getElementIcon('Search')" />
-          </el-icon>
-        </el-button>
-        <el-button link type="danger" class="row-action-btn" @click="emitKickAll(row)">
-          <el-icon>
-            <component :is="getElementIcon('SwitchButton')" />
-          </el-icon>
-        </el-button>
-      </div>
-    </div>
+    </BaseCard>
   </div>
 </template>
 
 <script setup>
 import { getElementIcon } from '@/utils/elementIcons';
 import { formatTime } from '@/utils/format';
+import { useTheme } from '@/composables/useTheme';
+const { isDarkMode } = useTheme();
 defineOptions({
   name: 'OnlineUserList',
 });
@@ -167,7 +168,7 @@ function getStatusLabel(row) {
   border-radius: 16px;
   overflow: hidden;
   border: 1px solid #e6ebf2;
-  background: #ffffff;
+  /* background: #ffffff; */
 }
 
 .online-list.is-empty {
@@ -187,8 +188,6 @@ function getStatusLabel(row) {
   grid-template-columns: minmax(260px, 1.6fr) minmax(140px, 0.9fr) minmax(150px, 0.95fr) minmax(150px, 0.95fr) 120px 92px;
   align-items: center;
   gap: 12px;
-  padding: 20px 28px;
-  border-bottom: 1px solid #eef2f6;
 }
 
 .online-row:last-child {
@@ -215,7 +214,7 @@ function getStatusLabel(row) {
   justify-content: center;
   flex-shrink: 0;
   background: #f2f4f7;
-  color: #344054;
+  color: var(--text-secondary);
   font-size: 22px;
 }
 
@@ -251,12 +250,12 @@ function getStatusLabel(row) {
 }
 
 .user-role {
-  color: #98a2b3;
+  color: var(--text);
   font-size: 13px;
 }
 
 .primary-text {
-  color: #101828;
+  color: var(--text);
   font-size: 18px;
   font-weight: 700;
   line-height: 1.15;
@@ -264,7 +263,7 @@ function getStatusLabel(row) {
 
 .secondary-text {
   margin-top: 8px;
-  color: #667085;
+  color: var(--text-secondary);
   font-size: 13px;
 }
 
@@ -276,7 +275,7 @@ function getStatusLabel(row) {
 }
 
 .status-sub {
-  color: #667085;
+  color: var(--text-secondary);
   font-size: 12px;
 }
 
@@ -291,7 +290,7 @@ function getStatusLabel(row) {
   width: 34px;
   height: 34px;
   border-radius: 8px;
-  color: #667085;
+  color: var(--text-secondary);
 }
 
 .row-action-btn:hover {
