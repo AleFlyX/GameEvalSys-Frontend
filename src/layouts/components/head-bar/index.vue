@@ -110,6 +110,7 @@ const userStore = useUserStore();
 const message = useMessage();
 import { useTheme } from "@/composables/useTheme";
 import { onMounted } from 'vue';
+import { showMsgBox } from "@/utils/ConfirmBox";
 
 const { isDarkMode, toggleTheme: baseToggleTheme, initTheme } = useTheme();
 
@@ -120,8 +121,20 @@ onMounted(() => {
 
 // 为保证稳定性，这里我们只是包装一下切换逻辑：
 const toggleTheme = () => {
-  const nextTheme = isDarkMode.value ? 'light' : 'dark';
-  baseToggleTheme(nextTheme);
+  const handleToggleTheme = () => {
+    const nextTheme = isDarkMode.value ? 'light' : 'dark';
+    baseToggleTheme(nextTheme);
+  };
+
+  if (!isDarkMode.value) {
+    showMsgBox('暗夜模式正处于测试中，是否切换？', '页面有部分内容未完全适配', { 'type': 'warning' }).then((confirmed) => {
+      if (confirmed) {
+        handleToggleTheme();
+      }
+    });
+  } else {
+    handleToggleTheme();
+  }
 };
 
 const title = computed(() => {

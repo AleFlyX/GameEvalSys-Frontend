@@ -75,10 +75,10 @@
             </div>
 
             <div class="card-actions">
-              <el-button v-loading="loadingTable" type="primary" @click="handleStartScoring(project)">
+              <MyBtn v-loading="loadingTable" type="primary" @click="handleStartScoring(project)">
                 进入评分
-              </el-button>
-              <el-button @click="handleViewDetail(project)">项目详情</el-button>
+              </MyBtn>
+              <MyBtn @click="handleViewDetail(project)">项目详情</MyBtn>
             </div>
           </BaseCard>
         </div>

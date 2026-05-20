@@ -16,9 +16,9 @@
         <strong>{{ dashboardStats.pendingGroups }}</strong>
         <p>建议优先进入进行中的项目处理待评分小组。</p>
         <div class="hero-actions">
-          <el-button type="primary" size="large" @click="handleGoScoring">
+          <MyBtn size="large" @click="handleGoScoring">
             开始评分
-          </el-button>
+          </MyBtn>
         </div>
       </BaseCard>
     </div>

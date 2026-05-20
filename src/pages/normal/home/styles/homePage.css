@@ -19,11 +19,17 @@
 }
 
 .hero-copy {
-  background: var(--card-bg, #ffffff);
+  background:
+    radial-gradient(circle at top left, rgba(47, 107, 255, 0.16), transparent 36%),
+    linear-gradient(135deg, var(--card-bg) 0%, #f2f7ff 100%);
   border: 1px solid var(--border, rgba(47, 107, 255, 0.08));
   padding: 32px 36px;
 }
-
+html[data-theme="dark"] .hero-copy {
+  background:
+    radial-gradient(circle at top left, rgba(47, 107, 255, 0.08), transparent 36%),
+    linear-gradient(135deg, var(--card-bg) 0%, rgba(255, 255, 255, 0.05) 100%);
+}
 .hero-eyebrow {
   margin: 0 0 10px;
   font-size: 12px;

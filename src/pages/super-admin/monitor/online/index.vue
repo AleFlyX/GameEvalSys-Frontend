@@ -7,7 +7,7 @@
     </template>
 
     <div class="online-toolbar-shell">
-      <section class="page-hero">
+      <!-- <section class="page-hero">
         <div>
           <p class="hero-eyebrow">Session Monitor</p>
           <h1 class="page-title">在线用户</h1>
@@ -18,7 +18,7 @@
           <span class="toolbar-chip">活跃会话 {{ activeSessionCount }} 个</span>
           <span class="toolbar-chip">本页 {{ onlineList.length }} 条</span>
         </div>
-      </section>
+      </section> -->
 
       <section class="filter-panel">
         <el-form :model="queryParams" ref="queryRef" :inline="true" label-width="70px" class="online-form">
