@@ -1,16 +1,18 @@
 <template>
-  <div class="monitor-page">
-    <div class="monitor-shell">
+  <PagePanel class="monitor-page" :bg-card="false">
+    <template #header>
+      <StatCard v-for="item in summaryCards" :key="item.label" class="metric-card" :label="item.label"
+        :value="item.value" :sub="item.sub" label-placement="body" :icon="item.icon" :icon-color="item.iconColor"
+        :icon-bg="item.iconBg" :icon-size="42" :icon-radius="14" />
+    </template>
+
+    <div class="monitor-toolbar-shell">
       <monitorPageHero :status-meta="statusMeta" :transport-text="transportText" :dashboard-summary="dashboard.summary"
         :connection-meta="connectionMeta" :last-refresh-text="lastRefreshText" :loading="loading"
         @refresh="handleRefresh" />
+    </div>
 
-      <section class="stat-grid">
-        <StatCard v-for="item in summaryCards" :key="item.label" class="metric-card" :label="item.label"
-          :value="item.value" :sub="item.sub" label-placement="body" :icon="item.icon" :icon-color="item.iconColor"
-          :icon-bg="item.iconBg" :icon-size="42" :icon-radius="14" />
-      </section>
-
+    <template #main-table>
       <section class="content-grid">
         <div class="left-column">
           <MonitorCard title="健康总览" subtitle="服务状态、数据库和缓存状态">
@@ -49,12 +51,8 @@
 
               <div class="sparkline">
                 <span v-for="(point, index) in item.trend" :key="`${item.label}-${index}`" class="spark-bar"
-                  :style="{ height: `${point}%`, backgroundColor: item.color, animationDelay: `${index * 0.04}s` }">
-                  <!-- {{ item.trend[index] }}
-                  {{ point }}/{{ index }} -->
-                </span>
+                  :style="{ height: `${point}%`, backgroundColor: item.color, animationDelay: `${index * 0.04}s` }" />
               </div>
-
             </div>
             <div class="load-row">
               <span class="load-label">负载均值 (1m / 5m / 15m)</span>
@@ -109,14 +107,15 @@
           </MonitorCard>
         </div>
       </section>
-    </div>
-  </div>
+    </template>
+  </PagePanel>
 </template>
 
 <script setup lang="ts">
+import PagePanel from '@/layouts/PagePanel.vue';
+import StatCard from '@/components/common/data/StatCard.vue';
 import { useMonitorServer } from './composables/useMonitorServer';
 import monitorPageHero from './components/monitorPageHero.vue';
-import StatCard from '@/components/common/data/StatCard.vue';
 import MonitorCard from './components/monitorCard.vue';
 
 defineOptions({
@@ -154,10 +153,7 @@ const {
 }
 
 .monitor-page {
-  width: 100%;
-  min-height: 100vh;
-  padding: 28px 18px 40px;
-  box-sizing: border-box;
+  --panel-max-width: min(1360px, calc(100% - 40px));
   background:
     radial-gradient(circle at top left, rgba(255, 255, 255, 0.8), transparent 28%),
     radial-gradient(circle at 85% 18%, rgba(37, 99, 235, 0.08), transparent 22%),
@@ -165,10 +161,17 @@ const {
   color: var(--monitor-text);
 }
 
-.monitor-shell {
-  width: 100%;
-  max-width: 1320px;
-  margin: 0 auto;
+.monitor-page :deep(.panel-header) {
+  gap: 14px;
+}
+
+.monitor-page :deep(.data-list) {
+  padding-top: 24px;
+}
+
+.monitor-toolbar-shell {
+  display: grid;
+  gap: 16px;
 }
 
 .metric-card {
@@ -176,13 +179,16 @@ const {
   border: 1px solid var(--monitor-border);
   box-shadow: 0 12px 32px rgba(15, 23, 42, 0.07);
   backdrop-filter: blur(10px);
-}
-
-.stat-grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 14px;
-  margin-bottom: 16px;
+  border-radius: 20px;
+  --stat-card-padding: 20px;
+  --stat-card-radius: 20px;
+  --stat-card-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
+  --stat-card-hover-shadow: 0 16px 36px rgba(15, 23, 42, 0.1);
+  --stat-value-size: 30px;
+  --stat-value-weight: 800;
+  --stat-value-color: #0f172a;
+  --stat-label-color: #475569;
+  --stat-sub-color: #64748b;
 }
 
 .content-grid {
@@ -195,19 +201,6 @@ const {
 .right-column {
   display: grid;
   gap: 14px;
-}
-
-.metric-card {
-  border-radius: 20px;
-  --stat-card-padding: 20px;
-  --stat-card-radius: 20px;
-  --stat-card-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
-  --stat-card-hover-shadow: 0 16px 36px rgba(15, 23, 42, 0.1);
-  --stat-value-size: 30px;
-  --stat-value-weight: 800;
-  --stat-value-color: #0f172a;
-  --stat-label-color: #475569;
-  --stat-sub-color: #64748b;
 }
 
 .health-item {
@@ -293,7 +286,6 @@ const {
   align-items: end;
   height: 48px;
   margin-top: 10px;
-
 }
 
 .spark-bar {
@@ -308,11 +300,11 @@ const {
 }
 
 @keyframes sparkRise {
-  0% {
+  from {
     transform: scaleY(0);
   }
 
-  100% {
+  to {
     transform: scaleY(1);
   }
 }

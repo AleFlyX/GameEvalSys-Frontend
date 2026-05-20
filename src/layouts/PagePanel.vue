@@ -13,7 +13,7 @@
         </slot>
       </div>
 
-      <main class="data-list">
+      <main class="data-list" :class="bgCard ? 'bg-card' : ''">
         <slot name="main-table">
           <!-- el table组件 -->
         </slot>
@@ -33,6 +33,12 @@
 </template>
 
 <script setup>
+defineProps({
+  bgCard: {
+    type: Boolean,
+    default: true
+  }
+});
 </script>
 
 <style scoped>
@@ -74,11 +80,14 @@
 .data-list {
   width: 100%;
   min-height: 320px;
-  padding: 28px 32px 24px;
   display: flex;
   flex-direction: column;
   gap: 24px;
   box-sizing: border-box;
+}
+
+.bg-card {
+  padding: 28px 32px 24px;
   border-radius: 24px;
   border: 1px solid var(--border);
   background: var(--card-bg);
