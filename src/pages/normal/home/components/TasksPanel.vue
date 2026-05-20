@@ -46,9 +46,9 @@ const JumpToScoring = (groupId) => {
   // 实现跳转到评分页面的逻辑
   router.push({
     name: 'projectScoring',
-    params: { projectId: props.focusProjectId },
-    query: { projectName: props.focusProjectName },
-    state: {
+    params: { projectId: Number(props.focusProjectId) || props.focusProjectId, },
+    query: {
+      projectName: props.focusProjectName,
       groupId: groupId,
       openModal: true,
     }

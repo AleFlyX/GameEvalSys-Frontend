@@ -78,7 +78,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { ArrowLeft } from '@element-plus/icons-vue';
 
@@ -101,7 +101,7 @@ defineOptions({
 const projectStore = useProjectStore();
 const scoreStore = useScoreStore();
 const route = useRoute();
-const { projectId, projectName, warmupProjectDetails } = useGroupScoringProject(route, projectStore);
+const { groupId, openModalFromRoute, projectId, projectName, warmupProjectDetails } = useGroupScoringProject(route, projectStore);
 const {
   groupList,
   selectedGroup,
@@ -119,6 +119,7 @@ const {
   projectStore,
   scoreStore,
 });
+const hasOpenedRouteModal = ref(false);
 const {
   activeName,
   searchBarRef,
@@ -142,6 +143,18 @@ const currentSectionDescription = computed(() => (
     : '优先完成这些尚未提交评分的小组，任务会随着提交自动刷新。'
 ));
 
+const openRouteModalIfNeeded = () => {
+  if (hasOpenedRouteModal.value || !openModalFromRoute.value || !groupId.value) return;
+
+  const targetGroup = groupList.value.find((group) => Number(group.id) === Number(groupId.value));
+  if (!targetGroup) return;
+
+  hasOpenedRouteModal.value = true;
+  handleScoring(targetGroup);
+};
+
+watch([groupList, openModalFromRoute, groupId], openRouteModalIfNeeded, { immediate: true });
+
 onMounted(() => {
   warmupProjectDetails();
   fetchGroups();
@@ -152,9 +165,6 @@ onMounted(() => {
 .group-scoring-page {
   min-height: 100vh;
   padding: 32px;
-  background:
-    radial-gradient(circle at top left, rgba(47, 107, 255, 0.1), transparent 30%),
-    linear-gradient(180deg, #f4f7fb 0%, #eef3f9 100%);
   box-sizing: border-box;
 }
 
