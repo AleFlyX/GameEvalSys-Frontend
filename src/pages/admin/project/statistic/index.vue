@@ -34,7 +34,6 @@
     <!-- 加载状态 -->
     <el-skeleton v-if="isListSkeleton" :rows="5" animated />
     <template #main-table>
-
       <!-- 项目列表 -->
       <div class="projects-grid">
 
@@ -241,7 +240,7 @@ onMounted(() => {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 24px;
-  /* max-width: 1400px; */
+  width: 100%;
   margin-left: auto;
   margin-right: auto;
 }
