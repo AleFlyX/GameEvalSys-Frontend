@@ -21,6 +21,8 @@ export const useUserStore = defineStore("userStore", () => {
   const isAdmin = computed(() => ["admin", "super_admin"].includes(userInfo.value.role));
   const isSuperAdmin = computed(() => userInfo.value.role === "super_admin");
   const isScorer = computed(() => userInfo.value.role === "scorer");
+  // whether dynamic routes have been injected for current session
+  const routesReady = ref(false);
 
   /**
    * 清除登陆状态
@@ -76,9 +78,11 @@ export const useUserStore = defineStore("userStore", () => {
     } catch (err) {
       return Promise.reject(err);
     } finally {
-      window.location.href = "/home";
+      window.location.href = "/login";
       //无论是否成功，都执行以下操作
       clearUserStore();
+      // reset dynamic routes flag
+      routesReady.value = false;
     }
   }
 
@@ -92,6 +96,9 @@ export const useUserStore = defineStore("userStore", () => {
     isScorer,
     isAdmin,
     isSuperAdmin,
+    routesReady,
+    // allow external modules to mark routes injected
+    setRoutesReady: (val) => (routesReady.value = !!val),
     login,
     logout,
   };

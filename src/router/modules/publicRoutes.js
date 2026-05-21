@@ -23,7 +23,8 @@ export const pub = [
     component: MainLayout,
     meta: { requireAuth: true },
     redirect: "/home",
-    children: [...norm, ...admin, ...superAdmin], //主界面的路由
+    // children will be injected dynamically after login according to role
+    children: [],
   },
   {
     path: "/about",

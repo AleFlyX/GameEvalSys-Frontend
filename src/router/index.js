@@ -3,6 +3,7 @@ import { createRouter, createWebHistory } from "vue-router";
 import { pub } from "@/router/modules/publicRoutes";
 import { useUserStore } from "@/stores/modules/userStore";
 import { useMessage } from "@/composables/useMessage";
+import { bootstrapRoutesFromStorage, generateRoleRoutes, injectRoutes } from "@/router/permission";
 
 const message = useMessage();
 const routes = [...pub];
@@ -11,12 +12,30 @@ const router = createRouter({
   routes,
 });
 
-router.beforeEach((to, from, next) => {
+// Pre-inject persisted routes so hard refreshes on protected pages can resolve immediately.
+bootstrapRoutesFromStorage(router);
+
+router.beforeEach(async (to, from, next) => {
   if (to.meta.title) {
     // console.log("当前页有标题");
     document.title = `${to.meta.title} -项目评分系统`;
   }
   const userStore = useUserStore();
+  // if logged in but dynamic routes not injected yet, inject according to role
+  if (userStore.isLogin && !userStore.routesReady) {
+    try {
+      const role = userStore.userRole || userStore.userInfo.role || "";
+      const dynamic = generateRoleRoutes(role);
+      injectRoutes(router, dynamic);
+      userStore.setRoutesReady(true);
+      // re-enter by path so vue-router re-matches against newly added routes
+      // return next({ ...to, replace: true })
+      return next({ path: to.fullPath, query: to.query, hash: to.hash, replace: true });
+    } catch (err) {
+      // continue to normal flow on error
+      console.error("inject dynamic routes failed", err);
+    }
+  }
   if (to.meta.requireAuth) {
     if (userStore.isLogin) {
       //已登录

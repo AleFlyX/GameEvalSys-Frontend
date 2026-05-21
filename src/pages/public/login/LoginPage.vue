@@ -83,6 +83,7 @@ import { ElMessage } from 'element-plus';
 import { useUserStore } from '@/stores/modules/userStore.js';
 import { useLoading } from '@/composables/useLoading';
 import { elementIconMap } from '@/utils/elementIcons';
+import { generateRoleRoutes, injectRoutes } from '@/router/permission';
 
 // 导入子组件
 import LoginForm from './components/loginForm.vue';
@@ -186,6 +187,12 @@ const handleLogin = async () => {
     // 调用登录 API
     await userStore.login(loginForm.value);
 
+    // 登录后先注入动态路由，避免首次跳转直接命中 404
+    const role = userStore.userRole || userStore.userInfo.role || '';
+    const dynamicRoutes = generateRoleRoutes(role);
+    injectRoutes(router, dynamicRoutes);
+    userStore.setRoutesReady(true);
+
     // 如果勾选了记住我，保存账号到历史
     if (rememberMe.value) {
       addToHistory(loginForm.value.username);
@@ -195,7 +202,7 @@ const handleLogin = async () => {
 
     // 获取登录前的重定向地址，无则跳转到首页
     const redirect = router.currentRoute.value.query.redirect || '/home';
-    router.push(redirect);
+    router.replace(typeof redirect === 'string' ? redirect : '/home');
   } catch (err) {
     ElMessage.error(err.message || '登录失败，请检查用户名或密码');
     console.error('登录失败：', err);
