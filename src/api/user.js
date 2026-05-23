@@ -44,6 +44,14 @@ export const userApi = {
   },
 
   /**
+   * 获取当前用户动态路由树
+   * @returns {Promise}
+   */
+  getAuthRoutes: () => {
+    return service.get("/auth/routes");
+  },
+
+  /**
    * 管理端在线用户列表
    * @param {Object} params
    * @param {number} [params.page=1]

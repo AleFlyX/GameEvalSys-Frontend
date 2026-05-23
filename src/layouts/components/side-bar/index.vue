@@ -19,8 +19,8 @@
       </MenuItem>
 
       <!-- 数据统计和管理面板都在 /admin 下，但它们只应该响应各自的路由集合。 -->
-      <MenuFolder v-if="userStore.isAdmin" base-index="/admin" label="数据统计"
-        :active-paths="visibleStatisticMenus.map((item) => item.path)" :collapsed="isCollapsed">
+      <MenuFolder v-if="userStore.isAdmin" base-index="/admin" label="数据统计" :active-paths="statisticActivePaths"
+        :collapsed="isCollapsed">
         <template #prefix>
           <el-icon>
             <component :is="elementIconMap.Histogram" />
@@ -38,9 +38,8 @@
       </MenuFolder>
 
       <!-- 管理面板使用同一前缀，但通过 excludePaths 排除统计页，避免误展开。 -->
-      <MenuFolder v-if="userStore.isAdmin" base-index="/admin" label="管理面板"
-        :active-paths="visibleAdminMenus.map((item) => item.path)"
-        :exclude-paths="visibleStatisticMenus.map((item) => item.path)" :collapsed="isCollapsed">
+      <MenuFolder v-if="userStore.isAdmin" base-index="/admin" label="管理面板" :active-paths="adminActivePaths"
+        :exclude-paths="statisticActivePaths" :collapsed="isCollapsed">
         <template #prefix>
           <el-icon>
             <component :is="elementIconMap.Setting" />
@@ -59,7 +58,7 @@
 
       <!-- 后台管理单独使用 /super-admin 前缀，按自身路由集合展开。 -->
       <MenuFolder v-if="userStore.isSuperAdmin" base-index="/super-admin" label="后台管理"
-        :active-paths="visibleSuperAdminMenus.map((item) => item.path)" :collapsed="isCollapsed">
+        :active-paths="superAdminActivePaths" :collapsed="isCollapsed">
         <template #prefix>
           <el-icon>
             <component :is="elementIconMap.Grid" />
@@ -104,9 +103,7 @@
 
 <script setup>
 import { computed, ref } from "vue";
-import { norm } from "@/router/modules/normalRoutes";
-import { admin } from "@/router/modules/adminRoutes";
-import { superAdmin } from "@/router/modules/superAdminRoutes";
+import { useRouter } from "vue-router";
 import { useUserStore } from "@/stores/modules/userStore";
 import { elementIconMap } from "@/utils/elementIcons";
 import BrandIcon from "../../../components/icons/BrandIcon.vue";
@@ -118,53 +115,42 @@ defineOptions({
 });
 
 const userStore = useUserStore();
+const router = useRouter();
+const isMenuRouteVisible = (route) => Boolean(route.meta?.title && !route.meta?.hidden && route.meta?.roles?.includes(userStore.userRole));
+const isStatisticRoute = (route) => route.path.includes("/statistic");
+const toMenuItem = (route, keyPrefix) => ({
+  key: `${keyPrefix}-${route.path}`,
+  path: route.path,
+  label: route.meta?.title || route.name,
+  icon: route.meta?.icon,
+});
 
-// 找出可直接进入的路径
-const visibleNormMenus = computed(() => norm.filter((item) => !item.meta?.hidden));
-const visibleAdminMenus = computed(() => admin.filter((item) => !item.meta?.hidden && !item.path.includes("statistic")));
-const visibleStatisticMenus = computed(() => admin.filter((item) => !item.meta?.hidden && item.path.includes("statistic")));
-const visibleSuperAdminMenus = computed(() => superAdmin.filter((item) => !item.meta?.hidden));
+const visibleRoutes = computed(() => {
+  // routesReady 作为依赖，确保在路由准备好后菜单会重新计算。
+  void userStore.routesReady;
+  return router.getRoutes().filter((route) => isMenuRouteVisible(route));
+});
+
+const visibleNormMenus = computed(() => visibleRoutes.value.filter((item) => item.meta?.roles?.includes("normal") || item.meta?.roles?.includes("scorer")));
+const visibleStatisticMenus = computed(() => visibleRoutes.value.filter((item) => isStatisticRoute(item)));
+const visibleAdminMenus = computed(() => visibleRoutes.value.filter((item) => item.meta?.roles?.includes("admin") && !isStatisticRoute(item) && !visibleNormMenus.value.some((normItem) => normItem.path === item.path)));
+const visibleSuperAdminMenus = computed(() => visibleRoutes.value.filter((item) => item.meta?.roles?.includes("super_admin") && !isStatisticRoute(item) && !item.meta?.roles?.includes("admin")));
+const statisticActivePaths = computed(() => visibleStatisticMenus.value.map((item) => item.path));
+const adminActivePaths = computed(() => visibleAdminMenus.value.map((item) => item.path));
+const superAdminActivePaths = computed(() => visibleSuperAdminMenus.value.map((item) => item.path));
 const collapsedMenus = computed(() => {
-  const menus = visibleNormMenus.value.map((item) => ({
-    key: `norm-${item.path}`,
-    path: item.path,
-    label: item.meta?.title || item.name,
-    icon: item.meta?.icon,
-  }));
+  const menus = visibleNormMenus.value.map((item) => toMenuItem(item, "norm"));
 
   if (userStore.isAdmin) {
     menus.push(
-      ...visibleAdminMenus.value.map(
-        (item) => (
-          {
-            key: `admin-${item.path}`,
-            path: item.path,
-            label: item.meta?.title || item.name,
-            icon: item.meta?.icon,
-          }
-        )
-      ),
-      ...visibleStatisticMenus.value.map(
-        (item) => (
-          {
-            key: `statistic-${item.path}`,
-            path: item.path,
-            label: item.meta?.title || item.name,
-            icon: item.meta?.icon,
-          }
-        )
-      )
+      ...visibleAdminMenus.value.map((item) => toMenuItem(item, "admin")),
+      ...visibleStatisticMenus.value.map((item) => toMenuItem(item, "statistic"))
     );
   }
 
   if (userStore.isSuperAdmin) {
     menus.push(
-      ...visibleSuperAdminMenus.value.map((item) => ({
-        key: `super-${item.path}`,
-        path: item.path,
-        label: item.meta?.title || item.name,
-        icon: item.meta?.icon,
-      }))
+      ...visibleSuperAdminMenus.value.map((item) => toMenuItem(item, "super"))
     );
   }
 
