@@ -3,7 +3,7 @@ import { createRouter, createWebHistory } from "vue-router";
 import { pub } from "@/router/modules/publicRoutes";
 import { useUserStore } from "@/stores/modules/userStore";
 import { useMessage } from "@/composables/useMessage";
-import { bootstrapRoutesFromStorage, generateRoleRoutes, injectRoutes, fetchAndInjectBackendRoutes } from "@/router/permission";
+import { bootstrapRoutesFromStorage, fetchAndInjectBackendRoutes } from "@/router/permission";
 
 const message = useMessage();
 const routes = [...pub];
@@ -14,6 +14,7 @@ const router = createRouter({
 
 // Try to fetch routes from backend first; if network fails, fall back to persisted local routes.
 fetchAndInjectBackendRoutes(router).catch(() => {
+  console.log('ROUTE FETCh ERR')
   // ignore errors and fallback to persisted routes
   bootstrapRoutesFromStorage(router);
 });
@@ -24,15 +25,15 @@ router.beforeEach(async (to, from, next) => {
     document.title = `${to.meta.title} -项目评分系统`;
   }
   const userStore = useUserStore();
-  // if logged in but dynamic routes not injected yet, inject according to role
+  // if logged in but dynamic routes not injected yet, prefer backend routes and fall back to local storage
   if (userStore.isLogin && !userStore.routesReady) {
     try {
-      const role = userStore.userRole || userStore.userInfo.role || "";
-      const dynamic = generateRoleRoutes(role);
-      injectRoutes(router, dynamic);
+      const backendInjected = await fetchAndInjectBackendRoutes(router);
+      if (!backendInjected) {
+        bootstrapRoutesFromStorage(router);
+      }
       userStore.setRoutesReady(true);
       // re-enter by path so vue-router re-matches against newly added routes
-      // return next({ ...to, replace: true })
       return next({ path: to.fullPath, query: to.query, hash: to.hash, replace: true });
     } catch (err) {
       // continue to normal flow on error
