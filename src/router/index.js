@@ -3,7 +3,7 @@ import { createRouter, createWebHistory } from "vue-router";
 import { pub } from "@/router/modules/publicRoutes";
 import { useUserStore } from "@/stores/modules/userStore";
 import { useMessage } from "@/composables/useMessage";
-import { bootstrapRoutesFromStorage, generateRoleRoutes, injectRoutes } from "@/router/permission";
+import { bootstrapRoutesFromStorage, generateRoleRoutes, injectRoutes, fetchAndInjectBackendRoutes } from "@/router/permission";
 
 const message = useMessage();
 const routes = [...pub];
@@ -12,8 +12,11 @@ const router = createRouter({
   routes,
 });
 
-// Pre-inject persisted routes so hard refreshes on protected pages can resolve immediately.
-bootstrapRoutesFromStorage(router);
+// Try to fetch routes from backend first; if network fails, fall back to persisted local routes.
+fetchAndInjectBackendRoutes(router).catch(() => {
+  // ignore errors and fallback to persisted routes
+  bootstrapRoutesFromStorage(router);
+});
 
 router.beforeEach(async (to, from, next) => {
   if (to.meta.title) {

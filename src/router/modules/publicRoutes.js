@@ -7,9 +7,6 @@ const NotFound = () => import("@/pages/public/404/NotFound.vue");
 // const MainLayout = () => import("@/layouts/MainLayout.vue");
 const MainLayout = () => import("@/layouts/MainLayout.vue");
 
-import { admin } from "./adminRoutes";
-import { norm } from "./normalRoutes";
-import { superAdmin } from "./superAdminRoutes";
 export const pub = [
   {
     path: "/login",
