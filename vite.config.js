@@ -8,10 +8,11 @@ import vueDevTools from "vite-plugin-vue-devtools";
 import { mockDevServerPlugin } from "vite-plugin-mock-dev-server";
 
 // https://vite.dev/config/
-export default defineConfig(({ mode }) => {
+export default defineConfig(({ command, mode }) => {
   // 加载对应 mode 的环境变量
   const env = loadEnv(mode, process.cwd());
   const enableMock = env.VITE_USE_MOCK === "true";
+  const isBuildCommand = command === "build";
 
   const plugins = [
     vue(),
@@ -40,6 +41,11 @@ export default defineConfig(({ mode }) => {
   }
 
   return {
+    esbuild: isBuildCommand
+      ? {
+        drop: ["console"],
+      }
+      : undefined,
     plugins,
     resolve: {
       alias: {
