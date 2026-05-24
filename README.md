@@ -75,18 +75,18 @@ npm run format
 
 可在项目根目录按需创建 `.env.development`、`.env.production`。
 
-| 变量名                  | 说明                         | 默认值    |
-| ----------------------- | ---------------------------- | --------- |
-| `VITE_API_BASE_URL`     | 接口基础路径                 | `/api/v1` |
-| `VITE_SHOW_TEST_ROUTES` | 是否显示测试路由（`1` 启用） | `0`       |
-| `VITE_DELAY_REQUEST`    | 是否启用请求延迟（`1` 启用） | `0`       |
+| 变量名                  | 说明                            | 默认值    |
+| ----------------------- | ------------------------------- | --------- |
+| `VITE_API_BASE_URL`     | 接口基础路径                    | `/api/v1` |
+| `VITE_SHOW_TEST_ROUTES` | 是否显示测试路由（`true` 启用） | `false`   |
+| `VITE_DELAY_REQUEST`    | 是否启用请求延迟（`true` 启用） | `false`   |
 
 示例：
 
 ```env
 VITE_API_BASE_URL=/api/v1
-VITE_SHOW_TEST_ROUTES=0
-VITE_DELAY_REQUEST=0
+VITE_SHOW_TEST_ROUTES=false
+VITE_DELAY_REQUEST=false
 ```
 
 ## 路由与权限
