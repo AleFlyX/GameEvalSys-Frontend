@@ -4,7 +4,7 @@ const Home = () => import("@/pages/normal/home/HomePage.vue");
 const ScoringList = () => import("@/pages/normal/scoring/list/index.vue");
 const ProjectScoring = () => import("@/pages/normal/scoring/groups/index.vue");
 import { test } from "./testRoutes";
-const testRts = import.meta.env.VITE_SHOW_TEST_ROUTES === '1' ? test : []
+const testRts = import.meta.env.VITE_SHOW_TEST_ROUTES === 'true' ? test : []
 export const norm = [
   ...testRts,
   // normal子路由（打分用户/管理员均可访问）

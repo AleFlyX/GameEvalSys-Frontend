@@ -61,7 +61,7 @@ function resolveRouteRoles(node, normalizedFullPath) {
 export function generateRoleRoutes(role) {
   // combine arrays; test routes are already controlled by env flag in their module
   const all = [...norm, ...admin, ...superAdmin];
-  if (import.meta.env.VITE_SHOW_TEST_ROUTES === '1') {
+  if (import.meta.env.VITE_SHOW_TEST_ROUTES === 'true') {
     all.push(...test);
   }
   console.log("ALL ROUTES", all)

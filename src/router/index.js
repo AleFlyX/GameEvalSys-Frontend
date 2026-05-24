@@ -12,7 +12,7 @@ const router = createRouter({
   routes,
 });
 
-if (import.meta.env.USE_LOCAL_ROUTE == 0) {
+if (import.meta.env.USE_LOCAL_ROUTE === 'false') {
   // Try to fetch routes from backend first; if network fails, fall back to persisted local routes.
   fetchAndInjectBackendRoutes(router).catch(() => {
     console.log('ROUTE FETCh ERR')

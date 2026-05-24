@@ -115,7 +115,7 @@ service.interceptors.request.use(
       };
       // config.params._t = new Date().getTime()
     }
-    if (import.meta.env.VITE_DELAY_REQUEST === 1) await new Promise(resolve => setTimeout(resolve, 5000));
+    if (import.meta.env.VITE_DELAY_REQUEST === 'true') await new Promise(resolve => setTimeout(resolve, 5000));
     return config;
   },
   (error) => {
