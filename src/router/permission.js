@@ -64,6 +64,8 @@ export function generateRoleRoutes(role) {
   if (import.meta.env.VITE_SHOW_TEST_ROUTES === '1') {
     all.push(...test);
   }
+  console.log("ALL ROUTES", all)
+  console.log("PERM FILTERED", filterRoutesByRole(all, role))
   return filterRoutesByRole(all, role);
 }
 
@@ -87,6 +89,7 @@ export function injectRoutes(router, routes = []) {
       // console.warn('addRoute failed', rt.name, err)
     }
   });
+  console.log('injected Routes', router.getRoutes())
 }
 
 /**

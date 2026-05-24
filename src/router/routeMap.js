@@ -24,6 +24,8 @@ export const routeMap = {
   'public-notfound': () => import('@/pages/public/404/NotFound.vue'),
   'super-monitor-online': () => import('@/pages/super-admin/monitor/online/index.vue'),
   'super-monitor-server': () => import('@/pages/super-admin/monitor/server/index.vue'),
+  'super-admin-menu': () => import('@/pages/super-admin/menu/index.vue'),
+  'super-menu-management': () => import('@/pages/super-admin/menu/index.vue'),
 };
 
 export function mapComponent(componentCode) {

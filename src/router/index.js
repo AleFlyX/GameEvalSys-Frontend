@@ -12,12 +12,17 @@ const router = createRouter({
   routes,
 });
 
-// Try to fetch routes from backend first; if network fails, fall back to persisted local routes.
-fetchAndInjectBackendRoutes(router).catch(() => {
-  console.log('ROUTE FETCh ERR')
-  // ignore errors and fallback to persisted routes
+if (import.meta.env.USE_LOCAL_ROUTE == 0) {
+  // Try to fetch routes from backend first; if network fails, fall back to persisted local routes.
+  fetchAndInjectBackendRoutes(router).catch(() => {
+    console.log('ROUTE FETCh ERR')
+    // ignore errors and fallback to persisted routes
+    bootstrapRoutesFromStorage(router);
+  });
+}
+else {
   bootstrapRoutesFromStorage(router);
-});
+}
 
 router.beforeEach(async (to, from, next) => {
   if (to.meta.title) {
