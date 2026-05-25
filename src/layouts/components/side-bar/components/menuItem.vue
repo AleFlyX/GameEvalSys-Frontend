@@ -27,6 +27,10 @@ const props = defineProps({
     type: [Boolean, null],
     default: null,
   },
+  activePaths: {
+    type: Array,
+    default: () => [],
+  },
   level: {
     type: String,
     default: "root",
@@ -51,6 +55,9 @@ const normalizePath = (path) => {
 };
 
 const itemActive = computed(() => {
+  if (props.activePaths.length) {
+    return props.activePaths.some((path) => route.path.startsWith(normalizePath(path)));
+  }
   return route.path === normalizePath(props.index);
 });
 const isActive = computed(() => {
