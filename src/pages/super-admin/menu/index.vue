@@ -32,7 +32,7 @@
       </template>
     </SearchInput>
 
-    <div v-if="isDevMode" class="menu-debug-panel">
+    <div v-dev class="menu-debug-panel">
       <el-alert title="菜单调试输出" type="info" :closable="false" show-icon>
         <div class="menu-debug-content">
           <div class="menu-debug-row">
@@ -490,8 +490,6 @@ const visibleMenus = computed(() => {
 });
 
 const renderedMenus = computed(() => flattenRenderedMenus(visibleMenus.value, 0, []));
-
-const isDevMode = import.meta.env.DEV;
 
 const menuDebugInfo = computed(() => {
   const rootSummaryText = (menuTree.value || [])
