@@ -1,0 +1,212 @@
+<template>
+  <BaseFormModal :visible="props.visible" width="760px" min-height="65%"
+    @update:visible="emit('update:visible', $event)">
+    <template #title>
+      <span>{{ props.title }}</span>
+    </template>
+
+    <template #form>
+      <el-form ref="formRef" :model="formModel" :rules="formRules" label-width="100px" status-icon>
+        <el-form-item label="上级菜单" prop="parentId">
+          <el-select v-model="formModel.parentId" placeholder="无上级菜单" clearable filterable style="width: 100%">
+            <el-option v-for="option in props.parentOptions" :key="option.id" :label="option.label" :value="option.id"
+              :disabled="option.disabled" />
+          </el-select>
+        </el-form-item>
+
+        <el-form-item label="菜单名称" prop="title">
+          <el-input v-model="formModel.title" placeholder="请输入菜单名称" />
+        </el-form-item>
+
+        <el-form-item label="菜单编码" prop="menuCode">
+          <el-input v-model="formModel.menuCode" placeholder="请输入菜单编码" :disabled="props.isEditing" />
+        </el-form-item>
+
+        <el-form-item label="菜单类型" prop="menuType">
+          <el-select v-model="formModel.menuType" placeholder="请选择菜单类型" filterable allow-create style="width: 100%">
+            <el-option label="目录" value="catalog" />
+            <el-option label="菜单" value="menu" />
+            <el-option label="按钮" value="button" />
+          </el-select>
+        </el-form-item>
+
+        <el-form-item label="路径" prop="path">
+          <el-input v-model="formModel.path" placeholder="请输入路由路径，例如 /admin/menu" />
+        </el-form-item>
+
+        <el-form-item label="路由名" prop="routeName">
+          <el-input v-model="formModel.routeName" placeholder="请输入路由名称" />
+        </el-form-item>
+
+        <el-form-item label="组件编码" prop="componentCode">
+          <el-input v-model="formModel.componentCode" placeholder="请输入 componentCode，目录类型可留空" />
+        </el-form-item>
+
+        <el-form-item label="图标" prop="icon">
+          <div class="icon-input-row">
+            <el-input v-model="formModel.icon" placeholder="请输入图标名称，例如 Grid、Setting、Management" />
+            <div class="icon-preview" :class="{ 'is-empty': !formModel.icon }">
+              <el-icon v-if="formModel.icon">
+                <component :is="getElementIcon(formModel.icon)" />
+              </el-icon>
+              <span v-else>预览</span>
+            </div>
+          </div>
+        </el-form-item>
+
+        <el-form-item label="排序" prop="sortNum">
+          <el-input-number v-model="formModel.sortNum" :min="0" :step="1" controls-position="right"
+            style="width: 100%" />
+        </el-form-item>
+
+        <el-form-item label="可见状态" prop="hidden">
+          <el-switch v-model="formModel.hidden" active-text="隐藏" inactive-text="显示" />
+        </el-form-item>
+
+        <el-form-item label="启用状态" prop="isEnabled">
+          <el-switch v-model="formModel.isEnabled" active-text="启用" inactive-text="禁用" />
+        </el-form-item>
+
+        <el-form-item label="角色范围" prop="roleCodes">
+          <el-checkbox-group v-model="formModel.roleCodes">
+            <el-checkbox v-for="role in props.roleOptions" :key="role.value" :label="role.value">
+              {{ role.label }}
+            </el-checkbox>
+          </el-checkbox-group>
+        </el-form-item>
+      </el-form>
+    </template>
+
+    <template #operations>
+      <div class="dialog-footer">
+        <el-button @click="emit('update:visible', false)">取消</el-button>
+        <el-button type="primary" :loading="props.loading" @click="handleSubmit">
+          保存
+        </el-button>
+      </div>
+    </template>
+  </BaseFormModal>
+</template>
+
+<script setup>
+import { computed, ref, toRef } from 'vue';
+
+import BaseFormModal from '@/components/common/modal/BaseFormModal.vue';
+import { getElementIcon } from '@/utils/elementIcons';
+
+const props = defineProps({
+  visible: {
+    type: Boolean,
+    default: false,
+  },
+  title: {
+    type: String,
+    default: '菜单',
+  },
+  loading: {
+    type: Boolean,
+    default: false,
+  },
+  formModel: {
+    type: Object,
+    default: () => ({}),
+  },
+  parentOptions: {
+    type: Array,
+    default: () => [],
+  },
+  roleOptions: {
+    type: Array,
+    default: () => [],
+  },
+  isEditing: {
+    type: Boolean,
+    default: false,
+  },
+});
+
+const emit = defineEmits(['update:visible', 'submit']);
+
+const formRef = ref(null);
+const formModel = toRef(props, 'formModel');
+
+const validateComponentCode = (_rule, value, callback) => {
+  if (formModel.value.menuType === 'catalog') {
+    callback();
+    return;
+  }
+
+  if (!String(value || '').trim()) {
+    callback(new Error('非目录菜单请填写组件编码'));
+    return;
+  }
+
+  callback();
+};
+
+const formRules = computed(() => ({
+  parentId: [],
+  menuCode: [{ required: true, message: '请输入菜单编码', trigger: 'blur' }],
+  menuType: [{ required: true, message: '请选择菜单类型', trigger: 'change' }],
+  title: [{ required: true, message: '请输入菜单名称', trigger: 'blur' }],
+  path: [{ required: true, message: '请输入菜单路径', trigger: 'blur' }],
+  routeName: [{ required: true, message: '请输入路由名称', trigger: 'blur' }],
+  componentCode: [{ validator: validateComponentCode, trigger: 'blur' }],
+}));
+
+const handleSubmit = async () => {
+  try {
+    await formRef.value?.validate?.();
+  } catch {
+    return;
+  }
+
+  emit('submit', {
+    ...formModel.value,
+    roleCodes: Array.isArray(formModel.value.roleCodes) ? [...formModel.value.roleCodes] : [],
+  });
+};
+</script>
+
+<style scoped>
+.dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.icon-input-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+
+.icon-preview {
+  width: 48px;
+  height: 40px;
+  border-radius: 12px;
+  border: 1px solid rgba(37, 99, 235, 0.18);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #2563eb;
+  background: rgba(37, 99, 235, 0.06);
+  flex-shrink: 0;
+}
+
+.icon-preview.is-empty {
+  color: var(--text-secondary);
+}
+
+@media (max-width: 768px) {
+  .icon-input-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .icon-preview {
+    width: 100%;
+  }
+}
+</style>
