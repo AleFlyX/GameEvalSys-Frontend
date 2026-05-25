@@ -12,7 +12,7 @@ const Statistic = () => import("@/pages/admin/statistic/StatisticPannel.vue");
 
 export const admin = [
   {
-    path: "admin/statistic",
+    path: "admin/statistic/platform",
     // path: "statistic/:projectId",
     name: "adminStatistic",
     component: Statistic,
