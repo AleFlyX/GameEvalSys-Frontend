@@ -51,14 +51,21 @@ const route = useRoute();
 
 const normalizePath = (path) => {
   if (!path) return "";
-  return path.startsWith("/") ? path : `/${path}`;
+  const normalized = path.startsWith("/") ? path : `/${path}`;
+  return normalized.length > 1 ? normalized.replace(/\/$/, "") : normalized;
+};
+
+const isPathActive = (path) => {
+  const normalized = normalizePath(path);
+  if (!normalized) return false;
+  return normalizePath(route.path) === normalized;
 };
 
 const itemActive = computed(() => {
   if (props.activePaths.length) {
-    return props.activePaths.some((path) => route.path.startsWith(normalizePath(path)));
+    return props.activePaths.some((path) => isPathActive(path));
   }
-  return route.path === normalizePath(props.index);
+  return isPathActive(props.index);
 });
 const isActive = computed(() => {
   return props.active === null ? itemActive.value : props.active;

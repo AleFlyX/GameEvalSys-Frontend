@@ -64,10 +64,16 @@ const emits = defineEmits(["update:active"]);
 
 const route = useRoute();
 
+const normalizePath = (path) => {
+  if (!path) return "";
+  const normalized = path.startsWith("/") ? path : `/${path}`;
+  return normalized.length > 1 ? normalized.replace(/\/$/, "") : normalized;
+};
+
 const childMenuItemActive = computed(() => {
-  const currentPath = route.path;
+  const currentPath = normalizePath(route.path);
   // 先排除不属于当前 folder 的子路径，避免同一前缀下的分组互相展开。
-  const isExcluded = props.excludePaths.some((path) => currentPath.startsWith(path));
+  const isExcluded = props.excludePaths.some((path) => currentPath === normalizePath(path));
 
   if (isExcluded) {
     return false;
@@ -75,10 +81,10 @@ const childMenuItemActive = computed(() => {
 
   if (props.activePaths.length) {
     // 显式匹配当前 folder 负责的路由列表，比单纯依赖 baseIndex 更精确。
-    return props.activePaths.some((path) => currentPath.startsWith(path));
+    return props.activePaths.some((path) => currentPath === normalizePath(path));
   }
 
-  return currentPath.startsWith(props.baseIndex);
+  return currentPath === normalizePath(props.baseIndex);
 });
 const opened = ref(props.alwaysOpen || props.active || childMenuItemActive.value);
 
