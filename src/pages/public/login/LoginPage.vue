@@ -83,7 +83,8 @@ import { ElMessage } from 'element-plus';
 import { useUserStore } from '@/stores/modules/userStore.js';
 import { useLoading } from '@/composables/useLoading';
 import { elementIconMap } from '@/utils/elementIcons';
-import { generateRoleRoutes, injectRoutes } from '@/router/permission';
+import { fetchAndInjectBackendRoutes } from '@/router/permission';
+import { setDynamicRoutesReady } from '@/domain/dynamicRouteState';
 
 // 导入子组件
 import LoginForm from './components/loginForm.vue';
@@ -187,11 +188,12 @@ const handleLogin = async () => {
     // 调用登录 API
     await userStore.login(loginForm.value);
 
-    // 登录后先注入动态路由，避免首次跳转直接命中 404
-    const role = userStore.userRole || userStore.userInfo.role || '';
-    const dynamicRoutes = generateRoleRoutes(role);
-    injectRoutes(router, dynamicRoutes);
-    userStore.setRoutesReady(true);
+    // 登录后显式拉取后端动态路由并注入，确保菜单和权限数据以 /auth/routes 为准
+    const injected = await fetchAndInjectBackendRoutes(router);
+    if (!injected) {
+      throw new Error('动态路由加载失败，请稍后重试');
+    }
+    setDynamicRoutesReady(true);
 
     // 如果勾选了记住我，保存账号到历史
     if (rememberMe.value) {

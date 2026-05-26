@@ -41,6 +41,7 @@
 import { computed, ref } from "vue";
 import { useUserStore } from "@/stores/modules/userStore";
 import { elementIconMap } from "@/utils/elementIcons";
+import { menuTree as dynamicMenuTree, routesReady } from "@/domain/dynamicRouteState";
 import BrandIcon from "../../../components/icons/BrandIcon.vue";
 import MenuItem from "./components/menuItem.vue";
 import MenuTree from "./components/menuTree.vue";
@@ -55,21 +56,10 @@ const normalizePath = (path) => {
   return path.startsWith("/") ? path : `/${path}`;
 };
 
-const readMenuTree = () => {
-  const raw = localStorage.getItem("menuTree");
-  if (!raw) return [];
-  try {
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return [];
-  }
-};
-
 const menuTree = computed(() => {
   // routesReady 作为依赖，确保在路由准备好后菜单会重新计算。
-  void userStore.routesReady;
-  return readMenuTree();
+  void routesReady.value;
+  return dynamicMenuTree.value;
 });
 
 const flattenMenuTree = (nodes = []) => {
