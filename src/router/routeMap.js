@@ -29,6 +29,10 @@ export const routeMap = {
   'super-menu-management': () => import('@/pages/super-admin/menu/index.vue'),
 };
 
+if (import.meta.env.VITE_SHOW_TEST_ROUTES === 'true') {
+  routeMap['test-router-tree'] = () => import('@/test/pages/routerTreeData.vue');
+}
+
 export function mapComponent(componentCode) {
   if (!componentCode) return null;
   const loader = routeMap[componentCode];
