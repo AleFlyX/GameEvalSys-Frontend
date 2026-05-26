@@ -48,6 +48,12 @@ export const useHandleInteract = () => {
   // 开始打分
   const { isLoading: loadingTable, start: startTableLoading, end: endTableLoading } = useLoading('scoringList:table');
   const handleStartScoring = async (row) => {
+    const projectId = Number(row?.id);
+    if (!Number.isFinite(projectId) || projectId <= 0) {
+      console.warn('Invalid project id for scoring navigation:', row);
+      return;
+    }
+
     selectedProject.value = row;
     startTableLoading();
     const prefetchTask = prefetchProjectAndStandard(row).catch((error) => {
@@ -58,14 +64,11 @@ export const useHandleInteract = () => {
       // 预取不应阻塞路由太久：最多等 300ms，之后先导航
       await Promise.race([prefetchTask, wait(300)]);
       router.push({
-        name: 'projectScoring',
-        params: {
-          projectId: row.id,
-        },
+        path: `/scoring/${projectId}`,
         query: {
           projectName: row.name,
-        } // 自定义字段用query
-      })
+        },
+      });
     } finally {
       endTableLoading();
     }
