@@ -19,20 +19,45 @@ const router = createRouter({
  * 初始化动态路由：根据运行时配置决定先使用后端路由还是直接从本地持久化路由恢复
  * VITE_USE_LOCAL_ROUTE === 'false' 时优先尝试从后端拉取动态路由，失败回退到本地存储
  */
-function initDynamicRoutesAtStartup() {
-  if (import.meta.env.VITE_USE_LOCAL_ROUTE == "false") {
-    // 先尝试从后端获取并注入；若失败则回退到本地持久化路由
-    fetchAndInjectBackendRoutes(router).catch(() => {
-      console.log("ROUTE FETCh ERR");
-      bootstrapRoutesFromStorage(router);
+export function initDynamicRoutesAtStartup() {
+  // If there's a token, prefer fetching backend dynamic routes so protected pages match correctly
+  const token = localStorage.getItem("accessToken") || localStorage.getItem("token") || "";
+  if (token) {
+    return fetchAndInjectBackendRoutes(router).then((injected) => {
+      if (!injected) {
+        // backend didn't return routes, try to restore persisted role routes
+        bootstrapRoutesFromStorage(router);
+      }
+      try {
+        // mark routes ready so consumers react
+        setDynamicRoutesReady(true);
+      } catch (e) {
+        // ignore
+      }
+      return injected;
+    }).catch((err) => {
+      console.log("ROUTE FETCH ERR", err);
+      try {
+        bootstrapRoutesFromStorage(router);
+      } catch (e) {
+        // ignore
+      }
+      try { setDynamicRoutesReady(true); } catch (e) { }
+      return false;
     });
-  } else {
-    // 强制使用本地持久化路由（开发/调试场景）
-    bootstrapRoutesFromStorage(router);
   }
-}
 
-initDynamicRoutesAtStartup();
+  // No token: fall back to local route usage if explicitly enabled, otherwise resolve quickly
+  if (import.meta.env.VITE_USE_LOCAL_ROUTE === 'true') {
+    try {
+      bootstrapRoutesFromStorage(router);
+    } catch (e) {
+      // ignore
+    }
+  }
+  try { setDynamicRoutesReady(true); } catch (e) { }
+  return Promise.resolve(true);
+}
 
 /**
  * 将页面标题设置为路由元信息中的 title（如果存在）并添加项目后缀
@@ -49,31 +74,22 @@ function setDocumentTitle(to) {
  * - 若后端注入失败或返回 false，则回退到本地持久化路由
  * 返回值：当完成注入并需要重新导航时返回 true（调用处会重入路由），否则返回 false
  */
+function isNotFoundMatch(to) {
+  if (!to) return false;
+  if (!to.matched || to.matched.length === 0) return true;
+  return to.matched.some((record) => record?.name === "notFound");
+}
+
 async function ensureDynamicRoutesInjectedIfNeeded(router, userStore, to) {
-  if (userStore.isLogin && !routesReady.value) {
-    try {
-      const backendInjected = await fetchAndInjectBackendRoutes(router);
-      if (!backendInjected) {
-        // 后端未返回动态路由，使用本地持久化路由作为备选
-        bootstrapRoutesFromStorage(router);
-      }
-      setDynamicRoutesReady(true);
-      // 通知调用者需要重新进入当前路径以触发路由匹配新注入的路由
-      return true;
-    } catch (err) {
-      // 注入失败则继续路由流程（不阻塞用户）
-      console.error("inject dynamic routes failed", err);
-      // 如果注入失败但本地有缓存，也尝试回退到本地（保证最小功能）
-      try {
-        bootstrapRoutesFromStorage(router);
-      } catch (e) {
-        // 忽略回退错误
-      }
-      setDynamicRoutesReady(true);
-      return true;
-    }
+  if (!userStore.isLogin || routesReady.value) return false;
+
+  try {
+    await initDynamicRoutesAtStartup();
+  } catch (err) {
+    console.error("inject dynamic routes failed", err);
   }
-  return false;
+
+  return isNotFoundMatch(to);
 }
 
 /**
@@ -112,10 +128,11 @@ router.beforeEach(async (to, from, next) => {
   setDocumentTitle(to);
   const userStore = useUserStore();
 
-  // 如果需要从后端拉取并注入动态路由，优先处理并在注入后重新进入当前路由以重新匹配
+  // 需要动态路由且当前落在 404 上，则先注入后重入以触发正确匹配
   const needReenter = await ensureDynamicRoutesInjectedIfNeeded(router, userStore, to);
   if (needReenter) {
-    return next({ path: to.fullPath, query: to.query, hash: to.hash, replace: true });
+    const target = to.redirectedFrom?.fullPath || to.fullPath;
+    return next({ path: target, query: to.query, hash: to.hash, replace: true });
   }
 
   // 处理认证与权限
