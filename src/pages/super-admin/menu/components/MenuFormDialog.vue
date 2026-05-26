@@ -43,15 +43,53 @@
         </el-form-item>
 
         <el-form-item label="图标" prop="icon">
-          <div class="icon-input-row">
-            <el-input v-model="formModel.icon" placeholder="请输入图标名称，例如 Grid、Setting、Management" />
-            <div class="icon-preview" :class="{ 'is-empty': !formModel.icon }">
-              <el-icon v-if="formModel.icon">
-                <component :is="getElementIcon(formModel.icon)" />
-              </el-icon>
-              <span v-else>预览</span>
+          <el-popover v-model:visible="iconPickerVisible" :width="420" placement="bottom-start" trigger="click"
+            :teleported="false">
+            <template #reference>
+              <button type="button" class="icon-picker-trigger">
+                <div class="icon-preview" :class="{ 'is-empty': !formModel.icon }">
+                  <el-icon v-if="formModel.icon">
+                    <component :is="getElementIcon(formModel.icon)" />
+                  </el-icon>
+                  <span v-else>预览</span>
+                </div>
+                <div class="icon-picker-copy">
+                  <span class="icon-picker-label">{{ selectedIconLabel }}</span>
+                  <span class="icon-picker-hint">点击从图标库中选择</span>
+                </div>
+                <el-icon class="icon-picker-arrow">
+                  <component :is="getElementIcon('ArrowDown')"></component>
+                </el-icon>
+              </button>
+            </template>
+
+            <div class="icon-picker-panel">
+              <el-input v-model="iconSearchText" clearable placeholder="搜索图标名称，例如 Grid、Setting、Management" />
+
+              <div class="icon-picker-meta">
+                <span>共 {{ filteredIconOptions.length }} 个可选图标</span>
+                <el-button text type="primary" :disabled="!formModel.icon" @click="handleClearIcon">
+                  清空
+                </el-button>
+              </div>
+
+              <div v-if="filteredIconOptions.length" class="icon-grid">
+                <button v-for="option in filteredIconOptions" :key="option.name" type="button" class="icon-grid-item"
+                  :class="{ 'is-active': option.name === formModel.icon }" @click="handlePickIcon(option.name)">
+                  <span class="icon-grid-icon">
+                    <el-icon>
+                      <component :is="option.icon" />
+                    </el-icon>
+                  </span>
+                  <span class="icon-grid-name">{{ option.name }}</span>
+                </button>
+              </div>
+
+              <div v-else class="icon-grid-empty">
+                没有匹配的图标
+              </div>
             </div>
-          </div>
+          </el-popover>
         </el-form-item>
 
         <el-form-item label="排序" prop="sortNum">
@@ -92,7 +130,7 @@
 import { computed, ref, toRef } from 'vue';
 
 import BaseFormModal from '@/components/common/modal/BaseFormModal.vue';
-import { getElementIcon } from '@/utils/elementIcons';
+import { elementIconMap, getElementIcon } from '@/utils/elementIcons';
 
 const props = defineProps({
   visible: {
@@ -129,6 +167,34 @@ const emit = defineEmits(['update:visible', 'submit']);
 
 const formRef = ref(null);
 const formModel = toRef(props, 'formModel');
+const iconPickerVisible = ref(false);
+const iconSearchText = ref('');
+
+const iconOptions = computed(() => Object.entries(elementIconMap)
+  .map(([name, icon]) => ({ name, icon }))
+  .sort((left, right) => left.name.localeCompare(right.name, 'en')));
+
+const filteredIconOptions = computed(() => {
+  const keyword = iconSearchText.value.trim().toLowerCase();
+
+  if (!keyword) {
+    return iconOptions.value;
+  }
+
+  return iconOptions.value.filter(({ name }) => name.toLowerCase().includes(keyword));
+});
+
+const selectedIconLabel = computed(() => formModel.value.icon || '请选择图标');
+
+const handlePickIcon = (iconName) => {
+  formModel.value.icon = iconName;
+  iconPickerVisible.value = false;
+};
+
+const handleClearIcon = () => {
+  formModel.value.icon = '';
+  iconSearchText.value = '';
+};
 
 const validateComponentCode = (_rule, value, callback) => {
   if (formModel.value.menuType === 'catalog') {
@@ -175,11 +241,53 @@ const handleSubmit = async () => {
   gap: 10px;
 }
 
-.icon-input-row {
+.icon-picker-trigger {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--el-border-color);
+  border-radius: 12px;
+  background: #fff;
+  cursor: pointer;
+  text-align: left;
+}
+
+.icon-picker-trigger:hover {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.08);
+}
+
+.icon-picker-trigger:focus-visible {
+  outline: 2px solid rgba(37, 99, 235, 0.35);
+  outline-offset: 2px;
+}
+
+.icon-picker-copy {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.icon-picker-label {
+  color: var(--text);
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.icon-picker-hint {
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.icon-picker-arrow {
+  color: var(--text-secondary);
+  flex-shrink: 0;
 }
 
 .icon-preview {
@@ -199,14 +307,83 @@ const handleSubmit = async () => {
   color: var(--text-secondary);
 }
 
+.icon-picker-panel {
+  display: grid;
+  gap: 12px;
+}
+
+.icon-picker-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.icon-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  max-height: 280px;
+  overflow: auto;
+  padding-right: 2px;
+}
+
+.icon-grid-item {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  padding: 10px 8px;
+  border: 1px solid var(--el-border-color);
+  border-radius: 12px;
+  background: #fff;
+  cursor: pointer;
+  color: var(--text);
+}
+
+.icon-grid-item:hover,
+.icon-grid-item.is-active {
+  border-color: #2563eb;
+  background: rgba(37, 99, 235, 0.06);
+}
+
+.icon-grid-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #2563eb;
+  background: rgba(37, 99, 235, 0.08);
+}
+
+.icon-grid-name {
+  width: 100%;
+  font-size: 12px;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.icon-grid-empty {
+  padding: 24px 12px;
+  border: 1px dashed var(--el-border-color);
+  border-radius: 12px;
+  text-align: center;
+  color: var(--text-secondary);
+}
+
 @media (max-width: 768px) {
-  .icon-input-row {
-    flex-direction: column;
-    align-items: stretch;
+  .icon-preview {
+    width: 44px;
+    height: 36px;
   }
 
-  .icon-preview {
-    width: 100%;
+  .icon-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 </style>

@@ -8,7 +8,8 @@
               :aria-label="isMenuBranchExpanded(scope.row) ? '收起子菜单' : '展开子菜单'"
               @click.stop="emit('toggle-branch', scope.row)">
               <el-icon>
-                <component :is="isMenuBranchExpanded(scope.row) ? ArrowDown : ArrowRight" />
+                <component
+                  :is="isMenuBranchExpanded(scope.row) ? getElementIcon('ArrowDown') : getElementIcon('ArrowRight')" />
               </el-icon>
             </button>
             <span v-else class="menu-tree-spacer" aria-hidden="true"></span>
@@ -59,7 +60,7 @@
                 </el-tag>
               </div>
               <p class="menu-expand-desc">
-                这个展开区块用于承载次要信息，减少主表列宽压力。
+                路由详细信息
               </p>
             </div>
 
@@ -109,8 +110,6 @@
 </template>
 
 <script setup>
-import { ArrowDown, ArrowRight } from '@element-plus/icons-vue';
-
 import { getElementIcon } from '@/utils/elementIcons';
 
 defineProps({
