@@ -44,7 +44,7 @@
 
         <el-form-item label="图标" prop="icon">
           <el-popover v-model:visible="iconPickerVisible" :width="420" placement="bottom-start" trigger="click"
-            :teleported="false">
+            :teleported="true" popper-class="menu-icon-picker-popper" :effect="theme.effectiveTheme">
             <template #reference>
               <button type="button" class="icon-picker-trigger">
                 <div class="icon-preview" :class="{ 'is-empty': !formModel.icon }">
@@ -117,10 +117,10 @@
 
     <template #operations>
       <div class="dialog-footer">
-        <el-button @click="emit('update:visible', false)">取消</el-button>
-        <el-button type="primary" :loading="props.loading" @click="handleSubmit">
+        <MyBtn @click="emit('update:visible', false)">取消</MyBtn>
+        <MyBtn type="primary" :loading="props.loading" @click="handleSubmit">
           保存
-        </el-button>
+        </MyBtn>
       </div>
     </template>
   </BaseFormModal>
@@ -128,9 +128,9 @@
 
 <script setup>
 import { computed, ref, toRef } from 'vue';
-
 import BaseFormModal from '@/components/common/modal/BaseFormModal.vue';
 import { elementIconMap, getElementIcon } from '@/utils/elementIcons';
+import { useTheme } from '@/composables/useTheme';
 
 const props = defineProps({
   visible: {
@@ -164,7 +164,7 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['update:visible', 'submit']);
-
+const theme = useTheme();
 const formRef = ref(null);
 const formModel = toRef(props, 'formModel');
 const iconPickerVisible = ref(false);
@@ -247,11 +247,12 @@ const handleSubmit = async () => {
   gap: 12px;
   width: 100%;
   padding: 10px 12px;
-  border: 1px solid var(--el-border-color);
+  border: 1px solid var(--border);
   border-radius: 12px;
-  background: #fff;
+  background: var(--card-bg);
   cursor: pointer;
   text-align: left;
+  color: var(--text);
 }
 
 .icon-picker-trigger:hover {
@@ -299,7 +300,7 @@ const handleSubmit = async () => {
   align-items: center;
   justify-content: center;
   color: #2563eb;
-  background: rgba(37, 99, 235, 0.06);
+  background: rgba(37, 99, 235, 0.08);
   flex-shrink: 0;
 }
 
@@ -335,9 +336,9 @@ const handleSubmit = async () => {
   justify-items: center;
   gap: 8px;
   padding: 10px 8px;
-  border: 1px solid var(--el-border-color);
+  border: 1px solid var(--border);
   border-radius: 12px;
-  background: #fff;
+  background: var(--card-bg);
   cursor: pointer;
   color: var(--text);
 }
@@ -356,7 +357,7 @@ const handleSubmit = async () => {
   align-items: center;
   justify-content: center;
   color: #2563eb;
-  background: rgba(37, 99, 235, 0.08);
+  background: rgba(37, 99, 235, 0.12);
 }
 
 .icon-grid-name {
@@ -370,10 +371,58 @@ const handleSubmit = async () => {
 
 .icon-grid-empty {
   padding: 24px 12px;
-  border: 1px dashed var(--el-border-color);
+  border: 1px dashed var(--border);
   border-radius: 12px;
   text-align: center;
   color: var(--text-secondary);
+}
+
+html[data-theme="dark"] .icon-picker-trigger {
+  background: var(--input-bg);
+  border-color: var(--input-border);
+}
+
+html[data-theme="dark"] .icon-picker-trigger:hover {
+  border-color: var(--input-border-hover);
+  box-shadow: 0 0 0 3px rgba(10, 158, 255, 0.14);
+}
+
+html[data-theme="dark"] .icon-preview {
+  border-color: rgba(10, 158, 255, 0.24);
+  background: rgba(10, 158, 255, 0.16);
+}
+
+html[data-theme="dark"] .icon-grid-item {
+  background: var(--input-bg);
+  border-color: var(--input-border);
+}
+
+html[data-theme="dark"] .icon-grid-item:hover,
+html[data-theme="dark"] .icon-grid-item.is-active {
+  border-color: rgba(10, 158, 255, 0.65);
+  background: rgba(10, 158, 255, 0.12);
+}
+
+html[data-theme="dark"] .icon-grid-icon {
+  background: rgba(10, 158, 255, 0.18);
+}
+
+html[data-theme="dark"] .icon-grid-empty {
+  border-color: var(--input-border);
+}
+
+:global(.menu-icon-picker-popper) {
+  z-index: 3200 !important;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--card-bg);
+  color: var(--text);
+  box-shadow: 0 20px 48px rgba(15, 23, 42, 0.22);
+}
+
+:global(html[data-theme="dark"] .menu-icon-picker-popper) {
+  border-color: var(--input-border);
+  box-shadow: 0 24px 54px rgba(0, 0, 0, 0.46);
 }
 
 @media (max-width: 768px) {
