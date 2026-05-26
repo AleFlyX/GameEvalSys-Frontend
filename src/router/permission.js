@@ -32,6 +32,65 @@ function cloneRouteRecord(route) {
   return cloned;
 }
 
+function normalizePath(path) {
+  const raw = String(path || '').trim();
+  if (!raw) return '';
+  return raw.startsWith('/') ? raw.replace(/\/+$/, '') : `/${raw.replace(/\/+$/, '')}`;
+}
+
+function joinRoutePath(parentPath, childPath) {
+  const parent = normalizePath(parentPath);
+  const child = String(childPath || '').trim();
+  if (!child) return parent;
+  if (child.startsWith('/')) return normalizePath(child);
+  if (!parent) return normalizePath(child);
+  return normalizePath(`${parent}/${child}`);
+}
+
+function collectExistingRoutePaths(router) {
+  return new Set((router?.getRoutes?.() || []).map((route) => normalizePath(route.path)));
+}
+
+function hasRequiredParam(path) {
+  return /(^|\/):[^/]+/.test(String(path || ''));
+}
+
+function canRedirectToChild(parentPath, childPath) {
+  const fullChildPath = joinRoutePath(parentPath, childPath);
+  return Boolean(fullChildPath) && !hasRequiredParam(fullChildPath);
+}
+
+function addRouteIfMissing(router, record, parentName, parentPath, existingPaths) {
+  if (!router || !record) return;
+
+  const currentFullPath = joinRoutePath(parentPath, record.path);
+  if (currentFullPath && existingPaths.has(currentFullPath)) {
+    return;
+  }
+
+  const cloned = cloneRouteRecord(record);
+  if (!cloned.name) cloned.name = normalizeRouteName(cloned);
+
+  if (Array.isArray(cloned.children) && cloned.children.length) {
+    cloned.children = cloned.children.filter((child) => {
+      const childFullPath = joinRoutePath(currentFullPath, child.path);
+      return !(childFullPath && existingPaths.has(childFullPath));
+    });
+
+    if (cloned.redirect && cloned.children.length > 0) {
+      const firstChild = cloned.children[0];
+      if (!canRedirectToChild(currentFullPath, firstChild.path)) {
+        delete cloned.redirect;
+      }
+    }
+  }
+
+  if (!router.hasRoute(cloned.name)) {
+    router.addRoute(parentName, cloned);
+    existingPaths.add(currentFullPath);
+  }
+}
+
 function normalizeRouteName(route) {
   const rawName = route?.name || route?.path || "dynamic-route";
   return String(rawName).replace(/[^\w-]+/g, "_");
@@ -62,14 +121,10 @@ export function generateRoleRoutes(role) {
  */
 export function injectRoutes(router, routes = []) {
   if (!router || !routes || !routes.length) return;
+  const existingPaths = collectExistingRoutePaths(router);
   routes.forEach((rt) => {
     try {
-      const record = cloneRouteRecord(rt);
-      if (!record.name) record.name = normalizeRouteName(record);
-      if (!router.hasRoute(record.name)) {
-        // add as child of mainLayout
-        router.addRoute("mainLayout", record);
-      }
+      addRouteIfMissing(router, rt, "mainLayout", "", existingPaths);
     } catch {
       // ignore individual add errors
       // console.warn('addRoute failed', rt.name, err)
