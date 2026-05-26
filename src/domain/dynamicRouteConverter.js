@@ -44,77 +44,83 @@ function normalizeAbsolutePath(value) {
   return raw.startsWith('/') ? raw : `/${raw}`;
 }
 
-/**
- * Compute the path segment relative to parentFullPath.
- * @param {string} fullPath
- * @param {string} parentFullPath
- * @returns {string} relative segment (no leading slash)
- */
-function getRelativePath(fullPath, parentFullPath) {
-  const normalizedFullPath = normalizeAbsolutePath(fullPath);
-  const normalizedParentPath = normalizeAbsolutePath(parentFullPath);
-  if (!normalizedParentPath) {
-    return normalizedFullPath.replace(/^\//, '');
-  }
-  if (normalizedFullPath === normalizedParentPath) {
-    return normalizedParentPath.replace(/^\//, '');
-  }
-  const parentPrefix = `${normalizedParentPath}/`;
-  if (normalizedFullPath.startsWith(parentPrefix)) {
-    return normalizedFullPath.slice(parentPrefix.length);
-  }
-  return normalizedFullPath.replace(/^\//, '');
+function isAbsoluteLikePath(rawPath) {
+  const path = String(rawPath || '').trim();
+  if (!path) return false;
+  if (path.startsWith('/')) return true;
+  const firstSegment = path.split('/')[0];
+  return ['admin', 'super-admin', 'scoring', 'home'].includes(firstSegment);
+}
+
+function buildFullPath(rawPath, parentFullPath) {
+  const raw = String(rawPath || '').trim();
+  if (!raw) return normalizeAbsolutePath(parentFullPath || '');
+  if (raw.startsWith('/') || isAbsoluteLikePath(raw)) return normalizeAbsolutePath(raw);
+  if (!parentFullPath) return normalizeAbsolutePath(raw);
+  return normalizeAbsolutePath(`${normalizeAbsolutePath(parentFullPath)}/${raw}`);
+}
+
+function toChildPath(fullPath) {
+  return String(fullPath || '').replace(/^\//, '');
+}
+
+function shouldRenderRoute(node) {
+  if (node?.componentCode) return true;
+  const hasChildren = Array.isArray(node?.children) && node.children.length > 0;
+  return !hasChildren;
 }
 
 /**
  * Convert a backend node to a vue-router RouteRecord-like object.
  * @param {object} node - backend node
- * @param {string} parentFullPath - parent's normalized full path
+ * @param {string} fullPath - absolute full path for this node
  * @param {(code: string) => any} mapComponent - function mapping componentCode -> component
- * @returns {object} route record
+ * @returns {object|null} route record
  */
-function convertNode(node, parentFullPath = '', mapComponent) {
-  const fullPath = node.path || node.routePath || node.routeName || node.menuCode || '';
-  const normalizedFullPath = normalizeAbsolutePath(fullPath);
-  const path = getRelativePath(normalizedFullPath, parentFullPath);
+function convertNode(node, fullPath, mapComponent) {
+  if (!shouldRenderRoute(node)) return null;
+
+  const path = toChildPath(fullPath);
   const name = node.routeName || node.menuCode || path || normalizeRouteName(node);
-  const hasChildren = Array.isArray(node.children) && node.children.length > 0;
   const meta = {
     title: node.title || node.menuName || '',
     icon: node.icon || '',
-    hidden: !!node.hidden || hasChildren,
-    roles: resolveRouteRoles(node, normalizedFullPath),
+    hidden: !!node.hidden,
+    roles: resolveRouteRoles(node, fullPath),
   };
 
   const record = { path, name, meta };
-
-  if (hasChildren && !node.componentCode) {
+  const comp = typeof mapComponent === 'function' ? mapComponent(node.componentCode) : null;
+  if (comp) {
+    record.component = comp;
+  } else if (node.componentCode) {
     record.component = RouterView;
-  } else {
-    const comp = typeof mapComponent === 'function' ? mapComponent(node.componentCode) : null;
-    if (comp) record.component = comp;
-  }
-
-  if (hasChildren) {
-    record.children = node.children.map((c) => convertNode(c, normalizedFullPath, mapComponent));
-    if (!node.redirect && record.children.length > 0) {
-      record.redirect = { name: record.children[0].name };
-    }
-  }
-
-  if (!record.component) {
-    const compFallback = typeof mapComponent === 'function' ? mapComponent(node.componentCode) : null;
-    record.component = compFallback || RouterView;
   }
 
   return record;
 }
 
+function flattenBackendNodes(nodes, parentFullPath, mapComponent, out) {
+  const list = Array.isArray(nodes) ? nodes : [];
+  list.forEach((node) => {
+    if (!node) return;
+    const fullPath = buildFullPath(node.path || node.routePath || node.routeName || node.menuCode || '', parentFullPath);
+    const record = convertNode(node, fullPath, mapComponent);
+    if (record) out.push(record);
+    if (Array.isArray(node.children) && node.children.length > 0) {
+      flattenBackendNodes(node.children, fullPath, mapComponent, out);
+    }
+  });
+}
+
 /**
- * Convert an array of backend nodes to route records.
- * @param {Array} data - backend node array
- * @param {(code: string) => any} mapComponent - optional mapping function for componentCode
- * @returns {Array} route records
+ * 扁平来自后端的路由节点数据为 vue-router RouteRecord 数组
+ * - 对于没有 componentCode 的节点，如果它是一个分组（有 children），则不渲染路由（即不生成 RouteRecord），但会继续处理其子节点
+ * - 对于没有 componentCode 的叶子节点，则使用 RouterView 作为组件的 fallback，以确保路由可访问但不渲染内容
+ * - 对于有 componentCode 但 mapComponent 无法解析的节点，也使用 RouterView 作为 fallback，并在控制台警告
+ * @param {Array} data - 后端节点数组
+ * @param {(code: string) => any} mapComponent - 可选的 componentCode 映射函数
+ * @returns {Array} RouteRecord 数组
  */
 export function convertBackendNodes(data = [], mapComponent) {
   if (!Array.isArray(data)) return [];
@@ -124,7 +130,9 @@ export function convertBackendNodes(data = [], mapComponent) {
     console.warn('convertBackendNodes: mapComponent is not a function, ignoring it.');
     mapComponent = null;
   }
-  return data.map((n) => convertNode(n, '', mapComponent));
+  const records = [];
+  flattenBackendNodes(data, '', mapComponent, records);
+  return records;
 }
 
 export default { convertBackendNodes };
