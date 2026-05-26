@@ -52,6 +52,36 @@ export default defineConfig(({ command, mode }) => {
         "@": fileURLToPath(new URL("./src", import.meta.url)),
       },
     },
+    build: {
+      outDir: "./deploy/dist",
+      chunkSizeWarningLimit: 1500, // 解决打包体积过大警告
+      rollupOptions: {
+        output: {
+          manualChunks(id) {
+            if (id.includes("node_modules")) {
+              if (id.includes("element-plus")) return "vendor-element-plus";
+              if (id.includes("@element-plus/icons-vue")) return "vendor-element-icons";
+              if (id.includes("echarts")) return "vendor-echarts";
+              if (id.includes("xlsx")) return "vendor-xlsx";
+              if (id.includes("page-agent")) return "vendor-page-agent";
+              if (id.includes("vue-router")) return "vendor-vue-router";
+              if (id.includes("pinia")) return "vendor-pinia";
+              if (id.includes("axios")) return "vendor-axios";
+              return "vendor";
+            }
+
+            if (id.includes("/src/layouts/")) return "layout";
+            if (id.includes("/src/pages/public/")) return "page-public";
+            if (id.includes("/src/pages/normal/")) return "page-normal";
+            if (id.includes("/src/pages/admin/")) return "page-admin";
+            if (id.includes("/src/pages/super-admin/")) return "page-super-admin";
+            if (id.includes("/src/test/")) return "page-test";
+
+            return undefined;
+          },
+        },
+      },
+    },
     server: {
       host: true,
       port: 5173, // 前端服务端口
@@ -83,12 +113,6 @@ export default defineConfig(({ command, mode }) => {
           },
         },
       },
-    },
-    // 打包配置
-    build: {
-      outDir: "./deploy/dist",
-      chunkSizeWarningLimit: 1500, // 解决打包体积过大警告
-      // rollupOptions: { ... },
     },
   };
 });
