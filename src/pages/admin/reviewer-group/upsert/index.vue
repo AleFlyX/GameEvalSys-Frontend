@@ -128,12 +128,12 @@ const handleCancel = () => {
       cancelButtonText: '继续编辑',
       type: 'warning'
     }).then(() => {
-      router.push('/admin/reviewer-groups');
+      router.back();
     }).catch(() => {
       // 取消操作，继续编辑
     });
   } else {
-    router.push('/admin/reviewer-groups');
+    router.back();
   }
 };
 
