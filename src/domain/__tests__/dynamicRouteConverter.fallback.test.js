@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { convertBackendNodes } from '../dynamicRouteConverter';
+import { convertBackendNodes } from '../dynamicRoutes/dynamicRouteConverter';
 import { RouterView } from 'vue-router';
 
 // describe 描述了 convertBackendNodes 函数的测试套件，包含两个测试用例：

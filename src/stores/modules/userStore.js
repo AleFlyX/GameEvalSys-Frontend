@@ -1,7 +1,7 @@
 import { defineStore } from "pinia";
 import { ref, computed } from "vue";
 import { userApi } from "@/api/user.js";
-import { resetDynamicRouteState } from "@/domain/dynamicRouteState";
+import { resetDynamicRouteState } from "@/domain/dynamicRoutes/dynamicRouteState";
 
 export const useUserStore = defineStore("userStore", () => {
   const token = ref(localStorage.getItem("accessToken") || localStorage.getItem("token") || "");

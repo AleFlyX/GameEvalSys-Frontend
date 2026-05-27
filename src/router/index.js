@@ -3,7 +3,7 @@ import { createRouter, createWebHistory } from "vue-router";
 import { pub } from "@/router/modules/publicRoutes";
 import { useMessage } from "@/composables/useMessage";
 import { bootstrapRoutesFromStorage, fetchAndInjectBackendRoutes } from "@/router/permission";
-import { routesReady, setDynamicRoutesReady } from "@/domain/dynamicRouteState";
+import { routesReady, setDynamicRoutesReady } from "@/domain/dynamicRoutes/dynamicRouteState";
 import { useUserStore } from "@/stores/modules/userStore";
 
 // 易于测试与维护：将动态路由注入、权限检查、标题设置等逻辑拆成小函数
@@ -25,14 +25,14 @@ export function initDynamicRoutesAtStartup() {
   if (token) {
     return fetchAndInjectBackendRoutes(router).then((injected) => {
       if (!injected) {
-        // backend didn't return routes, try to restore persisted role routes
+        // 后端路由拉取失败，回退到本地持久化路由
         bootstrapRoutesFromStorage(router);
       }
       try {
-        // mark routes ready so consumers react
+        // 无论成功与否都标记动态路由准备就绪，允许路由守卫继续导航
         setDynamicRoutesReady(true);
       } catch (e) {
-        // ignore
+        console.warn("setDynamicRoutesReady failed", e);
       }
       return injected;
     }).catch((err) => {
@@ -40,22 +40,26 @@ export function initDynamicRoutesAtStartup() {
       try {
         bootstrapRoutesFromStorage(router);
       } catch (e) {
-        // ignore
+        console.warn("bootstrapRoutesFromStorage failed", e);
       }
-      try { setDynamicRoutesReady(true); } catch (e) { }
+      try { setDynamicRoutesReady(true); } catch (e) {
+        console.warn("setDynamicRoutesReady failed", e);
+      }
       return false;
     });
   }
 
-  // No token: fall back to local route usage if explicitly enabled, otherwise resolve quickly
+  // 没有 token，直接标记动态路由准备就绪（虽然实际上没有动态路由可注入）
   if (import.meta.env.VITE_USE_LOCAL_ROUTE === 'true') {
     try {
       bootstrapRoutesFromStorage(router);
     } catch (e) {
-      // ignore
+      console.warn("bootstrapRoutesFromStorage failed", e);
     }
   }
-  try { setDynamicRoutesReady(true); } catch (e) { }
+  try { setDynamicRoutesReady(true); } catch (e) {
+    console.warn("setDynamicRoutesReady failed", e);
+  }
   return Promise.resolve(true);
 }
 
@@ -80,15 +84,24 @@ function isNotFoundMatch(to) {
   return to.matched.some((record) => record?.name === "notFound");
 }
 
+/**
+ * 确认动态路由已注入且当前导航落在 404 上时，先注入后重入以触发正确匹配
+ * @param {*} router
+ * @param {*} userStore
+ * @param {*} to
+ * @returns
+ */
 async function ensureDynamicRoutesInjectedIfNeeded(router, userStore, to) {
   if (!userStore.isLogin || routesReady.value) return false;
 
   try {
+    // routeReady若为false,重新注入动态路由，优先从后端拉取，失败回退到本地存储
     await initDynamicRoutesAtStartup();
   } catch (err) {
     console.error("inject dynamic routes failed", err);
   }
-
+  // 注入完成后如果当前路由仍然匹配不到（即落在 404 上），则返回 true 以触发重入导航，
+  // 正确匹配新注入的路由
   return isNotFoundMatch(to);
 }
 
@@ -128,8 +141,9 @@ router.beforeEach(async (to, from, next) => {
   setDocumentTitle(to);
   const userStore = useUserStore();
 
-  // 需要动态路由且当前落在 404 上，则先注入后重入以触发正确匹配
+  // 需要动态路由 且当前落在 404 上，则先注入后重入以触发正确匹配
   const needReenter = await ensureDynamicRoutesInjectedIfNeeded(router, userStore, to);
+  console.log('needReenter', needReenter, 'to', to.fullPath, 'from', from.fullPath);
   if (needReenter) {
     const target = to.redirectedFrom?.fullPath || to.fullPath;
     return next({ path: target, query: to.query, hash: to.hash, replace: true });

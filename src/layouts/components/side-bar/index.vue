@@ -41,7 +41,7 @@
 import { computed, ref } from "vue";
 import { useUserStore } from "@/stores/modules/userStore";
 import { elementIconMap } from "@/utils/elementIcons";
-import { menuTree as dynamicMenuTree, routesReady } from "@/domain/dynamicRouteState";
+import { menuTree as dynamicMenuTree, routesReady } from "@/domain/dynamicRoutes/dynamicRouteState.js";
 import BrandIcon from "../../../components/icons/BrandIcon.vue";
 import MenuItem from "./components/menuItem.vue";
 import MenuTree from "./components/menuTree.vue";

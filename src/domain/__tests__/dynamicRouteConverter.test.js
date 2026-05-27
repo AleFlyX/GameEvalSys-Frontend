@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { convertBackendNodes } from '../dynamicRouteConverter';
+import { convertBackendNodes } from '../dynamicRoutes/dynamicRouteConverter';
 
 describe('convertBackendNodes', () => {
   it('converts a simple tree with componentCode correctly', () => {

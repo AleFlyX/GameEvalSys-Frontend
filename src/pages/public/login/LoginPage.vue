@@ -84,7 +84,7 @@ import { useUserStore } from '@/stores/modules/userStore.js';
 import { useLoading } from '@/composables/useLoading';
 import { elementIconMap } from '@/utils/elementIcons';
 import { fetchAndInjectBackendRoutes } from '@/router/permission';
-import { setDynamicRoutesReady } from '@/domain/dynamicRouteState';
+import { setDynamicRoutesReady } from '@/domain/dynamicRoutes/dynamicRouteState.js';
 
 // 导入子组件
 import LoginForm from './components/loginForm.vue';
