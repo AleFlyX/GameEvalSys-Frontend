@@ -52,18 +52,23 @@
       <el-table-column type="expand" width="56">
         <template #default="scope">
           <div class="menu-expand-panel">
-            <div class="menu-expand-summary">
-              <div class="menu-expand-title">
-                <span class="menu-expand-name">{{ scope.row.title || '-' }}</span>
-                <el-tag :type="menuTypeTagMap[scope.row.menuType] || 'info'" effect="light" size="small">
-                  {{ menuTypeLabelMap[scope.row.menuType] || scope.row.menuType || '-' }}
-                </el-tag>
+            <div class="menu-expand-header"
+              style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
+              <div class="menu-expand-summary">
+                <div class="menu-expand-title">
+                  <span class="menu-expand-name">{{ scope.row.title || '-' }}</span>
+                  <el-tag :type="menuTypeTagMap[scope.row.menuType] || 'info'" effect="light" size="small">
+                    {{ menuTypeLabelMap[scope.row.menuType] || scope.row.menuType || '-' }}
+                  </el-tag>
+                </div>
+                <p class="menu-expand-desc">
+                  路由详细信息
+                </p>
               </div>
-              <p class="menu-expand-desc">
-                路由详细信息
-              </p>
+              <el-button size="small" type="danger" @click="emit('delete', scope.row)">
+                删除
+              </el-button>
             </div>
-
             <div class="menu-expand-grid">
               <div class="menu-expand-item">
                 <span class="expand-label">路由名</span>
@@ -95,13 +100,10 @@
       <el-table-column label="操作" width="240" fixed="right">
         <template #default="scope">
           <el-button size="small" type="primary" plain @click="emit('create-child', scope.row)">
-            新增子菜单
+            {{ scope.row.menuType === 'menu' ? '新增业务子菜单' : '新增子菜单' }}
           </el-button>
           <el-button size="small" @click="emit('edit', scope.row)">
             编辑
-          </el-button>
-          <el-button size="small" type="danger" @click="emit('delete', scope.row)">
-            删除
           </el-button>
         </template>
       </el-table-column>
@@ -220,7 +222,7 @@ const emit = defineEmits(['toggle-branch', 'create-child', 'edit', 'delete']);
 .menu-expand-panel {
   display: grid;
   gap: 14px;
-  padding: 8px 16px 16px 6px;
+  padding: 8px 5%;
 }
 
 .menu-expand-summary {

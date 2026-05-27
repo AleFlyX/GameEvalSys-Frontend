@@ -39,7 +39,7 @@
               <el-option label="禁用" :value="false" />
             </el-select>
           </el-form-item>
-          <el-form-item label="只看在线" prop="onlineOnly">
+          <el-form-item label="只看活跃" prop="onlineOnly">
             <el-switch v-model="queryParams.onlineOnly" />
           </el-form-item>
           <el-form-item class="online-form-actions">

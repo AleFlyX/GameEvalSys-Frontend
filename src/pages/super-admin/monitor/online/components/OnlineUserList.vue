@@ -9,7 +9,8 @@
 
       <div class="online-row">
         <div class="identity-col">
-          <div class="user-avatar" :class="row.isEnabled ? 'is-enabled' : 'is-disabled'">
+          <div class="user-avatar"
+            :class="[row.isEnabled ? 'is-enabled' : 'is-disabled', getStatusTagType(row) === 'danger' ? 'is-offline' : '']">
             <el-icon>
               <component :is="getElementIcon(getDeviceType(row))" />
             </el-icon>
@@ -122,7 +123,6 @@ function formatLastActive(row) {
 
 function getDeviceType(row) {
   const device = `${row?.device || ''}`.toLowerCase();
-  if (row.onlineCount === 0) return 'User';
   return device.includes('mobile') || device.includes('phone') || device.includes('android') || device.includes('ios')
     ? 'Cellphone'
     : 'Monitor';
@@ -218,7 +218,8 @@ function getStatusLabel(row) {
   background: rgba(34, 197, 94, 0.14);
 }
 
-.user-avatar.is-disabled {
+.user-avatar.is-disabled,
+.user-avatar.is-offline {
   background: rgba(245, 158, 11, 0.14);
 }
 
