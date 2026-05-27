@@ -12,7 +12,7 @@ export default defineConfig([
 
   {
     name: 'app/node-config-files',
-    files: ['**/*.config.{js,mjs,cjs}', 'vite.config.js'],
+    files: ['**/*.config.{js,mjs,cjs}', '**/*.cjs', 'vite.config.js'],
     languageOptions: {
       globals: {
         ...globals.node,

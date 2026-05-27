@@ -12,6 +12,7 @@
 </template>
 <script setup>
 import { useRouter } from 'vue-router';
+import { ref } from 'vue';
 const router = useRouter();
 router.getRoutes().forEach(route => {
   console.log('Route:', route);
