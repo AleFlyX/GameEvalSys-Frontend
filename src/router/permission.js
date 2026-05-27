@@ -1,13 +1,10 @@
-import { norm } from "./modules/normalRoutes";
-import { admin } from "./modules/adminRoutes";
-import { superAdmin } from "./modules/superAdminRoutes";
-import { test } from "./modules/testRoutes";
 import { mapComponent } from "./routeMap";
 import { userApi } from "@/api/user";
-import { setDynamicMenuTree } from "@/domain/dynamicRouteState";
-import { convertBackendNodes } from "@/domain/dynamicRouteConverter";
+import { setDynamicMenuTree } from "@/domain/dynamicRoutes/dynamicRouteState";
+import { convertBackendNodes } from "@/domain/dynamicRoutes/dynamicRouteConverter";
+
 /**
- * Filter a flat list of routes by role
+ * 过滤路由列表，返回符合角色权限的路由
  * @param {Array} routes
  * @param {string} role
  */
@@ -32,12 +29,23 @@ function cloneRouteRecord(route) {
   return cloned;
 }
 
+/**
+ * 规范化路径，确保以单斜杠开头且没有尾斜杠
+ * @param {string} path
+ * @returns {string}
+ */
 function normalizePath(path) {
   const raw = String(path || '').trim();
   if (!raw) return '';
   return raw.startsWith('/') ? raw.replace(/\/+$/, '') : `/${raw.replace(/\/+$/, '')}`;
 }
 
+/**
+ * 拼接路由路径
+ * @param {*} parentPath
+ * @param {*} childPath
+ * @returns
+ */
 function joinRoutePath(parentPath, childPath) {
   const parent = normalizePath(parentPath);
   const child = String(childPath || '').trim();
@@ -47,19 +55,44 @@ function joinRoutePath(parentPath, childPath) {
   return normalizePath(`${parent}/${child}`);
 }
 
+/**
+ * 路由查重，判断目标路由是否已存在于 router 中
+ * @param {*} router
+ * @returns
+ */
 function collectExistingRoutePaths(router) {
   return new Set((router?.getRoutes?.() || []).map((route) => normalizePath(route.path)));
 }
 
+/**
+ * 检查路径是否包含必需的参数
+ * @param {*} path
+ * @returns
+ */
 function hasRequiredParam(path) {
   return /(^|\/):[^/]+/.test(String(path || ''));
 }
 
+/**
+ * 判断目标路由是否匹配不到（即落在 404 上）
+ * @param {*} parentPath
+ * @param {*} childPath
+ * @returns
+ */
 function canRedirectToChild(parentPath, childPath) {
   const fullChildPath = joinRoutePath(parentPath, childPath);
   return Boolean(fullChildPath) && !hasRequiredParam(fullChildPath);
 }
 
+/**
+ * 如果路由缺失且当前落在 404 上，则注入动态路由后重入以触发正确匹配
+ * @param {*} router
+ * @param {*} record
+ * @param {*} parentName
+ * @param {*} parentPath
+ * @param {*} existingPaths
+ * @returns
+ */
 function addRouteIfMissing(router, record, parentName, parentPath, existingPaths) {
   if (!router || !record) return;
 
@@ -91,31 +124,34 @@ function addRouteIfMissing(router, record, parentName, parentPath, existingPaths
   }
 }
 
+/**
+ * 格式化路由名称，确保每个路由都有一个有效的 name 字段，供 addRoute 使用
+ * @param {*} route
+ * @returns
+ */
 function normalizeRouteName(route) {
   const rawName = route?.name || route?.path || "dynamic-route";
   return String(rawName).replace(/[^\w-]+/g, "_");
 }
 
-
-
 /**
- * Generate accessible routes for a role
+ * 生成角色对应的路由列表
+ * - 根据角色过滤不同权限的路由
+ * - testRoutes 由环境变量控制是否包含在内，且其内部也有基于环境变量的控制
  * @param {string} role
  * @returns {Array}
  */
-export function generateRoleRoutes(role) {
-  // combine arrays; test routes are already controlled by env flag in their module
-  const all = [...norm, ...admin, ...superAdmin];
-  if (import.meta.env.VITE_SHOW_TEST_ROUTES === 'true') {
-    all.push(...test);
-  }
-  console.log("ALL ROUTES", all)
-  console.log("PERM FILTERED", filterRoutesByRole(all, role))
-  return filterRoutesByRole(all, role);
-}
+// NOTE: Business routes are exclusively provided by the backend. Frontend only
+// keeps `publicRoutes` and `routeMap` as component loaders. The legacy
+// generateRoleRoutes logic that merged local static routes has been removed to
+// avoid dual-sources-of-truth and 404-on-refresh issues.
 
 /**
- * Inject routes into router under the main layout parent
+ * 注入路由到 router 中的mainLayout下，避免重复注入同一路由
+ * - 已存在的路由会被跳过
+ * - 通过递归处理嵌套路由
+ * - 注入时会规范化路径和名称以确保一致性
+ * - 注入完成后会打印当前 router 中的所有路由以供调试验证
  * @param {Router} router
  * @param {Array} routes
  */
@@ -126,16 +162,19 @@ export function injectRoutes(router, routes = []) {
     try {
       addRouteIfMissing(router, rt, "mainLayout", "", existingPaths);
     } catch {
-      // ignore individual add errors
-      // console.warn('addRoute failed', rt.name, err)
+      // 注入失败通常是因为路由配置有误（如缺失 path 或 name）
+      console.warn("Failed to inject route", rt);
     }
   });
   console.log('injected Routes', router.getRoutes())
 }
 
 /**
- * Bootstrap dynamic routes from persisted login state before the first navigation.
- * This makes hard refreshes on /home and other protected pages resolve correctly.
+ * 初始化动态路由：
+ * - 若用户已登录且 routesReady 为 false，则优先从后端拉取并注入动态路由，失败回退到本地持久化路由
+ * - 若没有 token 则直接标记动态路由准备就绪（虽然实际上没有动态路由可注入）
+ * @param {*} router
+ * @returns {Promise<boolean>} 成功注入返回 true，失败返回 false
  * @param {Router} router
  */
 export function bootstrapRoutesFromStorage(router) {
@@ -143,23 +182,26 @@ export function bootstrapRoutesFromStorage(router) {
   const token = localStorage.getItem("accessToken") || localStorage.getItem("token") || "";
   if (!token) return;
 
-  let role = "";
+  // 从本地持久化的菜单树恢复（如果有），并按后端格式转换后注入路由
   try {
-    const rawUserInfo = localStorage.getItem("userInfo");
-    const userInfo = rawUserInfo ? JSON.parse(rawUserInfo) : null;
-    role = userInfo?.role || "";
-  } catch {
-    role = "";
+    const raw = localStorage.getItem("menuTree");
+    const parsed = raw ? JSON.parse(raw) : [];
+    if (Array.isArray(parsed) && parsed.length > 0) {
+      const records = convertBackendNodes(parsed, mapComponent);
+      injectRoutes(router, records);
+    }
+  } catch (e) {
+    // ignore malformed stored menu
+    console.warn("bootstrapRoutesFromStorage: failed to read stored menu", e);
   }
-
-  const routes = generateRoleRoutes(role);
-  injectRoutes(router, routes);
 }
 
 /**
- * Fetch routes tree from backend and inject into router.
- * Backend should return an array of nodes with fields:
+ * 丛后端获取路由树并注入到 router 中
+ * 后端返回的路由数据结构示例:
  * { menuCode, path, routeName, title, icon, hidden, componentCode, children }
+ * @param {*} router
+ * @returns {Promise<boolean>} 成功注入返回 true，失败返回 false
  */
 export async function fetchAndInjectBackendRoutes(router) {
   if (!router) return;
@@ -172,16 +214,16 @@ export async function fetchAndInjectBackendRoutes(router) {
     const data = resp?.data ?? resp;
     if (!Array.isArray(data) || data.length === 0) return false;
 
-    // persist backend menu tree for sidebar rendering
+    // 持久化存储菜单树以供侧边栏使用
     setDynamicMenuTree(data);
 
     const records = convertBackendNodes(data, mapComponent);
     injectRoutes(router, records);
     return true;
   } catch {
-    // network / parse errors – swallow so app can fallback to local bootstrap
+    // 拉取或注入失败，返回 false 以触发后续的回退逻辑
     return false;
   }
 }
 
-export default { generateRoleRoutes, injectRoutes, bootstrapRoutesFromStorage };
+export default { injectRoutes, bootstrapRoutesFromStorage };
