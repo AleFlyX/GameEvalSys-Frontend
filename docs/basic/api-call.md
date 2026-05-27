@@ -114,6 +114,131 @@
   }
   ```
 
+### 1.4.1 获取当前用户动态路由树
+
+- **接口地址**：`/auth/routes`
+- **请求方式**：GET
+- **请求头**：`Authorization: Bearer {token}`
+- **说明**：用于前端动态路由注入。后端返回菜单/路由树，前端通过本地 `componentCode -> component` 白名单映射渲染页面。
+- **响应示例**：
+
+  ```json
+  {
+    "code": 200,
+    "message": "查询成功",
+    "data": [
+      {
+        "menuCode": "home",
+        "path": "/home",
+        "routeName": "home",
+        "title": "首页",
+        "icon": "HomeFilled",
+        "hidden": false,
+        "componentCode": "normal-home",
+        "children": []
+      },
+      {
+        "menuCode": "admin",
+        "path": "/admin",
+        "routeName": "adminRoot",
+        "title": "管理面板",
+        "icon": "Setting",
+        "hidden": false,
+        "children": [
+          {
+            "menuCode": "admin-project",
+            "path": "/admin/project",
+            "routeName": "projectList",
+            "title": "项目管理",
+            "icon": "Management",
+            "hidden": false,
+            "componentCode": "admin-project-list"
+          }
+        ]
+      }
+    ]
+  }
+  ```
+
+- **字段约束建议**：
+  - `menuCode`、`routeName` 在同一树内应唯一。
+  - `componentCode` 仅返回白名单值，不返回前端源码路径。
+  - `hidden=true` 仅影响菜单展示，不应绕过后端接口鉴权。
+
+### 1.4.2 获取当前用户信息
+
+- **接口地址**：`/auth/me`
+- **请求方式**：GET
+- **请求头**：`Authorization: Bearer {token}`
+- **说明**：用于前端在刷新或首次进入时恢复当前用户身份信息、角色和权限摘要。
+- **响应示例**：
+
+  ```json
+  {
+    "code": 200,
+    "message": "查询成功",
+    "data": {
+      "id": 1,
+      "username": "admin",
+      "name": "系统管理员",
+      "role": "super_admin",
+      "roles": ["super_admin"],
+      "permissions": ["menu:home:view", "menu:admin:view", "menu:admin:project:view"]
+    }
+  }
+  ```
+
+### 1.4.3 菜单管理 CRUD
+
+- **接口前缀**：`/admin/menus`
+- **权限要求**：`ROLE_admin` 或 `ROLE_super_admin`
+
+#### 1.4.3.1 查询菜单树
+
+- **接口地址**：`/admin/menus`
+- **请求方式**：GET
+- **说明**：返回可管理的菜单树，包含 `roleCodes`、`hidden`、`isEnabled` 等字段。
+
+#### 1.4.3.2 查询菜单详情
+
+- **接口地址**：`/admin/menus/{id}`
+- **请求方式**：GET
+
+#### 1.4.3.3 创建菜单
+
+- **接口地址**：`/admin/menus`
+- **请求方式**：POST
+- **请求体示例**：
+
+  ```json
+  {
+    "parentId": 5,
+    "menuCode": "admin-user",
+    "menuType": "menu",
+    "title": "用户管理",
+    "path": "/admin/user",
+    "routeName": "userList",
+    "icon": "User",
+    "hidden": false,
+    "componentCode": "admin-user",
+    "sortNum": 3,
+    "isEnabled": true,
+    "roleCodes": ["admin", "super_admin"]
+  }
+  ```
+
+#### 1.4.3.4 更新菜单
+
+- **接口地址**：`/admin/menus/{id}`
+- **请求方式**：PUT
+- **说明**：`menuCode` 不允许修改，更新时需保持与原值一致；`roleCodes` 会覆盖重建。
+
+#### 1.4.3.5 删除菜单
+
+- **接口地址**：`/admin/menus/{id}`
+- **请求方式**：DELETE
+- **说明**：删除会级联软删除当前菜单及其子菜单，并清理相关角色绑定。
+
 ### 1.5 管理员会话管理
 
 #### 1.5.1 查询指定用户会话
@@ -218,6 +343,7 @@
     }
   }
   ```
+- `onlineCount`是最近活跃的会话数
 
 #### 1.5.5 服务监控（仅 super_admin）
 
@@ -1666,7 +1792,7 @@
   | scorerDistribution | array | 打分用户分布统计 |
   | scorerDistribution[].userId | number | 打分用户ID |
   | scorerDistribution[].userName | string | 打分用户名称 |
-  | scorerDistribution[].scoreRange | string | 总分区间，当前可能值为 `0-2分`、`2-4分`、`4-6分`、`6-8分`、`8-10分`、`其他` |
+  | scorerDistribution[].scoreRange | string | 该打分用户在该项目下的实际总分区间，格式为 `最小分-最大分`；若最小值和最大值相同，则显示单个分值 |
   | scorerDistribution[].count | number | 该用户落在当前分值区间的记录数 |
 - **统计逻辑说明**：
   - **原始平均分**：直接基于原始打分求平均。
