@@ -8,7 +8,6 @@ import axios from 'axios';
 const monitorService = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || '/api/v1',
   timeout: 10000,
-  withCredentials: true,
   headers: {
     'Content-Type': 'application/json;charset=utf-8',
   },

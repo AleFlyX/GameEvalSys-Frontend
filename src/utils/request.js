@@ -8,7 +8,6 @@ const message = useMessage();
 const service = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || "/api/v1", // 基础路径（从环境变量读取）
   timeout: 10000, // 请求超时时间
-  withCredentials: true,
   headers: {
     "Content-Type": "application/json;charset=utf-8", // 默认请求格式
   },
@@ -17,7 +16,7 @@ const service = axios.create({
 const refreshClient = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || "/api/v1",
   timeout: 10000,
-  withCredentials: true,
+  withCredentials: true, //只有在刷新token接口需要携带cookie（如sid），其他接口不需要，避免不必要的cookie传输
   headers: {
     "Content-Type": "application/json;charset=utf-8",
   },
