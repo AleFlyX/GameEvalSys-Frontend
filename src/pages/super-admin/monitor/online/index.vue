@@ -5,7 +5,10 @@
         :value="item.value" :sub="item.sub" label-placement="body" :icon="item.icon" :icon-color="item.iconColor"
         :icon-bg="item.iconBg" :icon-size="42" :icon-radius="14" />
     </template>
-
+    <p v-dev>{{ onlineList }}</p>
+    <MyBtn v-dev
+      @click="onlineList = [{ ip: '192.168.1.15', id: 1, username: 'John Doe', displayName: 'John Doe', role: 'super_admin', isEnabled: true }]">
+      Mock</MyBtn>
     <div class="online-toolbar-shell">
       <!-- <section class="page-hero">
         <div>

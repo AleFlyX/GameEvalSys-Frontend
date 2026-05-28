@@ -1,14 +1,17 @@
 <template>
-  <base-dialog-modal v-model:visible="visible" title="用户会话详情" width="900px">
+  <base-dialog-modal v-model:visible="visible" title="用户会话详情" width="80vw">
     <template #header>
       <div class="session-dialog-header">
         <span>用户：{{ user?.username || '-' }}</span>
         <span>姓名：{{ user?.name || '-' }}</span>
+        <span>登录地：{{ user?.loginLocation || '-' }}</span>
       </div>
     </template>
     <template #body>
       <el-table v-loading="loading" :data="sessions" border style="width: 100%;" empty-text="暂无会话">
         <el-table-column label="SID" prop="sid" min-width="230" :show-overflow-tooltip="true" />
+        <el-table-column label="IP地址" prop="ip" min-width="auto" :show-overflow-tooltip="false" />
+        <el-table-column label="登录地点" prop="loginLocation" min-width="150" :show-overflow-tooltip="true" />
         <el-table-column label="状态" prop="status" width="110" align="center" />
         <el-table-column label="登录时间" prop="loginAt" width="180" align="center">
           <template #default="scope">

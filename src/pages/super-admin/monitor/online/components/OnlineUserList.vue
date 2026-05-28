@@ -26,7 +26,10 @@
           </div>
         </div>
         <div class="network-col">
-          <div class="primary-text">{{ formatIp(row) }}</div>
+          <MyBtn type="link" class="ip-copy-btn" :title="`点击复制 IP：${formatIp(row)}`" @click="copyIp(row)">
+            <span class="primary-text ip-text">{{ formatIp(row) }}</span>
+            <span class="ip-copy-hint">复制</span>
+          </MyBtn>
           <div class="secondary-text">{{ formatLocation(row) }}</div>
         </div>
         <div class="time-col">
@@ -62,7 +65,9 @@
 import { getElementIcon } from '@/utils/elementIcons';
 import { formatTime } from '@/utils/format';
 import { useTheme } from '@/composables/useTheme';
+import { useMessage } from '@/composables/useMessage';
 const { isDarkMode } = useTheme();
+const message = useMessage();
 defineOptions({
   name: 'OnlineUserList',
 });
@@ -86,6 +91,36 @@ function emitOpenSessions(row) {
 
 function emitKickAll(row) {
   emit('kick-all', row);
+}
+
+async function copyIp(row) {
+  const ip = `${formatIp(row)}`.trim();
+  if (!ip || ip === '-') {
+    message.warning('当前没有可复制的 IP');
+    return;
+  }
+
+  try {
+    await navigator.clipboard.writeText(ip);
+    message.success('IP 已复制');
+  } catch {
+    const input = document.createElement('input');
+    input.value = ip;
+    input.setAttribute('readonly', 'readonly');
+    input.style.position = 'fixed';
+    input.style.left = '-9999px';
+    document.body.appendChild(input);
+    input.select();
+
+    const copied = document.execCommand('copy');
+    document.body.removeChild(input);
+
+    if (copied) {
+      message.success('IP 已复制');
+    } else {
+      message.error('复制失败，请手动复制');
+    }
+  }
 }
 
 // function formatEmail(row) {
@@ -201,6 +236,13 @@ function getStatusLabel(row) {
   min-width: 0;
 }
 
+.network-col {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
 .user-avatar {
   width: 60px;
   height: 60px;
@@ -256,6 +298,57 @@ function getStatusLabel(row) {
   font-size: 18px;
   font-weight: 700;
   line-height: 1.15;
+}
+
+.ip-copy-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-width: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  appearance: none;
+  -webkit-appearance: none;
+  text-align: left;
+  cursor: pointer;
+}
+
+.ip-copy-btn:hover .ip-text,
+.ip-copy-btn:focus-visible .ip-text {
+  color: #2563eb;
+}
+
+.ip-copy-btn:hover .ip-copy-hint,
+.ip-copy-btn:focus-visible .ip-copy-hint {
+  opacity: 1;
+  transform: translateY(-1px);
+}
+
+.ip-copy-btn:focus-visible {
+  outline: 2px solid rgba(37, 99, 235, 0.22);
+  outline-offset: 4px;
+  border-radius: 8px;
+}
+
+.ip-text {
+  flex: 1;
+  display: block;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.ip-copy-hint {
+  flex: none;
+  color: #2563eb;
+  font-size: 12px;
+  font-weight: 700;
+  opacity: 0.72;
+  transition: opacity 0.15s ease, transform 0.15s ease;
 }
 
 .secondary-text {
