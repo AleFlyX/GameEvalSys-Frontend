@@ -85,7 +85,18 @@ function addRouteIfMissing(router, record, parentName, parentPath, existingPaths
 
   const currentFullPath = joinRoutePath(parentPath, record.path);
   if (currentFullPath && existingPaths.has(currentFullPath)) {
-    return;
+    // 如果已存在相同路径，只有当该已存在路由是静态兜底（staticFallback）时，才允许被后端路由覆盖
+    const existingRoute = (router.getRoutes() || []).find((r) => normalizePath(r.path) === currentFullPath);
+    if (existingRoute && existingRoute.meta && existingRoute.meta.staticFallback) {
+      try {
+        router.removeRoute(existingRoute.name);
+      } catch {
+        // ignore
+      }
+      existingPaths.delete(currentFullPath);
+    } else {
+      return;
+    }
   }
 
   const cloned = cloneRouteRecord(record);
@@ -108,6 +119,18 @@ function addRouteIfMissing(router, record, parentName, parentPath, existingPaths
   if (!router.hasRoute(cloned.name)) {
     router.addRoute(parentName, cloned);
     existingPaths.add(currentFullPath);
+  } else {
+    // 若已存在同名路由，但该路由是静态兜底，则移除后由后端路由覆盖
+    const existingByName = (router.getRoutes() || []).find((r) => r.name === cloned.name);
+    if (existingByName && existingByName.meta && existingByName.meta.staticFallback) {
+      try {
+        router.removeRoute(cloned.name);
+      } catch {
+        // ignore
+      }
+      router.addRoute(parentName, cloned);
+      existingPaths.add(currentFullPath);
+    }
   }
 }
 

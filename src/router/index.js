@@ -92,16 +92,22 @@ function isNotFoundMatch(to) {
  * @returns
  */
 async function ensureDynamicRoutesInjectedIfNeeded(router, userStore, to) {
-  if (!userStore.isLogin || routesReady.value) return false;
+  // 如果动态路由已经准备好，无需注入
+  if (routesReady.value) return false;
+
+  // 在页面刷新后，pinia/vuex 等前端状态可能被重置，但 token 仍可能存在于 localStorage
+  // 因此以 token 为准决定是否需要尝试注入动态路由，而不是仅依赖 userStore.isLogin
+  const token = localStorage.getItem("accessToken") || localStorage.getItem("token") || "";
+  if (!token) return false;
 
   try {
-    // routeReady若为false,重新注入动态路由，优先从后端拉取，失败回退到本地存储
+    // 尝试注入动态路由，优先从后端拉取，失败回退到本地持久化路由
     await initDynamicRoutesAtStartup();
   } catch (err) {
     console.error("inject dynamic routes failed", err);
   }
-  // 注入完成后如果当前路由仍然匹配不到（即落在 404 上），则返回 true 以触发重入导航，
-  // 正确匹配新注入的路由
+
+  // 注入完成后如果当前路由仍然匹配不到（即落在 404 上），则返回 true 以触发重入导航
   return isNotFoundMatch(to);
 }
 
