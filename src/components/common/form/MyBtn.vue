@@ -1,5 +1,5 @@
 <template>
-  <button :type="nativeType" class="btn" :class="[
+  <button v-bind="$attrs" :type="nativeType" class="btn" :class="[
     `btn--${type || 'default'}`,
     `btn--${size}`,
     {
