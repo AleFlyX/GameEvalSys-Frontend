@@ -7,9 +7,6 @@ const NotFound = () => import("@/pages/public/404/NotFound.vue");
 // const MainLayout = () => import("@/layouts/MainLayout.vue");
 const MainLayout = () => import("@/layouts/MainLayout.vue");
 
-import { admin } from "./adminRoutes";
-import { norm } from "./normalRoutes";
-import { superAdmin } from "./superAdminRoutes";
 export const pub = [
   {
     path: "/login",
@@ -23,7 +20,8 @@ export const pub = [
     component: MainLayout,
     meta: { requireAuth: true },
     redirect: "/home",
-    children: [...norm, ...admin, ...superAdmin], //主界面的路由
+    // children will be injected dynamically after login according to role
+    children: [],
   },
   {
     path: "/about",

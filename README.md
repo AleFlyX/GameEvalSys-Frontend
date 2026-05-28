@@ -75,18 +75,18 @@ npm run format
 
 可在项目根目录按需创建 `.env.development`、`.env.production`。
 
-| 变量名                  | 说明                         | 默认值    |
-| ----------------------- | ---------------------------- | --------- |
-| `VITE_API_BASE_URL`     | 接口基础路径                 | `/api/v1` |
-| `VITE_SHOW_TEST_ROUTES` | 是否显示测试路由（`1` 启用） | `0`       |
-| `VITE_DELAY_REQUEST`    | 是否启用请求延迟（`1` 启用） | `0`       |
+| 变量名                  | 说明                            | 默认值    |
+| ----------------------- | ------------------------------- | --------- |
+| `VITE_API_BASE_URL`     | 接口基础路径                    | `/api/v1` |
+| `VITE_SHOW_TEST_ROUTES` | 是否显示测试路由（`true` 启用） | `false`   |
+| `VITE_DELAY_REQUEST`    | 是否启用请求延迟（`true` 启用） | `false`   |
 
 示例：
 
 ```env
 VITE_API_BASE_URL=/api/v1
-VITE_SHOW_TEST_ROUTES=0
-VITE_DELAY_REQUEST=0
+VITE_SHOW_TEST_ROUTES=false
+VITE_DELAY_REQUEST=false
 ```
 
 ## 路由与权限
@@ -98,31 +98,32 @@ VITE_DELAY_REQUEST=0
 - `/403` 无权限页
 - `/404` 未找到页
 
-### 业务路由
+### 业务路由（历史静态示例）
 
-主框架路由为 `/`，默认重定向到 `/home`，子路由按角色控制：
+主框架路由为 `/`，默认重定向到 `/home`。注意：仓库已在 2026-05-28 将业务路由的主定义移除，生产环境中业务路由应由后端 `GET /auth/routes` 提供。本节列出的路由为历史/参考示例，建议以后端下发的菜单树与前端 `routeMap` 为准：
 
-- 普通业务
-  - `/home`：`super_admin/admin/scorer/normal`
-  - `/scoring`：`super_admin/admin/scorer`
-  - `/scoring/:projectId`：`super_admin/admin/scorer`
-- 管理后台
-  - `/admin/user`
-  - `/admin/project`
-  - `/admin/project/edit/:id`
-  - `/admin/project/statistic`
-  - `/admin/project/statistic/:projectId`
-  - `/admin/scoring-stds`
-  - `/admin/project-groups`
-  - `/admin/reviewer-groups`
-  - `/admin/reviewer-groups/add`
-  - `/admin/reviewer-groups/edit/:id`
-  - `/admin/statistic`
-  - 以上均为：`super_admin/admin`
-- 超级管理员
-  - `/super-admin/monitor/server`
-  - `/super-admin/monitor/online`
-  - 以上均为：`super_admin`
+- `/home`
+- `/scoring`
+- `/scoring/:projectId`
+
+管理后台（历史示例）
+
+- `/admin/user`
+- `/admin/project`
+- `/admin/project/edit/:id`
+- `/admin/project/statistic`
+- `/admin/project/statistic/:projectId`
+- `/admin/scoring-stds`
+- `/admin/project-groups`
+- `/admin/reviewer-groups`
+- `/admin/reviewer-groups/add`
+- `/admin/reviewer-groups/edit/:id`
+- `/admin/statistic`
+
+超级管理员（历史示例）
+
+- `/super-admin/monitor/server`
+- `/super-admin/monitor/online`
 
 ## 接口约定
 
@@ -203,3 +204,19 @@ docker compose -f deploy/docker-compose.yml up -d --build
 - `docs/basic/api-call.md`
 - `docs/dev/README.md`
 - `deploy/README.md`
+
+## 路由迁移说明（2026-05-28）
+
+自 2026-05-28 起，仓库已调整路由加载策略：前端不再维护完整的业务路由静态模块（`normalRoutes`/`adminRoutes`/`superAdminRoutes`），这些业务路由由后端接口 `GET /auth/routes` 提供。前端仅保留：
+
+- `publicRoutes`（登录、404、403、layout 等基础路由）
+- `testRoutes`（仅用于测试，受 `VITE_SHOW_TEST_ROUTES` 控制）
+- `routeMap`（`componentCode -> 本地组件` 映射表）
+
+开发者对接要点：
+
+1. 后端应实现 `GET /auth/routes`，返回当前用户可访问的菜单/路由树（参见 `docs/dev/dynamic-route-plan.md`）。
+2. 前端在登录或启动时调用该接口，持久化 `menuTree`（localStorage），并使用 `src/domain/dynamicRouteConverter.js` 将其转换为 `RouteRecord[]` 注入到 `mainLayout` 下。注入逻辑位于 `src/router/permission.js`。
+3. 新增页面时：先在前端实现页面并在 `src/router/routeMap.js` 注册对应的 `componentCode`，然后在后端的菜单管理中使用相同的 `componentCode` 下发路由。若后端返回的 `componentCode` 未命中映射，前端会使用 404/兜底组件作为备选。
+
+如需回滚到前端静态路由（开发期快速验证），可参考历史示例文档，但生产环境应以后端为唯一业务路由来源以避免冲突与刷新问题。

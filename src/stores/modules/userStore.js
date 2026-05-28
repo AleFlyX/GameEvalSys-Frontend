@@ -1,6 +1,7 @@
 import { defineStore } from "pinia";
 import { ref, computed } from "vue";
 import { userApi } from "@/api/user.js";
+import { resetDynamicRouteState } from "@/domain/dynamicRoutes/dynamicRouteState";
 
 export const useUserStore = defineStore("userStore", () => {
   const token = ref(localStorage.getItem("accessToken") || localStorage.getItem("token") || "");
@@ -9,10 +10,10 @@ export const useUserStore = defineStore("userStore", () => {
   const userInfo = ref(
     JSON.parse(localStorage.getItem("userInfo")) ||
     {
-      // id: 1, //debug
-      // username: "admin",
-      // role: "super_admin",
-      // name: "超级管理员",
+      id: -1, //debug
+      username: "未登录",
+      role: "normal",
+      name: "未登录",
     },
   );
   const isLogin = computed(() => !!token.value);
@@ -21,7 +22,6 @@ export const useUserStore = defineStore("userStore", () => {
   const isAdmin = computed(() => ["admin", "super_admin"].includes(userInfo.value.role));
   const isSuperAdmin = computed(() => userInfo.value.role === "super_admin");
   const isScorer = computed(() => userInfo.value.role === "scorer");
-
   /**
    * 清除登陆状态
    */
@@ -38,6 +38,7 @@ export const useUserStore = defineStore("userStore", () => {
     localStorage.removeItem("sid");
     localStorage.removeItem("expireTime");
     localStorage.removeItem("userInfo");
+    resetDynamicRouteState();
   }
 
   /**
@@ -76,7 +77,7 @@ export const useUserStore = defineStore("userStore", () => {
     } catch (err) {
       return Promise.reject(err);
     } finally {
-      window.location.href = "/home";
+      window.location.href = "/login";
       //无论是否成功，都执行以下操作
       clearUserStore();
     }

@@ -8,10 +8,11 @@ import vueDevTools from "vite-plugin-vue-devtools";
 import { mockDevServerPlugin } from "vite-plugin-mock-dev-server";
 
 // https://vite.dev/config/
-export default defineConfig(({ mode }) => {
+export default defineConfig(({ command, mode }) => {
   // 加载对应 mode 的环境变量
   const env = loadEnv(mode, process.cwd());
   const enableMock = env.VITE_USE_MOCK === "true";
+  const isBuildCommand = command === "build";
 
   const plugins = [
     vue(),
@@ -40,10 +41,45 @@ export default defineConfig(({ mode }) => {
   }
 
   return {
+    esbuild: isBuildCommand
+      ? {
+        drop: ["console"],
+      }
+      : undefined,
     plugins,
     resolve: {
       alias: {
         "@": fileURLToPath(new URL("./src", import.meta.url)),
+      },
+    },
+    build: {
+      outDir: "./deploy/dist",
+      chunkSizeWarningLimit: 1500, // 解决打包体积过大警告
+      rollupOptions: {
+        output: {
+          manualChunks(id) {
+            if (id.includes("node_modules")) {
+              if (id.includes("element-plus")) return "vendor-element-plus";
+              if (id.includes("@element-plus/icons-vue")) return "vendor-element-icons";
+              if (id.includes("echarts")) return "vendor-echarts";
+              if (id.includes("xlsx")) return "vendor-xlsx";
+              if (id.includes("page-agent")) return "vendor-page-agent";
+              if (id.includes("vue-router")) return "vendor-vue-router";
+              if (id.includes("pinia")) return "vendor-pinia";
+              if (id.includes("axios")) return "vendor-axios";
+              return "vendor";
+            }
+
+            if (id.includes("/src/layouts/")) return "layout";
+            if (id.includes("/src/pages/public/")) return "page-public";
+            if (id.includes("/src/pages/normal/")) return "page-normal";
+            if (id.includes("/src/pages/admin/")) return "page-admin";
+            if (id.includes("/src/pages/super-admin/")) return "page-super-admin";
+            if (id.includes("/src/test/")) return "page-test";
+
+            return undefined;
+          },
+        },
       },
     },
     server: {
@@ -77,12 +113,6 @@ export default defineConfig(({ mode }) => {
           },
         },
       },
-    },
-    // 打包配置
-    build: {
-      outDir: "./deploy/dist",
-      chunkSizeWarningLimit: 1500, // 解决打包体积过大警告
-      // rollupOptions: { ... },
     },
   };
 });

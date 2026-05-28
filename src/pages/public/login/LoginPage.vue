@@ -83,6 +83,8 @@ import { ElMessage } from 'element-plus';
 import { useUserStore } from '@/stores/modules/userStore.js';
 import { useLoading } from '@/composables/useLoading';
 import { elementIconMap } from '@/utils/elementIcons';
+import { fetchAndInjectBackendRoutes } from '@/router/permission';
+import { setDynamicRoutesReady } from '@/domain/dynamicRoutes/dynamicRouteState.js';
 
 // 导入子组件
 import LoginForm from './components/loginForm.vue';
@@ -186,6 +188,13 @@ const handleLogin = async () => {
     // 调用登录 API
     await userStore.login(loginForm.value);
 
+    // 登录后显式拉取后端动态路由并注入，确保菜单和权限数据以 /auth/routes 为准
+    const injected = await fetchAndInjectBackendRoutes(router);
+    if (!injected) {
+      throw new Error('动态路由加载失败，请稍后重试');
+    }
+    setDynamicRoutesReady(true);
+
     // 如果勾选了记住我，保存账号到历史
     if (rememberMe.value) {
       addToHistory(loginForm.value.username);
@@ -195,7 +204,7 @@ const handleLogin = async () => {
 
     // 获取登录前的重定向地址，无则跳转到首页
     const redirect = router.currentRoute.value.query.redirect || '/home';
-    router.push(redirect);
+    router.replace(typeof redirect === 'string' ? redirect : '/home');
   } catch (err) {
     ElMessage.error(err.message || '登录失败，请检查用户名或密码');
     console.error('登录失败：', err);

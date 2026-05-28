@@ -4,6 +4,7 @@
       <span class="title" :title="title">
         {{ title }}
       </span>
+      <p v-dev>Dev mode</p>
 
       <div class="header-right">
         <div class="not-login" v-if="!userStore.isLogin">

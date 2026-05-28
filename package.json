@@ -10,6 +10,7 @@
     "lint": "eslint . --fix --cache",
     "lint:check": "eslint . --cache",
     "lint:check:base": "eslint . --cache --rule \"no-unused-vars: off\" --rule \"vue/multi-word-component-names: off\"",
+    "test:unit": "vitest",
     "test:gate": "npm run test:unit --if-present",
     "quality:check": "npm run lint:check:base && npm run test:gate && npm run build",
     "format": "prettier --write --experimental-cli src/"
@@ -37,7 +38,8 @@
     "unplugin-vue-components": "^32.0.0",
     "vite": "^7.3.1",
     "vite-plugin-mock-dev-server": "^2.1.1",
-    "vite-plugin-vue-devtools": "^8.0.5"
+    "vite-plugin-vue-devtools": "^8.0.5",
+    "vitest": "^1.0.0"
   },
   "engines": {
     "node": "^20.19.0 || >=22.12.0"

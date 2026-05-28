@@ -31,19 +31,21 @@
       </el-button>
     </div>
 
-    <!-- 加载状态 -->
-    <el-skeleton v-if="isListSkeleton" :rows="5" animated />
     <template #main-table>
-      <!-- 项目列表 -->
-      <div class="projects-grid">
+      <!-- 加载状态与项目列表（在 main-table 区域显示） -->
+      <div v-loading="isListLoading" class="projects-grid-wrapper">
+        <el-skeleton v-if="isListSkeleton" :rows="5" animated />
 
-        <div class="project-cards" v-for="project in filteredProjects" :key="project.id">
-          <ProjectCard :project="project"></ProjectCard>
-        </div>
+        <!-- 项目列表 -->
+        <div v-else class="projects-grid">
+          <div class="project-cards" v-for="project in filteredProjects" :key="project.id">
+            <ProjectCard :project="project"></ProjectCard>
+          </div>
 
-        <!-- 空状态 -->
-        <div v-if="filteredProjects.length === 0 && !(isListLoading | isListSkeleton)" class="empty-state">
-          <el-empty description="暂无项目" />
+          <!-- 空状态 -->
+          <div v-if="filteredProjects.length === 0 && !(isListLoading || isListSkeleton)" class="empty-state">
+            <el-empty description="暂无项目" />
+          </div>
         </div>
       </div>
     </template>

@@ -8,6 +8,9 @@
   <!-- <div class="dialog-test">
     我是弹窗
   </div> -->
+  <TestTableUse>
+
+  </TestTableUse>
   <BaseCard shadow="hover" style="width: 100px; margin: 50px;">
     <template #header>
       <div class="panel-header">
@@ -16,6 +19,18 @@
       </div>
     </template>
 
+  </BaseCard>
+  <BaseCard variant="outline">
+    variant: { // 卡片风格，提供多种预设样式，适用于不同场景
+    type: String,
+    default: 'default', // default | soft | outline | highlight
+    },
+  </BaseCard>
+  <BaseCard variant="highlight">
+    variant: { // 卡片风格，提供多种预设样式，适用于不同场景
+    type: String,
+    default: 'default', // default | soft | outline | highlight
+    },
   </BaseCard>
   <MyBtn type="link">link</MyBtn>
   <button @click="tof()">toFixed</button>
@@ -41,7 +56,7 @@ import { showMsgBox } from '@/utils/ConfirmBox';
 import { showMsgBox2 } from '@/test/utils/msgBox';
 import { ref } from 'vue'
 import Slideblock from '../components/slideblock.vue';
-
+import TestTableUse from '../components/testTableUse.vue';
 const visibleAA = ref(false)
 // const ShowTestMxgBox = (tit, cont) => {
 //   showMsgBox({ title: tit, content: cont })
