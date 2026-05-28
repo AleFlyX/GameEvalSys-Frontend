@@ -4,19 +4,6 @@ import { setDynamicMenuTree } from "@/domain/dynamicRoutes/dynamicRouteState";
 import { convertBackendNodes } from "@/domain/dynamicRoutes/dynamicRouteConverter";
 
 /**
- * 过滤路由列表，返回符合角色权限的路由
- * @param {Array} routes
- * @param {string} role
- */
-function filterRoutesByRole(routes = [], role = "") {
-  return routes.filter((r) => {
-    const roles = r?.meta?.roles || [];
-    if (!roles || roles.length === 0) return true; // no restriction
-    return roles.includes(role);
-  });
-}
-
-/**
  * 克隆路由，防止对路由的操作会影响到收到的数据源
  * @param {*} route
  * @returns
