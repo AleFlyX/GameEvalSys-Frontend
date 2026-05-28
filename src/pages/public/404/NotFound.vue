@@ -22,7 +22,8 @@ const errorPath = route.params.pathMatch || '/';
 
 // 返回首页
 const goHome = () => {
-  router.push('/home');
+  console.log('用户点击返回首页，当前错误路径:', errorPath);
+  router.push('/login');
 };
 </script>
 

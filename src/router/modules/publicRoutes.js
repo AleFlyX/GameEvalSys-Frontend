@@ -4,7 +4,6 @@ const About = () => import("@/pages/public/about/index.vue");
 const Forbidden = () => import("@/pages/public/403/ForbiddenPage.vue");
 const NotFound = () => import("@/pages/public/404/NotFound.vue");
 // 后台主布局（admin/normal页面共用）
-// const MainLayout = () => import("@/layouts/MainLayout.vue");
 const MainLayout = () => import("@/layouts/MainLayout.vue");
 
 export const pub = [
@@ -21,7 +20,14 @@ export const pub = [
     meta: { requireAuth: true },
     redirect: "/home",
     // children will be injected dynamically after login according to role
-    children: [],
+    children: [
+      {
+        path: "home",
+        name: "home",
+        component: () => import("@/pages/normal/home/HomePage.vue"),
+        meta: { title: "首页", requireAuth: true, staticFallback: true },
+      },
+    ],
   },
   {
     path: "/about",
@@ -46,3 +52,5 @@ export const pub = [
     redirect: "/404",
   },
 ];
+
+export default { pub };
