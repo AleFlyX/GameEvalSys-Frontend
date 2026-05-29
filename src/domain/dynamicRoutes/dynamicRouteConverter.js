@@ -10,27 +10,32 @@ function normalizeRouteName(route) {
   return String(rawName).replace(/[^\w-]+/g, '_');
 }
 
-const ALL_ROLES = ['super_admin', 'admin', 'scorer', 'normal'];
-const ADMIN_ROLES = ['super_admin', 'admin'];
-const SCORE_ROLES = ['super_admin', 'admin', 'scorer'];
-const SUPER_ONLY_ROLES = ['super_admin'];
+function normalizeStringList(value) {
+  if (!Array.isArray(value)) return [];
+  return value
+    .map((role) => String(role || '').trim())
+    .filter(Boolean)
+    .filter((role, index, list) => list.indexOf(role) === index);
+}
 
 /**
- * Resolve a default roles list for a backend node based on menuCode/path heuristics.
+ * Resolve route roles directly from the backend payload.
+ * Frontend no longer infers role scope from route path or menuCode.
  * @param {object} node - backend node
- * @param {string} normalizedFullPath - absolute path like '/admin/foo'
  * @returns {string[]} allowed roles
  */
-function resolveRouteRoles(node, normalizedFullPath) {
-  const menuCode = String(node?.menuCode || '').toLowerCase();
-  const path = String(normalizedFullPath || '').toLowerCase();
+function resolveRouteRoles(node) {
+  const primaryRoles = Array.isArray(node?.roles) && node.roles.length ? node.roles : node?.roleCodes;
+  return normalizeStringList(primaryRoles);
+}
 
-  if (menuCode === 'home' || path === '/home') return ALL_ROLES;
-  if (menuCode.startsWith('super-monitor') || path.startsWith('/admin/monitor')) return SUPER_ONLY_ROLES;
-  if (path.startsWith('/scoring')) return SCORE_ROLES;
-  if (path.startsWith('/admin')) return ADMIN_ROLES;
-
-  return Array.isArray(node?.roles) && node.roles.length ? node.roles : ADMIN_ROLES;
+/**
+ * Resolve permission codes directly from the backend payload.
+ * @param {object} node - backend node
+ * @returns {string[]} permission codes
+ */
+function resolvePermissionCodes(node) {
+  return normalizeStringList(node?.permissionCodes);
 }
 
 /**
@@ -86,7 +91,8 @@ function convertNode(node, fullPath, mapComponent) {
     title: node.title || node.menuName || '',
     icon: node.icon || '',
     hidden: !!node.hidden,
-    roles: resolveRouteRoles(node, fullPath),
+    roles: resolveRouteRoles(node),
+    permissionCodes: resolvePermissionCodes(node),
   };
 
   const record = { path, name, meta };
