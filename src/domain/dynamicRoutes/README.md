@@ -30,8 +30,8 @@
   - contract：
     - `data`：后端返回的节点数组（如果不是数组，返回 []）
     - `mapComponent`：可选，函数：`(componentCode) => VueComponent|factory|null`。若未提供或非函数则回退到 `RouterView`。
-  - 输出：每个 record 包含 `path`, `name`, `meta`（含 `title`,`icon`,`hidden`,`roles`），以及 `component`/`children`/`redirect`（若有）
-  - 已包含路径/name 正规化、角色解析的启发式规则，且有单元测试覆盖关键场景
+  - 输出：每个 record 包含 `path`, `name`, `meta`（含 `title`,`icon`,`hidden`,`roles`,`permissionCodes`），以及 `component`/`children`/`redirect`（若有）
+  - 角色与权限码直接来自后端，不再根据 `path`、`menuCode` 做权限推断
 
 设计与使用要点（简洁）
 
@@ -62,6 +62,7 @@ setDynamicRoutesReady(true);
 测试与稳健性建议
 
 - `dynamicRouteConverter` 是纯函数，应持续补充边界单元测试（空数组、无 componentCode、非法 path、role 字段等）。
+- `dynamicRouteConverter` 不应根据路径推断权限；如后端新增 `roles` 字段，前端直接透传即可。
 - 避免模块加载时的副作用影响测试：若需要，可把 `dynamicRouteState` 的初始 hydrate 改为显式 `init()`。
 
 扩展建议（可选）
