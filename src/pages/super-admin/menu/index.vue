@@ -25,6 +25,9 @@
             <el-option label="显示" :value="false" />
             <el-option label="隐藏" :value="true" />
           </el-select>
+          <MyBtn :loading="allMenuSqlLoading" @click="loadAllMenuSql">
+            查看全部 SQL
+          </MyBtn>
           <el-button :loading="loading" @click="handleRefresh">
             刷新
           </el-button>
@@ -48,7 +51,24 @@
     <template #modals>
       <MenuFormDialog v-model:visible="dialogVisible" :title="dialogTitle" :form-model="formModel"
         :parent-options="parentOptions" :role-options="roleOptions" :loading="submitLoading" :is-editing="isEditing"
-        @submit="handleSubmit" />
+        :sql-preview="sqlPreview" @submit="handleSubmit" @copy-sql="copySqlPreview" />
+      <MenuSqlModal
+        v-model:visible="saveMenuSqlVisible"
+        title="保存成功 - 后端返回 SQL"
+        :loading="false"
+        :sql-text="saveMenuSqlText"
+        :sql-meta="{ menuCount: 1, generatedAt: '' }"
+        :meta-items="saveMenuSqlMetaItems"
+        @copy-sql="copySaveMenuSql"
+      />
+      <MenuSqlModal
+        v-model:visible="allMenuSqlVisible"
+        :loading="allMenuSqlLoading"
+        title="全部菜单 SQL"
+        :sql-text="allMenuSqlText"
+        :sql-meta="allMenuSqlMeta"
+        @copy-sql="copyAllMenuSql"
+      />
     </template>
   </PagePanel>
 </template>
@@ -63,6 +83,7 @@ import StatCard from '@/components/common/data/StatCard.vue';
 import MenuDebugPanel from './components/MenuDebugPanel.vue';
 import MenuFormDialog from './components/MenuFormDialog.vue';
 import MenuManagementTable from './components/MenuManagementTable.vue';
+import MenuSqlModal from './components/MenuSqlModal.vue';
 import { useMenuManagement } from './composables/useMenuManagement';
 
 defineOptions({
@@ -82,12 +103,21 @@ const {
   renderedMenus,
   menuStats,
   menuDebugInfo,
+  sqlPreview,
   filterState,
   isEditing,
   dialogTitle,
   normalizeRoleCodes,
   handleSearch,
   handleRefresh,
+  allMenuSqlVisible,
+  allMenuSqlLoading,
+  allMenuSqlText,
+  allMenuSqlMeta,
+  saveMenuSqlVisible,
+  saveMenuSqlText,
+  saveMenuSqlMetaItems,
+  loadAllMenuSql,
   isMenuBranchExpanded,
   toggleMenuBranch,
   openCreateDialog,
@@ -95,6 +125,9 @@ const {
   openEditDialog,
   handleDelete,
   submitMenu,
+  copySqlPreview,
+  copyAllMenuSql,
+  copySaveMenuSql,
 } = useMenuManagement();
 
 const handleSubmit = async (formData) => {

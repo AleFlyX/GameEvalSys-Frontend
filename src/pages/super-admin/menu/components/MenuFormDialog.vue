@@ -24,7 +24,7 @@
 
         <el-form-item label="菜单类型" prop="menuType">
           <el-select v-model="formModel.menuType" placeholder="请选择菜单类型" filterable allow-create style="width: 100%">
-            <el-option label="目录" value="catalog" />
+            <el-option label="目录" value="dir" />
             <el-option label="菜单" value="menu" />
             <el-option label="按钮" value="button" />
           </el-select>
@@ -112,6 +112,19 @@
             </el-checkbox>
           </el-checkbox-group>
         </el-form-item>
+
+        <el-form-item label="SQL 预览">
+          <div class="sql-preview-wrap">
+            <div class="sql-preview-header">
+              <span class="sql-preview-title">后端备份 SQL</span>
+              <el-button type="primary" plain size="small" @click="emit('copy-sql')">
+                复制 SQL
+              </el-button>
+            </div>
+            <el-input :model-value="props.sqlPreview" type="textarea" :rows="12" readonly resize="none"
+              placeholder="表单填写完成后，这里会自动生成可执行的 SQL" class="sql-preview-input" />
+          </div>
+        </el-form-item>
       </el-form>
     </template>
 
@@ -161,9 +174,13 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  sqlPreview: {
+    type: String,
+    default: '',
+  },
 });
 
-const emit = defineEmits(['update:visible', 'submit']);
+const emit = defineEmits(['update:visible', 'submit', 'copy-sql']);
 const theme = useTheme();
 const formRef = ref(null);
 const formModel = toRef(props, 'formModel');
@@ -197,7 +214,7 @@ const handleClearIcon = () => {
 };
 
 const validateComponentCode = (_rule, value, callback) => {
-  if (formModel.value.menuType === 'catalog') {
+  if (formModel.value.menuType === 'dir') {
     callback();
     return;
   }
@@ -239,6 +256,29 @@ const handleSubmit = async () => {
   display: flex;
   justify-content: flex-end;
   gap: 10px;
+}
+
+.sql-preview-wrap {
+  width: 100%;
+  display: grid;
+  gap: 10px;
+}
+
+.sql-preview-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.sql-preview-title {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.sql-preview-input :deep(textarea) {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', monospace;
+  line-height: 1.65;
 }
 
 .icon-picker-trigger {
