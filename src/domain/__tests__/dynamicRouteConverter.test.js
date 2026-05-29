@@ -99,4 +99,39 @@ describe('convertBackendNodes', () => {
     expect(scoringDetail.path).toBe('scoring/:projectId');
     expect(reviewerAdd.path).toBe('admin/reviewer-groups/add');
   });
+
+  it('keeps backend permissionCodes and does not infer roles from path', () => {
+    const data = [
+      {
+        menuCode: 'sqlDir',
+        path: '/sqlDir',
+        routeName: 'sqlDir',
+        title: '测试sqlDir',
+        componentCode: 'sql-dir',
+        permissionCodes: ['menu:sqlDir:view'],
+      },
+    ];
+
+    const records = convertBackendNodes(data, (code) => (code ? () => code : null));
+    expect(records.length).toBe(1);
+    expect(records[0].meta.roles).toEqual([]);
+    expect(records[0].meta.permissionCodes).toEqual(['menu:sqlDir:view']);
+  });
+
+  it('uses backend roles when provided', () => {
+    const data = [
+      {
+        menuCode: 'sqlDir',
+        path: '/sqlDir',
+        routeName: 'sqlDir',
+        title: '测试sqlDir',
+        componentCode: 'sql-dir',
+        roles: ['super_admin'],
+      },
+    ];
+
+    const records = convertBackendNodes(data, (code) => (code ? () => code : null));
+    expect(records.length).toBe(1);
+    expect(records[0].meta.roles).toEqual(['super_admin']);
+  });
 });
