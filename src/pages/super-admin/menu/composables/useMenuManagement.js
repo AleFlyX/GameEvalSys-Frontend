@@ -1,6 +1,7 @@
 import { computed, onMounted, reactive, ref, watch } from 'vue';
 
 import { menuApi } from '@/api/menu';
+import { useClipboard } from '@/composables/useClipboard';
 import { useMessage } from '@/composables/useMessage';
 import { showMsgBox } from '@/utils/ConfirmBox';
 
@@ -14,22 +15,48 @@ const roleOptions = [
 const roleLabelMap = Object.fromEntries(roleOptions.map((item) => [item.value, item.label]));
 
 const menuTypeLabelMap = {
-  catalog: '目录',
+  dir: '目录',
   menu: '菜单',
   button: '按钮',
 };
 
 const menuTypeTagMap = {
-  catalog: 'info',
+  dir: 'info',
   menu: 'primary',
   button: 'success',
+};
+
+const normalizeMenuType = (value) => {
+  const normalizedValue = String(value || '').trim();
+  if (normalizedValue === 'catalog') return 'dir';
+  if (normalizedValue === 'dir' || normalizedValue === 'menu' || normalizedValue === 'button') {
+    return normalizedValue;
+  }
+  return 'menu';
+};
+
+const escapeSqlValue = (value) => {
+  if (value === null || value === undefined) {
+    return 'NULL';
+  }
+
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    return String(value);
+  }
+
+  if (typeof value === 'boolean') {
+    return value ? '1' : '0';
+  }
+
+  const text = String(value).replace(/'/g, "''");
+  return `'${text}'`;
 };
 
 const defaultFormModel = () => ({
   id: null,
   parentId: null,
   menuCode: '',
-  menuType: 'menu',
+  menuType: 'dir',
   title: '',
   path: '',
   routeName: '',
@@ -59,6 +86,7 @@ const normalizeMenuNode = (node) => ({
   ...node,
   hidden: normalizeBool(node?.hidden),
   isEnabled: node?.isEnabled === undefined ? true : normalizeBool(node?.isEnabled),
+  menuType: normalizeMenuType(node?.menuType),
   roleCodes: normalizeRoleCodes(node?.roleCodes),
   children: Array.isArray(node?.children) ? node.children.map((child) => normalizeMenuNode(child)) : [],
 });
@@ -207,7 +235,7 @@ const normalizeMenuRecord = (record) => ({
   ...record,
   parentId: record?.parentId ?? null,
   menuCode: record?.menuCode || '',
-  menuType: record?.menuType || 'menu',
+  menuType: normalizeMenuType(record?.menuType),
   title: record?.title || '',
   path: record?.path || '',
   routeName: record?.routeName || '',
@@ -220,10 +248,11 @@ const normalizeMenuRecord = (record) => ({
 });
 
 const buildMenuPayload = (formData = {}) => {
+  const menuType = normalizeMenuType(formData.menuType);
   const payload = {
     parentId: formData.parentId ?? null,
     menuCode: String(formData.menuCode || '').trim(),
-    menuType: String(formData.menuType || '').trim(),
+    menuType,
     title: String(formData.title || '').trim(),
     path: String(formData.path || '').trim(),
     routeName: String(formData.routeName || '').trim(),
@@ -235,17 +264,110 @@ const buildMenuPayload = (formData = {}) => {
     roleCodes: Array.isArray(formData.roleCodes) ? [...formData.roleCodes] : [],
   };
 
-  if (payload.menuType === 'catalog') {
+  if (payload.menuType === 'dir') {
     delete payload.componentCode;
   }
 
   return payload;
 };
 
+const buildMenuSql = (formData = {}) => {
+  const payload = buildMenuPayload(formData);
+  const roleCodes = Array.isArray(payload.roleCodes) ? payload.roleCodes.filter(Boolean) : [];
+
+  const menuColumns = [
+    'parent_id',
+    'menu_code',
+    'menu_type',
+    'title',
+    'path',
+    'route_name',
+    'icon',
+    'hidden',
+    'component_code',
+    'sort_num',
+    'is_enabled',
+    'is_deleted',
+  ];
+
+  const menuValues = [
+    payload.parentId ?? 0,
+    payload.menuCode,
+    payload.menuType,
+    payload.title,
+    payload.path,
+    payload.routeName,
+    payload.icon || '',
+    payload.hidden ? 1 : 0,
+    payload.componentCode || '',
+    Number.isFinite(payload.sortNum) ? payload.sortNum : 0,
+    payload.isEnabled ? 1 : 0,
+    0,
+  ].map(escapeSqlValue);
+
+  const menuSql = `INSERT INTO \`sys_menu\` (${menuColumns.map((column) => `\`${column}\``).join(', ')})\nVALUES\n(${menuValues.join(', ')});`;
+
+  const roleMenuSql = roleCodes.length
+    ? `INSERT INTO \`sys_role_menu\` (\`role_code\`, \`menu_code\`) \nVALUES\n${roleCodes.map((roleCode) => `(${escapeSqlValue(roleCode)}, ${escapeSqlValue(payload.menuCode)})`).join(',\n')};`
+    : '';
+
+  const statements = [
+    '-- 自动生成的菜单备份 SQL',
+    'START TRANSACTION;',
+    menuSql,
+    roleMenuSql,
+    'COMMIT;',
+  ].filter(Boolean);
+
+  return {
+    payload,
+    menuSql,
+    roleMenuSql,
+    fullSql: statements.join('\n\n'),
+  };
+};
+
+const extractSqlText = (response) => {
+  const data = response?.data ?? {};
+  return data.fullSql || data.sql || data.sqlText || data.content || '';
+};
+
+const extractSqlMeta = (response) => {
+  const data = response?.data ?? {};
+
+  return {
+    menuCount: Number(data.menuCount ?? data.total ?? 0),
+    generatedAt: data.generatedAt || data.createTime || '',
+  };
+};
+
+const extractSavedMenuSqlMeta = (response, payload = {}) => {
+  const data = response?.data ?? {};
+
+  return {
+    menuId: data.id ?? payload.id ?? '',
+    menuCode: data.menuCode || payload.menuCode || '',
+  };
+};
+
 export const useMenuManagement = () => {
   const message = useMessage();
+  const { copy } = useClipboard();
   const loading = ref(false);
   const submitLoading = ref(false);
+  const allMenuSqlVisible = ref(false);
+  const allMenuSqlLoading = ref(false);
+  const allMenuSqlText = ref('');
+  const allMenuSqlMeta = reactive({
+    menuCount: 0,
+    generatedAt: '',
+  });
+  const saveMenuSqlVisible = ref(false);
+  const saveMenuSqlText = ref('');
+  const saveMenuSqlMeta = reactive({
+    menuId: '',
+    menuCode: '',
+  });
   const menuTree = ref([]);
   const searchKeyword = ref('');
   const dialogVisible = ref(false);
@@ -259,6 +381,11 @@ export const useMenuManagement = () => {
   });
 
   const formModel = reactive(defaultFormModel());
+  const sqlPreview = computed(() => buildMenuSql(formModel).fullSql);
+  const saveMenuSqlMetaItems = computed(() => ([
+    { label: '菜单ID', value: saveMenuSqlMeta.menuId },
+    { label: '菜单编码', value: saveMenuSqlMeta.menuCode },
+  ].filter((item) => item.value !== '' && item.value !== null && item.value !== undefined)));
 
   const resetForm = () => {
     Object.assign(formModel, defaultFormModel());
@@ -329,6 +456,27 @@ export const useMenuManagement = () => {
     await fetchMenus();
   };
 
+  const loadAllMenuSql = async () => {
+    allMenuSqlVisible.value = true;
+    allMenuSqlLoading.value = true;
+
+    try {
+      const response = await menuApi.getMenuSql();
+      allMenuSqlText.value = extractSqlText(response);
+      Object.assign(allMenuSqlMeta, extractSqlMeta(response));
+    } catch (error) {
+      allMenuSqlText.value = '';
+      Object.assign(allMenuSqlMeta, {
+        menuCount: 0,
+        generatedAt: '',
+      });
+      message.error('获取全部菜单 SQL 失败');
+      console.error('Failed to load menu SQL:', error);
+    } finally {
+      allMenuSqlLoading.value = false;
+    }
+  };
+
   const isMenuBranchExpanded = (row) => expandedMenuIds.value.has(row.id);
 
   const toggleMenuBranch = (row) => {
@@ -393,12 +541,21 @@ export const useMenuManagement = () => {
 
     submitLoading.value = true;
     try {
-      if (isEditing.value) {
-        await menuApi.updateMenu(editingId.value, payload);
-        message.success('菜单已更新');
+      const response = isEditing.value
+        ? await menuApi.updateMenu(editingId.value, payload)
+        : await menuApi.createMenu(payload);
+
+      const sqlText = extractSqlText(response);
+      if (sqlText) {
+        saveMenuSqlText.value = sqlText;
+        Object.assign(saveMenuSqlMeta, extractSavedMenuSqlMeta(response, payload));
+        saveMenuSqlVisible.value = true;
+      }
+
+      if (sqlText) {
+        message.success(isEditing.value ? '菜单已更新，后端已返回标准 SQL' : '菜单已创建，后端已返回标准 SQL');
       } else {
-        await menuApi.createMenu(payload);
-        message.success('菜单已创建');
+        message.success(isEditing.value ? '菜单已更新' : '菜单已创建');
       }
 
       dialogVisible.value = false;
@@ -409,6 +566,27 @@ export const useMenuManagement = () => {
     } finally {
       submitLoading.value = false;
     }
+  };
+
+  const copySqlPreview = async () => {
+    return copy(sqlPreview.value, {
+      emptyMessage: '当前没有可复制的 SQL',
+      successMessage: 'SQL 已复制',
+    });
+  };
+
+  const copyAllMenuSql = async () => {
+    return copy(allMenuSqlText.value, {
+      emptyMessage: '当前没有可复制的菜单 SQL',
+      successMessage: '全部菜单 SQL 已复制',
+    });
+  };
+
+  const copySaveMenuSql = async () => {
+    return copy(saveMenuSqlText.value, {
+      emptyMessage: '当前没有可复制的保存 SQL',
+      successMessage: '保存 SQL 已复制',
+    });
   };
 
   watch(
@@ -428,7 +606,15 @@ export const useMenuManagement = () => {
     submitLoading,
     searchKeyword,
     dialogVisible,
-    formModel,
+      allMenuSqlVisible,
+      allMenuSqlLoading,
+      allMenuSqlText,
+      allMenuSqlMeta,
+      saveMenuSqlVisible,
+      saveMenuSqlText,
+      saveMenuSqlMeta,
+      saveMenuSqlMetaItems,
+      formModel,
     roleOptions,
     roleLabelMap,
     menuTypeLabelMap,
@@ -440,15 +626,20 @@ export const useMenuManagement = () => {
     filterState,
     isEditing,
     dialogTitle,
+    sqlPreview,
     normalizeRoleCodes,
     handleSearch,
     handleRefresh,
+    loadAllMenuSql,
     isMenuBranchExpanded,
     toggleMenuBranch,
     openCreateDialog,
     openCreateChildDialog,
     openEditDialog,
     handleDelete,
-    submitMenu,
-  };
+      submitMenu,
+      copySqlPreview,
+      copyAllMenuSql,
+      copySaveMenuSql,
+    };
 };
