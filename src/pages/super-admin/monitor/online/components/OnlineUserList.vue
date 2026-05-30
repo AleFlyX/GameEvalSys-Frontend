@@ -65,9 +65,9 @@
 import { getElementIcon } from '@/utils/elementIcons';
 import { formatTime } from '@/utils/format';
 import { useTheme } from '@/composables/useTheme';
-import { useMessage } from '@/composables/useMessage';
+import { useClipboard } from '@/composables/useClipboard';
 const { isDarkMode } = useTheme();
-const message = useMessage();
+const { copy } = useClipboard();
 defineOptions({
   name: 'OnlineUserList',
 });
@@ -95,32 +95,10 @@ function emitKickAll(row) {
 
 async function copyIp(row) {
   const ip = `${formatIp(row)}`.trim();
-  if (!ip || ip === '-') {
-    message.warning('当前没有可复制的 IP');
-    return;
-  }
-
-  try {
-    await navigator.clipboard.writeText(ip);
-    message.success('IP 已复制');
-  } catch {
-    const input = document.createElement('input');
-    input.value = ip;
-    input.setAttribute('readonly', 'readonly');
-    input.style.position = 'fixed';
-    input.style.left = '-9999px';
-    document.body.appendChild(input);
-    input.select();
-
-    const copied = document.execCommand('copy');
-    document.body.removeChild(input);
-
-    if (copied) {
-      message.success('IP 已复制');
-    } else {
-      message.error('复制失败，请手动复制');
-    }
-  }
+  await copy(ip, {
+    emptyMessage: '当前没有可复制的 IP',
+    successMessage: 'IP 已复制',
+  });
 }
 
 // function formatEmail(row) {
