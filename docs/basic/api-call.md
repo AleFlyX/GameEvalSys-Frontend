@@ -119,7 +119,7 @@
 - **接口地址**：`/auth/routes`
 - **请求方式**：GET
 - **请求头**：`Authorization: Bearer {token}`
-- **说明**：用于前端动态路由注入。后端返回菜单/路由树，前端通过本地 `componentCode -> component` 白名单映射渲染页面。
+- **说明**：用于前端动态路由注入。后端返回当前用户可访问的菜单/路由树，前端只负责按 `componentCode -> component` 白名单映射渲染页面，不再根据 `path` 或 `menuCode` 推断角色范围。
 - **响应示例**：
 
   ```json
@@ -135,6 +135,8 @@
         "icon": "HomeFilled",
         "hidden": false,
         "componentCode": "normal-home",
+        "roles": ["super_admin", "admin", "scorer", "normal"],
+        "permissionCodes": ["menu:home:view"],
         "children": []
       },
       {
@@ -144,6 +146,8 @@
         "title": "管理面板",
         "icon": "Setting",
         "hidden": false,
+        "roles": ["super_admin", "admin"],
+        "permissionCodes": ["menu:admin:view"],
         "children": [
           {
             "menuCode": "admin-project",
@@ -152,7 +156,9 @@
             "title": "项目管理",
             "icon": "Management",
             "hidden": false,
-            "componentCode": "admin-project-list"
+            "componentCode": "admin-project-list",
+            "roles": ["super_admin", "admin"],
+            "permissionCodes": ["menu:admin-project:view"]
           }
         ]
       }
@@ -163,6 +169,8 @@
 - **字段约束建议**：
   - `menuCode`、`routeName` 在同一树内应唯一。
   - `componentCode` 仅返回白名单值，不返回前端源码路径。
+  - `roles` 用于路由级访问控制，建议由后端直接下发，不要让前端推断。
+  - `permissionCodes` 用于按钮/操作级权限控制，可用于后续更细粒度的权限判断。
   - `hidden=true` 仅影响菜单展示，不应绕过后端接口鉴权。
 
 ### 1.4.2 获取当前用户信息
@@ -227,13 +235,63 @@
   }
   ```
 
+- **响应说明**：
+  - 创建成功后，后端建议返回本次保存对应的标准 SQL，便于前端展示和备份。
+  - 推荐返回字段：
+    - `data.sql`：单条核心 SQL
+    - `data.fullSql`：完整事务 SQL，包含 `START TRANSACTION` / `COMMIT`
+- **响应示例**：
+
+  ```json
+  {
+    "code": 200,
+    "message": "创建成功",
+    "data": {
+      "id": 123,
+      "sql": "INSERT INTO `sys_menu` (...) VALUES (...);",
+      "fullSql": "START TRANSACTION; ... COMMIT;"
+    }
+  }
+  ```
+
 #### 1.4.3.4 更新菜单
 
 - **接口地址**：`/admin/menus/{id}`
 - **请求方式**：PUT
 - **说明**：`menuCode` 不允许修改，更新时需保持与原值一致；`roleCodes` 会覆盖重建。
+- **响应说明**：
+  - 更新成功后，后端建议同样返回本次更新对应的标准 SQL，字段约定与创建菜单一致。
+  - 推荐返回字段：
+    - `data.sql`
+    - `data.fullSql`
 
-#### 1.4.3.5 删除菜单
+#### 1.4.3.5 查询全部菜单 SQL
+
+- **接口地址**：`/admin/menus/sql`
+- **请求方式**：GET
+- **说明**：用于菜单管理页面展示当前系统的全部菜单 SQL，方便管理员查看和复制。
+- **响应示例**：
+
+  ```json
+  {
+    "code": 200,
+    "message": "查询成功",
+    "data": {
+      "menuCount": 18,
+      "generatedAt": "2026-05-29 16:30:00",
+      "sql": "START TRANSACTION; ... COMMIT;",
+      "fullSql": "START TRANSACTION; ... COMMIT;"
+    }
+  }
+  ```
+
+- **字段说明**：
+  - `menuCount`：当前菜单数量
+  - `generatedAt`：SQL 生成时间
+  - `sql`：核心 SQL 文本
+  - `fullSql`：完整事务 SQL 文本，若后端仅返回一个字段，建议直接返回到 `fullSql`
+
+#### 1.4.3.6 删除菜单
 
 - **接口地址**：`/admin/menus/{id}`
 - **请求方式**：DELETE
