@@ -4,6 +4,10 @@ import { pub } from "@/router/modules/publicRoutes";
 import { useMessage } from "@/composables/useMessage";
 import { bootstrapRoutesFromStorage, fetchAndInjectBackendRoutes } from "@/router/permission";
 import { routesReady, setDynamicRoutesReady } from "@/domain/dynamicRoutes/dynamicRouteState";
+import {
+  canAccessRouteByPermissions,
+  canAccessRouteByRoles,
+} from "@/domain/auth/permission";
 import { useUserStore } from "@/stores/modules/userStore";
 
 // 易于测试与维护：将动态路由注入、权限检查、标题设置等逻辑拆成小函数
@@ -72,14 +76,6 @@ function setDocumentTitle(to) {
   }
 }
 
-function normalizeStringList(value) {
-  if (!Array.isArray(value)) return [];
-  return value
-    .map((item) => String(item || "").trim())
-    .filter(Boolean)
-    .filter((item, index, list) => list.indexOf(item) === index);
-}
-
 /**
  * 确保已注入动态路由：
  * - 若用户已登录且 routesReady 为 false，则优先从后端注入动态路由
@@ -90,27 +86,6 @@ function isNotFoundMatch(to) {
   if (!to) return false;
   if (!to.matched || to.matched.length === 0) return true;
   return to.matched.some((record) => record?.name === "notFound");
-}
-
-function hasAnyIntersection(sourceList, targetList) {
-  const source = normalizeStringList(sourceList);
-  const target = normalizeStringList(targetList);
-  if (!source.length || !target.length) return false;
-  return source.some((item) => target.includes(item));
-}
-
-function canAccessRouteByRoles(routeRoles, userRole) {
-  const roles = normalizeStringList(routeRoles);
-  if (!roles.length) return true;
-  return roles.includes(userRole);
-}
-
-function canAccessRouteByPermissions(routePermissions, userPermissions) {
-  const permissions = normalizeStringList(routePermissions);
-  if (!permissions.length) return true;
-  const normalizedUserPermissions = normalizeStringList(userPermissions);
-  if (!normalizedUserPermissions.length) return true;
-  return hasAnyIntersection(permissions, normalizedUserPermissions);
 }
 
 function hasRouteAccess(to, userStore) {

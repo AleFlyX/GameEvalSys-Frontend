@@ -2,19 +2,7 @@ import { defineStore } from "pinia";
 import { ref, computed } from "vue";
 import { userApi } from "@/api/user.js";
 import { resetDynamicRouteState } from "@/domain/dynamicRoutes/dynamicRouteState";
-
-/**
- * 清洗和标准化字符串列表，确保返回的数组中每个元素都是非空且不重复的字符串
- * @param {*} value
- * @returns
- */
-function normalizeStringList(value) {
-  if (!Array.isArray(value)) return [];
-  return value
-    .map((item) => String(item || "").trim())
-    .filter(Boolean) // 过滤掉空字符串,等价于 .filter((item) => Boolean(item)) 因为空字符串在布尔上下文中为 false
-    .filter((item, index, list) => list.indexOf(item) === index);
-}
+import { normalizeStringList } from "@/domain/auth/permission";
 
 export const useUserStore = defineStore("userStore", () => {
   const token = ref(localStorage.getItem("accessToken") || localStorage.getItem("token") || "");
