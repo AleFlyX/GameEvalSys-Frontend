@@ -68,6 +68,24 @@ export const userApi = {
   },
 
   /**
+   * 在线用户概览统计（全量，不受分页影响）
+   * @description 用于管理端在线用户页 StatCard 概览数据
+   * @param {Object} [params]
+   * @param {string} [params.role] - 可选角色筛选
+   * @param {boolean} [params.isEnabled] - 可选启用状态筛选
+   * @param {boolean} [params.onlineOnly] - 在线口径开关
+   * @returns {Promise<{
+   *   totalUsers: number,
+   *   onlineUserCount: number,
+   *   activeSessionCount: number,
+   *   disabledUserCount: number
+   * }>}
+   */
+  getOnlineUsersOverview: (params = {}) => {
+    return service.get("/admin/online-users/overview", { params });
+  },
+
+  /**
    * 踢指定会话下线
    * @param {string} sid
    * @returns {Promise}

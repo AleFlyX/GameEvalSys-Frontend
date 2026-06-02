@@ -102,6 +102,14 @@ const sessionLoading = ref(false);
 const sessionList = ref([]);
 const currentSessionUser = ref({});
 
+// 概览统计（从后端全量获取，不受分页影响）
+const overview = ref({
+  totalUsers: 0,
+  onlineUserCount: 0,
+  activeSessionCount: 0,
+  disabledUserCount: 0,
+});
+
 const queryParams = ref({
   role: null,
   keyWords: '',
@@ -109,39 +117,34 @@ const queryParams = ref({
   onlineOnly: true,
 });
 
-const activeSessionCount = computed(() => {
-  return onlineList.value.reduce((sum, row) => sum + Number(row?.onlineCount || 0), 0);
-});
-
-const onlineUserCount = computed(() => {
-  return onlineList.value.filter((row) => Number(row?.onlineCount || 0) > 0).length;
-});
-
-const disabledUserCount = computed(() => {
-  return onlineList.value.filter((row) => row?.isEnabled === false).length;
-});
+const roleLabelMap = {
+  super_admin: '超级管理员',
+  admin: '管理员',
+  scorer: '打分用户',
+  normal: '普通用户',
+};
 
 const overviewCards = computed(() => [
   {
     label: '在线用户',
-    value: String(onlineUserCount.value),
-    sub: `总用户 ${total.value}`,
+    value: String(overview.value.onlineUserCount),
+    sub: `总用户 ${overview.value.totalUsers}`,
     icon: 'UserFilled',
     iconColor: '#2563eb',
     iconBg: 'rgba(37, 99, 235, 0.12)',
   },
   {
     label: '活跃会话',
-    value: String(activeSessionCount.value),
-    sub: '当前页会话总量',
+    value: String(overview.value.activeSessionCount),
+    sub: '系统会话总量',
     icon: 'Connection',
     iconColor: '#0f766e',
     iconBg: 'rgba(15, 118, 110, 0.12)',
   },
   {
     label: '禁用账号',
-    value: String(disabledUserCount.value),
-    sub: '当前页异常状态',
+    value: String(overview.value.disabledUserCount),
+    sub: '系统异常状态',
     icon: 'Warning',
     iconColor: '#d97706',
     iconBg: 'rgba(217, 119, 6, 0.14)',
@@ -149,7 +152,7 @@ const overviewCards = computed(() => [
   {
     label: '筛选模式',
     value: queryParams.value.onlineOnly ? '在线' : '全部',
-    sub: queryParams.value.role ? `角色 ${queryParams.value.role}` : '全部角色',
+    sub: queryParams.value.role ? roleLabelMap[queryParams.value.role] || queryParams.value.role : '全部角色',
     icon: 'Filter',
     iconColor: '#7c3aed',
     iconBg: 'rgba(124, 58, 237, 0.12)',
@@ -180,9 +183,30 @@ async function getList() {
   }
 }
 
+async function fetchOverview() {
+  try {
+    const res = await userApi.getOnlineUsersOverview({
+      role: queryParams.value.role || undefined,
+      isEnabled: queryParams.value.isEnabled ?? undefined,
+      onlineOnly: queryParams.value.onlineOnly,
+    });
+    if (res?.data) {
+      overview.value = {
+        totalUsers: Number(res.data.totalUsers ?? 0),
+        onlineUserCount: Number(res.data.onlineUserCount ?? 0),
+        activeSessionCount: Number(res.data.activeSessionCount ?? 0),
+        disabledUserCount: Number(res.data.disabledUserCount ?? 0),
+      };
+    }
+  } catch {
+    // 概览加载失败不影响列表展示
+  }
+}
+
 function handleQuery() {
   pageNum.value = 1;
   getList();
+  fetchOverview();
 }
 
 function resetQuery() {
@@ -259,6 +283,7 @@ function handlePageChange(page) {
 }
 
 onMounted(() => {
+  fetchOverview();
   getList();
 });
 </script>
