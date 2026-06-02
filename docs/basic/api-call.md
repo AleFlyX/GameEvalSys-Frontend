@@ -403,6 +403,70 @@
   ```
 - `onlineCount`是最近活跃的会话数
 
+#### 1.5.4.1 在线用户概览统计
+
+- **接口地址**：`/admin/online-users/overview`
+- **请求方式**：GET
+- **请求头**：`Authorization: Bearer {token}`
+- **说明**：
+  - 返回全量统计数据，**不受分页参数影响**，用于页面顶部的 StatCard 概览面板。
+  - 与 `1.5.4 在线用户列表` 独立调用，概览数据反映系统全局状态。
+  - 可选传入与列表相同的筛选参数（role / isEnabled / onlineOnly），概览数据按筛选条件聚合。
+- **请求参数**（Query，均为可选）：
+  | 参数名 | 类型 | 必填 | 说明 |
+  |--------|------|------|------|
+  | role | string | 否 | 角色筛选；与列表筛选联动 |
+  | isEnabled | boolean | 否 | 启用状态筛选；与列表筛选联动 |
+  | onlineOnly | boolean | 否 | 在线口径开关；`true` 仅统计当前活跃在线用户，`false` 统计至少登录过一次的用户 |
+- **响应示例**：
+  ```json
+  {
+    "code": 200,
+    "message": "查询成功",
+    "data": {
+      "totalUsers": 156,
+      "onlineUserCount": 23,
+      "activeSessionCount": 31,
+      "disabledUserCount": 5
+    }
+  }
+  ```
+- **字段说明**：
+  | 字段 | 类型 | 说明 |
+  |------|------|------|
+  | totalUsers | number | 系统用户总数（受筛选条件影响后的总量） |
+  | onlineUserCount | number | 当前在线用户数（`onlineCount > 0` 的用户数，全量非分页） |
+  | activeSessionCount | number | 活跃会话总量（所有在线用户 `onlineCount` 之和，全量非分页） |
+  | disabledUserCount | number | 被禁用账号数（`isEnabled === false`，全量非分页） |
+
+##### 前端调用示例
+
+```js
+import { userApi } from "@/api/user";
+
+// 页面挂载时加载概览（可与列表筛选参数联动）
+const overview = ref({
+  totalUsers: 0,
+  onlineUserCount: 0,
+  activeSessionCount: 0,
+  disabledUserCount: 0,
+});
+
+async function fetchOverview() {
+  const res = await userApi.getOnlineUsersOverview({
+    role: queryParams.value.role || undefined,
+    isEnabled: queryParams.value.isEnabled ?? undefined,
+    onlineOnly: queryParams.value.onlineOnly,
+  });
+  overview.value = res.data;
+}
+
+onMounted(() => {
+  fetchOverview();
+  getList();
+});
+```
+
 #### 1.5.5 服务监控（仅 super_admin）
 
 - **说明**：
