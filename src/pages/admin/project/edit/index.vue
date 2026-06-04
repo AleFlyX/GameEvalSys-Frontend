@@ -17,24 +17,28 @@
         <el-tabs v-model="activeTab" @tab-click="onTabChange" v-loading="initLoading || isSaving">
           <!-- Tab 1: 基本信息 -->
           <el-tab-pane label="基本信息" name="basic">
-            <ProjectForm v-if="activeTab === 'basic'" ref="projectFormRef" edit-mode :data="formData" />
+            <ProjectForm ref="projectFormRef" edit-mode :data="formData" />
           </el-tab-pane>
 
           <!-- Tab 2: 项目内受评分的小组 -->
-          <el-tab-pane label="项目内受评分的小组" name="groups">
-            <ProjectGroups v-if="activeTab === 'groups'" ref="groupsFormRef" :project-id="formData.id"
-              @edited="projectGroupCache = $event" :edited-at-local="projectGroupCache.edited"
-              :goroup-ids-cache="projectGroupCache.cache" @update:group-ids="handleNewGroupIds"
-              @error-notice="message.error($event)" @success-notice="message.success($event)" />
+          <el-tab-pane label="项目内受评分的小组" name="groups" lazy>
+            <ProjectGroups ref="groupsFormRef" :project-id="formData.id" @edited="projectGroupCache = $event"
+              :edited-at-local="projectGroupCache.edited" :goroup-ids-cache="projectGroupCache.cache"
+              @update:group-ids="handleNewGroupIds" @error-notice="message.error($event)"
+              @success-notice="message.success($event)" />
           </el-tab-pane>
 
           <!-- Tab 3: 评审团配置 -->
-          <el-tab-pane label="评审团配置" name="reviewer">
-            <ProjectReviewGroups v-if="activeTab === 'reviewer'" :project-id="formData.id"
-              :scorer-ids="formData.scorerIds" @edited="projectScorerCache = $event"
-              :scorer-cache="projectScorerCache.cache" :edited-at-local="projectScorerCache.edited"
-              @update:scorer-ids="handleNewScorerIds" @error-notice="message.error($event)"
-              @success-notice="message.success($event)" />
+          <el-tab-pane label="评审团配置" name="reviewer" lazy>
+            <ProjectReviewGroups :project-id="formData.id" :scorer-ids="formData.scorerIds"
+              @edited="projectScorerCache = $event" :scorer-cache="projectScorerCache.cache"
+              :edited-at-local="projectScorerCache.edited" @update:scorer-ids="handleNewScorerIds"
+              @error-notice="message.error($event)" @success-notice="message.success($event)" />
+          </el-tab-pane>
+          <el-tab-pane label="作业配置" name="submission">
+            <div class="empty-state">
+              <p>敬请期待</p>
+            </div>
           </el-tab-pane>
         </el-tabs>
       </div>
