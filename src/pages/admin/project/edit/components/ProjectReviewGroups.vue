@@ -60,6 +60,10 @@ import { userApi } from '@/api/user'
 import { useLoading } from '@/composables/useLoading';
 
 import { REVIEWER_LIST_RULES } from '../../config/data-table/projectReviewerList';
+import { chunkArray } from '@/utils/array';
+
+/** 后端 /users/batch-query 接口单次允许的最大 ids 数量 */
+const BATCH_QUERY_LIMIT = userApi.BATCH_QUERY_LIMIT;
 
 const props = defineProps({
   projectId: {
@@ -102,13 +106,27 @@ const fetchReviewerGroupMembers = async () => {
     return;
   }
   try {
-    console.log("*--------------------", props.scorerIds)
-    const params = { ids: props.scorerIds, includeDisabled: true }
-    const response = await userApi.getUsersByIds(params);//batch get users
+    const ids = props.scorerIds;
+    if (!ids || ids.length === 0) {
+      reviewerGroupMembers.value = [];
+      return;
+    }
 
-    // reviewerGroupMembers.value = response.data?.list || [];
-    reviewerGroupMembers.value = response.data || [];
-    console.log('获取评审团成员列表', response.data)
+    // 分批并发请求，每批不超过 BATCH_QUERY_LIMIT 个 id
+    const chunks = chunkArray(ids, BATCH_QUERY_LIMIT);
+    const promises = chunks.map(chunk =>
+      userApi.getUsersByIds({ ids: chunk, includeDisabled: true })
+    );
+    const responses = await Promise.all(promises);
+
+    // 合并所有批次的数据
+    const merged = responses.reduce((acc, res) => {
+      const batch = res.data || [];
+      return acc.concat(batch);
+    }, []);
+
+    reviewerGroupMembers.value = merged;
+    console.log('获取评审团成员列表', merged)
   } catch (err) {
     emits('errorNotice', `加载评审团成员列表失败: ${err}`);
     reviewerGroupMembers.value = [];

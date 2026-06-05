@@ -140,12 +140,15 @@ export const userApi = {
    * 按照用户id数组批量获取用户信息
    * @param {Object} params
    * @param {Boolean} params.includeDisabled -是否显示被禁用的用户
-   * @param {Array} params.ids -需要批量查询的用户id（上限100位）
+   * @param {Array} params.ids -需要批量查询的用户id（上限 BATCH_QUERY_LIMIT 位）
    * @returns
    */
   getUsersByIds: (params = { includeDisabled: false, ids: [] }) => {
     return service.post("/users/batch-query", params)
   },
+
+  /** 单次批量查询允许的最大 ids 数量 */
+  BATCH_QUERY_LIMIT: 100,
 
   /**
    * 批量修改用户启用状态

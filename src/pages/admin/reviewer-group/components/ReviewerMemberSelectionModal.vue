@@ -51,6 +51,10 @@ import UserSelectionTable from '@/components/business/user/user-selection-modal/
 import SelectionModalShell from '@/components/common/modal/SelectionModalShell.vue';
 import { userApi } from '@/api/user';
 import { useMessage } from '@/composables/useMessage';
+import { chunkArray } from '@/utils/array';
+
+/** 后端 /users/batch-query 接口单次允许的最大 ids 数量 */
+const BATCH_QUERY_LIMIT = userApi.BATCH_QUERY_LIMIT;
 
 const props = defineProps({
   visible: {
@@ -105,13 +109,17 @@ const ensureSelectedUsersLoaded = async () => {
   }
 
   try {
-    const response = await userApi.getUsersByIds({
-      ids: missingIds,
-      includeDisabled: true
-    });
-    const users = response.data || [];
-    users.forEach((user) => {
-      selectedUsersMap.value.set(user.id, user);
+    // 分批并发请求，每批不超过 BATCH_QUERY_LIMIT 个 id
+    const chunks = chunkArray(missingIds, BATCH_QUERY_LIMIT);
+    const responses = await Promise.all(
+      chunks.map(chunk => userApi.getUsersByIds({ ids: chunk, includeDisabled: true }))
+    );
+
+    responses.forEach((res) => {
+      const users = res.data || [];
+      users.forEach((user) => {
+        selectedUsersMap.value.set(user.id, user);
+      });
     });
   } catch (error) {
     message.error('加载已选成员失败');
