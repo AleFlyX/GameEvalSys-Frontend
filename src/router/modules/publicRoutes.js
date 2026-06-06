@@ -27,6 +27,12 @@ export const pub = [
         component: () => import("@/pages/normal/home/HomePage.vue"),
         meta: { title: "首页", requireAuth: true, staticFallback: true },
       },
+      // {
+      //   path: "normal/submission",
+      //   name: "submission",
+      //   component: () => import("@/pages/normal/submission/index.vue"),
+      //   meta: { title: "提交作业", requireAuth: true, staticFallback: true },
+      // },
     ],
   },
   {

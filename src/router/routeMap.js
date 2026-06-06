@@ -33,12 +33,13 @@ if (import.meta.env.VITE_SHOW_TEST_ROUTES === 'true') {
   const testDialog = () => import('@/test/pages/testDialog.vue')
   const testAgent = () => import('@/test/pages/agent.vue')
   const loginTest = () => import("@/test/pages/LoginTest.vue")
-  const uploadFile = () => import("@/test/pages/uploadFile.vue")
+  const uploadFile = () => import("@/test/pages/uploadFile/uploadFileSingleThread.vue")
   routeMap['test-router-tree'] = () => import('@/test/pages/routerTreeData.vue');
   routeMap['test-dialog'] = testDialog;
   routeMap['test-agent'] = testAgent;
   routeMap['login-test'] = loginTest;
   routeMap['upload-file'] = uploadFile;
+  routeMap['submission'] = () => import("@/pages/normal/submission/index.vue");
 }
 
 export function mapComponent(componentCode) {
