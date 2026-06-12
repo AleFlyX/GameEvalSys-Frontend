@@ -170,6 +170,7 @@ const shortcutList = computed(() => {
   const role = userStore.userRole;
   const source = [
     { id: 'scoring', name: '打分列表', path: '/scoring', icon: 'Edit', color: '#409eff', roles: roleSet },
+    { id: 'submission', name: '提交作业', path: '/normal/submission', icon: 'Document', color: '#14b8a6', roles: ['normal'] },
     { id: 'project', name: '项目管理', path: '/admin/project', icon: 'Management', color: '#ffaa00', roles: ['super_admin', 'admin'] },
     { id: 'projectGroup', name: '受审队伍', path: '/admin/project-groups', icon: 'User', color: '#66cc66', roles: ['super_admin', 'admin'] },
     { id: 'statistic', name: '统计分析', path: '/admin/statistic', icon: 'TrendCharts', color: '#f56c6c', roles: ['super_admin', 'admin'] },
