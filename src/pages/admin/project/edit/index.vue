@@ -14,7 +14,7 @@
 
     <template #main-table>
       <div class="project-edit-container">
-        <el-tabs v-model="activeTab" @tab-click="onTabChange" v-loading="initLoading || isSaving">
+        <el-tabs v-model="activeTab" v-loading="initLoading || isSaving">
           <!-- Tab 1: 基本信息 -->
           <el-tab-pane label="基本信息" name="basic">
             <ProjectForm ref="projectFormRef" edit-mode :data="formData" />
@@ -36,8 +36,9 @@
               @error-notice="message.error($event)" @success-notice="message.success($event)" />
           </el-tab-pane>
           <el-tab-pane label="作业配置" name="submission">
-            <div class="empty-state">
-              <p>敬请期待</p>
+            <div class="tab-content submission-tab-content">
+              <SubmissionConfigForm ref="submissionConfigRef" :data="formData" />
+              <GradingStandardManager />
             </div>
           </el-tab-pane>
         </el-tabs>
@@ -65,8 +66,11 @@ import PagePanel from '@/layouts/PagePanel.vue';
 import ProjectForm from '../components/ProjectForm.vue';
 import ProjectGroups from './components/ProjectGroups.vue';
 import ProjectReviewGroups from './components/ProjectReviewGroups.vue';
+import SubmissionConfigForm from './components/SubmissionConfigForm.vue';
+import GradingStandardManager from './components/GradingStandardManager.vue';
 
 import { projectApi } from '@/api/project';
+import { buildSubmissionConfigPayload, normalizeProjectSubmissionConfig } from '@/utils/submission';
 
 import { showMsgBox } from '@/utils/ConfirmBox';
 
@@ -87,10 +91,12 @@ const isSubmitting = ref(false);
 const isDataAdjusted = reactive({ // 标记被改的数据
   basicInfoChanged: false,
   groupIdsChanged: false,
-  scorerIdsChanged: false
+  scorerIdsChanged: false,
+  submissionConfigChanged: false
 });
 
 const projectFormRef = ref(null);
+const submissionConfigRef = ref(null);
 
 /**
  * groupIds,scorerIds若为空值则说明没有产生更改,对应后端按传过去的字段来修改内容
@@ -111,7 +117,17 @@ const formData = reactive({
   scorerIds: [],
   // reviewerGroupIds: [],
   isEnabled: true,
-  status: 'not_started'
+  status: 'not_started',
+  allowSubmission: false,
+  submissionStartDate: null,
+  submissionEndDate: null,
+  submissionFileTypes: [],
+  submissionPptTypes: [],
+  submissionMaxSize: null,
+  submissionPptMaxSize: null,
+  submissionRequired: false,
+  enableAiScoring: false,
+  enableResubmit: true
 });
 
 const { isLoading: initLoading, requestWithLoading: initRequest } = useLoading('projectEdit:initForm');
@@ -119,16 +135,12 @@ const { isLoading: initLoading, requestWithLoading: initRequest } = useLoading('
 const initFormData = async () => {
   try {
     // await fetchReviewerGroupOptions();
-    const projectId = route.params.id;
-    if (projectId) {
-      // 这里应该调用 API 获取项目详情
-      const response = await initRequest(projectApi.getProjectDetail, projectId)
-      Object.assign(formData, response.data);
-      console.log('初始化表单数据', response.data)
-      console.log('**********BASIC************', formData)
-      // originalFormData = response.data;
-      projectName.value = formData.name;
-      // basicFormValidator.value = projectFormRef.value;
+      const projectId = route.params.id;
+      if (projectId) {
+        // 这里应该调用 API 获取项目详情
+        const response = await initRequest(projectApi.getProjectDetail, projectId)
+        Object.assign(formData, response.data, normalizeProjectSubmissionConfig(response.data));
+        projectName.value = formData.name;
     }
   } catch (err) {
     message.error(`加载项目信息失败: ${err}`);
@@ -137,26 +149,76 @@ const initFormData = async () => {
 };
 
 // 根据是否有对相关数据产生变更来决定产生变更
-const isDataChanged = computed(() => isDataAdjusted.basicInfoChanged || isDataAdjusted.groupIdsChanged || isDataAdjusted.scorerIdsChanged)
+const isDataChanged = computed(() => (
+  isDataAdjusted.basicInfoChanged
+  || isDataAdjusted.groupIdsChanged
+  || isDataAdjusted.scorerIdsChanged
+  || isDataAdjusted.submissionConfigChanged
+))
+
+const buildBasicInfoSnapshot = (data) => ([
+  data.name,
+  data.description,
+  data.startDate,
+  data.endDate,
+  data.standardId,
+  data.maliciousRuleType,
+  data.maliciousScoreLower,
+  data.maliciousScoreUpper,
+  data.isEnabled
+]);
+
+const buildSubmissionConfigSnapshot = (data) => {
+  const normalized = normalizeProjectSubmissionConfig(data);
+  return [
+    normalized.allowSubmission,
+    normalized.submissionStartDate,
+    normalized.submissionEndDate,
+    normalized.submissionFileTypes.join(','),
+    normalized.submissionPptTypes.join(','),
+    normalized.submissionMaxSize,
+    normalized.submissionPptMaxSize,
+    normalized.submissionRequired,
+    normalized.enableAiScoring,
+    normalized.enableResubmit,
+  ];
+};
 
 /**
  * 根据变更的数据构造发送到后端的DTO
  * @param {Object} data
  */
 const buildEditedData = (data) => {
-
   // 未做出任何改动直接退出
   if (!isDataChanged.value) {
     return;
   }
+
+  const payload = {
+    ...data,
+    ...buildSubmissionConfigPayload(data),
+  };
+
   if (!isDataAdjusted.groupIdsChanged) {
-    delete data.groupIds;
+    delete payload.groupIds;
   }
   if (!isDataAdjusted.scorerIdsChanged) {
-    delete data.scorerIds;
+    delete payload.scorerIds;
   }
-  console.log("DELETED DATA", data)
-  return data;
+  if (!isDataAdjusted.submissionConfigChanged) {
+    delete payload.allowSubmission;
+    delete payload.submissionStartDate;
+    delete payload.submissionEndDate;
+    delete payload.submissionFileTypes;
+    delete payload.submissionPptTypes;
+    delete payload.submissionMaxSize;
+    delete payload.submissionPptMaxSize;
+    delete payload.submissionRequired;
+    delete payload.enableAiScoring;
+    delete payload.enableResubmit;
+  }
+
+  return payload;
 }
 
 
@@ -182,12 +244,8 @@ const projectGroupCache = reactive({
   edited: false,
   cache: []
 });
-// watch(projectGroupCache, (new1) => {
-//   console.log(new1)
-// })
 //更新项目表单的小组数据
 const handleNewGroupIds = (newArr) => {
-  console.log('RECV NEW GROUPS ARRAY------------', newArr);
   isDataAdjusted.groupIdsChanged = true;
   formData.groupIds = newArr;
 }
@@ -197,13 +255,8 @@ const projectScorerCache = reactive({
   edited: false,
   cache: []
 });
-// watch(() => projectScorerCache.cache, (newVals) => {
-//   console.log('SCORER IDS CHANGED', newVals)
-// })
 // 更新项目表单的打分者数据
 const handleNewScorerIds = (newArr) => {
-  console.log('RECV NEW scorer ARRAY------------', newArr);
-  console.log('SCORER IDS CHANGED', projectScorerCache)
   isDataAdjusted.scorerIdsChanged = true;
   formData.scorerIds = newArr;
 }
@@ -228,13 +281,25 @@ const handleSave = async () => {
     return;
   }
 
+  if (submissionConfigRef.value) {
+    const { valid } = await submissionConfigRef.value.validate();
+    if (!valid) {
+      activeTab.value = 'submission';
+      message.error('请先完善作业提交流程配置');
+      return;
+    }
+  }
+
   formValidatedData = buildEditedData(formValidatedData);
+  if (!formValidatedData) {
+    message.info('未检测到需要保存的更改');
+    return;
+  }
 
   isSubmitting.value = true;
 
   try {
     await saveFormRequest(projectApi.editProject, formData.id, formValidatedData);
-    console.log('项目编辑表单数据', formValidatedData)
     message.success('项目已成功更新');
     router.back();
   } catch (err) {
@@ -246,7 +311,7 @@ const handleSave = async () => {
 
 // 浏览器刷新/关闭时的提醒逻辑
 const handleBeforeUnload = (e) => {
-  if (isDataAdjusted.basicInfoChanged || isDataAdjusted.groupIdsChanged || isDataAdjusted.scorerIdsChanged) {
+  if (isDataChanged.value) {
     // 标准写法：阻止默认行为 + 设置返回值（不同浏览器兼容）
     e.preventDefault();
     e.returnValue = '';
@@ -259,26 +324,18 @@ onMounted(async () => {
   window.addEventListener('beforeunload', handleBeforeUnload);
   try {
     await initFormData();
-    unWatch = watch(
-      // 第一个参数：返回需要监听的属性集合（函数形式）
-      () => [
-        formData.name,
-        formData.description,
-        formData.startDate,
-        formData.endDate,
-        formData.standardId,
-        formData.maliciousRuleType,
-        formData.maliciousScoreLower,
-        formData.maliciousScoreUpper,
-        formData.isEnabled
-      ],
-      // 第二个参数：变化后的回调
-      () => {
-        // console.log('BASIC INFO CHANGED', newVals);
-        isDataAdjusted.basicInfoChanged = true;
-      })
+    const unwatchBasicInfo = watch(buildBasicInfoSnapshot.bind(null, formData), () => {
+      isDataAdjusted.basicInfoChanged = true;
+    });
+    const unwatchSubmissionConfig = watch(buildSubmissionConfigSnapshot.bind(null, formData), () => {
+      isDataAdjusted.submissionConfigChanged = true;
+    });
+    unWatch = () => {
+      unwatchBasicInfo();
+      unwatchSubmissionConfig();
+    };
   } catch (err) {
-    console.log('初始化失败', err)
+    console.error('项目编辑页初始化失败', err);
   }
 
 });
@@ -405,5 +462,11 @@ html[data-theme="dark"] .form-actions {
 html[data-theme="dark"] .empty-state {
   background: rgba(255, 255, 255, 0.02);
   border-color: rgba(255, 255, 255, 0.05);
+}
+
+.submission-tab-content {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
 }
 </style>
