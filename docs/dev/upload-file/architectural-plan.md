@@ -4,6 +4,11 @@
 > **核心定位变化**：作业提交不是简单的"提交→审核"审批流，而是 **"提交→评分"打分流**。
 > 后期将接入 AI Agent 根据教师上传的打分标准（Rubric）对提交的代码自动评分。
 
+> 进度对齐（2026-06-12）
+> - 第一阶段前端闭环已落地：项目编辑页作业配置、学生按项目提交、学生端结果回显、正式路由与首页 normal 入口。
+> - 本阶段仅完成占位入口：`GradingStandardManager.vue`、`admin-submission`、`scoring-submission`。
+> - 后端数据层、BFF 上传网关、动态菜单节点、教师评分台、管理员作业管理页仍待后续阶段实现。
+
 ---
 
 ## 1. 数据模型与后端 API
@@ -501,9 +506,9 @@ src/pages/scoring/submission/
 
 ### Phase 3：前端 — 项目管理 Tab 扩展（2 天）
 
-- [ ] 创建 `SubmissionConfigForm.vue` 组件（基本开关 + 文件限制 + AI 开关）
-- [ ] 创建 `GradingStandardManager.vue` 组件（维度可视化编辑 + 文件上传）
-- [ ] 在项目编辑页作业配置 Tab 中接入这两个组件
+- [x] 创建 `SubmissionConfigForm.vue` 组件（基本开关 + 文件限制 + AI 开关）
+- [x] 创建 `GradingStandardManager.vue` 组件（本阶段完成占位壳和接口入口，完整维度编辑器与文件上传待下一阶段）
+- [x] 在项目编辑页作业配置 Tab 中接入这两个组件
 
 ### Phase 4：前端 — 教师评分工作台（2-3 天）
 
@@ -526,16 +531,16 @@ src/pages/scoring/submission/
 
 ### Phase 6：前端 — 学生端改进（1.5 天）
 
-- [ ] `index.vue` 增加项目选择器
-- [ ] 提交逻辑绑定到选中的项目 ID
-- [ ] 已评分提交展示评分结果卡片
-- [ ] 历史记录按项目过滤 + 显示分数
+- [x] `index.vue` 增加项目选择器
+- [x] 提交逻辑绑定到选中的项目 ID
+- [x] 已评分提交展示评分结果卡片
+- [x] 历史记录按项目过滤 + 显示分数
 
 ### Phase 7：入口配置（0.5 天）
 
 - [ ] 后端动态路由菜单添加三个菜单节点（学生/教师/管理员）
-- [ ] `routeMap.js` 注册三个页面组件
-- [ ] 首页快捷入口增加"提交作业"（normal）和"作业评分"（scorer）
+- [x] `routeMap.js` 注册三个页面组件（其中 `admin-submission`、`scoring-submission` 当前为占位页面）
+- [ ] 首页快捷入口增加"提交作业"（normal）和"作业评分"（scorer）（当前已完成 normal 角色“提交作业”入口）
 
 ---
 

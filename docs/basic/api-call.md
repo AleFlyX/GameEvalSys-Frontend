@@ -1416,6 +1416,207 @@ onMounted(() => {
   | ongoingProjects | number | 进行中项目数（status=ongoing） |
   | endedProjects | number | 已截止项目数（status=ended） |
 
+### 4.8 项目作业提交配置扩展字段
+
+- **适用接口**：`POST /projects`、`PUT /projects/{projectId}`、`GET /projects/{projectId}`
+- **说明**：第一阶段前后端联调时，项目详情与项目编辑接口需要兼容以下作业提交配置字段；后端可按增量方式返回，未返回时前端会使用默认降级值。
+
+| 参数名 | 类型 | 必填 | 说明 |
+|--------|------|------|------|
+| allowSubmission | boolean | 否 | 是否开启项目作业提交 |
+| submissionStartDate | string/null | 否 | 提交开始时间，格式 `yyyy-MM-dd HH:mm` |
+| submissionEndDate | string/null | 否 | 提交截止时间，格式 `yyyy-MM-dd HH:mm` |
+| submissionFileTypes | array/string | 否 | 项目文件允许类型，支持数组或逗号分隔字符串 |
+| submissionPptTypes | array/string | 否 | PPT 文件允许类型，支持数组或逗号分隔字符串 |
+| submissionMaxSize | number | 否 | 项目文件最大字节数 |
+| submissionPptMaxSize | number | 否 | PPT 文件最大字节数 |
+| submissionRequired | boolean | 否 | 是否要求学生必须提交 |
+| enableAiScoring | boolean | 否 | 是否在提交完成后触发 AI 评分 |
+| enableResubmit | boolean | 否 | 截止前是否允许覆盖提交 |
+
+### 4.9 获取我的可提交项目列表
+
+- **接口地址**：`/submissions/my/projects`
+- **请求方式**：GET
+- **请求头**：`Authorization: Bearer {token}`
+- **说明**：返回当前普通用户可见且允许提交的项目列表，用于学生提交页的项目选择器。
+- **响应示例**：
+  ```json
+  {
+    "code": 200,
+    "message": "查询成功",
+    "data": {
+      "list": [
+        {
+          "id": 18,
+          "name": "2026 C++ 游戏课程作业",
+          "allowSubmission": true,
+          "submissionStartDate": "2026-06-01 08:00",
+          "submissionEndDate": "2026-06-30 23:59",
+          "submissionFileTypes": ["zip", "rar", "7z"],
+          "submissionPptTypes": ["ppt", "pptx", "pdf"],
+          "submissionMaxSize": 524288000,
+          "submissionPptMaxSize": 104857600,
+          "submissionRequired": true,
+          "enableAiScoring": true,
+          "enableResubmit": true
+        }
+      ]
+    }
+  }
+  ```
+
+### 4.10 获取我在指定项目下的提交记录
+
+- **接口地址**：`/submissions/my`
+- **请求方式**：GET
+- **请求头**：`Authorization: Bearer {token}`
+- **请求参数**（Query）：
+  | 参数名 | 类型 | 必填 | 说明 |
+  |--------|------|------|------|
+  | projectId | number | 是 | 项目 ID |
+- **说明**：若当前项目下尚无提交记录，`data` 返回 `null`。
+- **响应示例**：
+  ```json
+  {
+    "code": 200,
+    "message": "查询成功",
+    "data": {
+      "id": 93,
+      "projectId": 18,
+      "projectName": "2026 C++ 游戏课程作业",
+      "description": "补充了暂停菜单与碰撞修复。",
+      "status": "scoring",
+      "submitCount": 2,
+      "filePath": "submission/2026/18/game-demo-v2.zip",
+      "fileHash": "c9406e4e7a0f47c5a13b9fef0e61fd8a",
+      "fileSize": 34567218,
+      "fileOriginalName": "game-demo-v2.zip",
+      "pptPath": "submission/2026/18/game-demo-v2.pdf",
+      "pptHash": "b44f8c2be44d40f0a0d7b9d9f09f37f3",
+      "pptSize": 4821392,
+      "pptOriginalName": "game-demo-v2.pdf",
+      "createdAt": "2026-06-10 19:22:11",
+      "updatedAt": "2026-06-11 09:05:03"
+    }
+  }
+  ```
+
+### 4.11 创建作业提交
+
+- **接口地址**：`/submissions`
+- **请求方式**：POST
+- **请求头**：`Authorization: Bearer {token}`
+- **请求参数**：
+  | 参数名 | 类型 | 必填 | 说明 |
+  |--------|------|------|------|
+  | projectId | number | 是 | 绑定的项目 ID |
+  | description | string | 否 | 提交说明 |
+  | filePath | string | 是 | 项目压缩包存储路径 |
+  | fileHash | string | 是 | 项目压缩包哈希 |
+  | fileSize | number | 是 | 项目压缩包大小，单位字节 |
+  | fileOriginalName | string | 是 | 项目压缩包原始文件名 |
+  | pptPath | string | 否 | PPT/答辩材料存储路径 |
+  | pptHash | string | 否 | PPT/答辩材料哈希 |
+  | pptSize | number | 否 | PPT/答辩材料大小，单位字节 |
+  | pptOriginalName | string | 否 | PPT/答辩材料原始文件名 |
+- **状态说明**：
+  - `pending`：已提交，待进入评分流程
+  - `scoring`：评分中
+  - `scored`：已完成评分
+  - `returned`：已退回，需学生重新处理
+- **请求示例**：
+  ```json
+  {
+    "projectId": 18,
+    "description": "第一次正式提交，已补齐演示 PPT。",
+    "filePath": "submission/2026/18/game-demo-v1.zip",
+    "fileHash": "1b48a8a5b6f242f79e934c43d41e1786",
+    "fileSize": 28765431,
+    "fileOriginalName": "game-demo-v1.zip",
+    "pptPath": "submission/2026/18/game-demo-v1.pdf",
+    "pptHash": "6f11e3eb2f6546c98df6af76cf3c19a2",
+    "pptSize": 3812490,
+    "pptOriginalName": "game-demo-v1.pdf"
+  }
+  ```
+- **响应示例**：
+  ```json
+  {
+    "code": 200,
+    "message": "提交成功",
+    "data": {
+      "id": 93,
+      "projectId": 18,
+      "status": "pending",
+      "submitCount": 1,
+      "createdAt": "2026-06-10 19:22:11",
+      "updatedAt": "2026-06-10 19:22:11"
+    }
+  }
+  ```
+
+### 4.12 获取我的提交历史
+
+- **接口地址**：`/submissions/my/history`
+- **请求方式**：GET
+- **请求头**：`Authorization: Bearer {token}`
+- **请求参数**（Query）：
+  | 参数名 | 类型 | 必填 | 说明 |
+  |--------|------|------|------|
+  | page | number | 否 | 页码，默认 `1` |
+  | size | number | 否 | 每页条数，默认 `10` |
+  | projectId | number | 否 | 按项目过滤 |
+- **响应示例**：
+  ```json
+  {
+    "code": 200,
+    "message": "查询成功",
+    "data": {
+      "list": [
+        {
+          "id": 93,
+          "projectId": 18,
+          "projectName": "2026 C++ 游戏课程作业",
+          "status": "scored",
+          "finalScore": 91.5,
+          "reviewComment": "功能完整，演示逻辑清晰，建议进一步优化碰撞检测边界。",
+          "createdAt": "2026-06-10 19:22:11",
+          "updatedAt": "2026-06-11 16:40:28"
+        }
+      ],
+      "total": 1,
+      "page": 1,
+      "size": 10
+    }
+  }
+  ```
+
+### 4.13 获取我的提交评分结果
+
+- **接口地址**：`/submissions/my/score`
+- **请求方式**：GET
+- **请求头**：`Authorization: Bearer {token}`
+- **请求参数**（Query）：
+  | 参数名 | 类型 | 必填 | 说明 |
+  |--------|------|------|------|
+  | submissionId | number | 是 | 提交记录 ID |
+- **说明**：学生端仅返回最终分数与教师评语，不透出 AI 推理过程或原始 AI 评分细节。
+- **响应示例**：
+  ```json
+  {
+    "code": 200,
+    "message": "查询成功",
+    "data": {
+      "submissionId": 93,
+      "status": "scored",
+      "finalScore": 91.5,
+      "reviewComment": "功能完整，演示逻辑清晰，建议进一步优化碰撞检测边界。",
+      "scoredAt": "2026-06-11 16:40:28"
+    }
+  }
+  ```
+
 ## 5. 小组管理模块（管理员）
 
 ### 5.1 创建小组
