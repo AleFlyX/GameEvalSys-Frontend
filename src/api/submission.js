@@ -60,13 +60,27 @@ export const normalizeSubmissionRecord = (record = {}) => ({
 export const normalizeSubmissionScore = (score = {}) => ({
   id: pickFirstDefined(score, ['id']),
   submissionId: pickFirstDefined(score, ['submissionId', 'submission_id']),
+  gradingStandardId: pickFirstDefined(score, ['gradingStandardId', 'grading_standard_id']),
   scorerType: pickFirstDefined(score, ['scorerType', 'scorer_type'], 'teacher'),
+  scorerId: pickFirstDefined(score, ['scorerId', 'scorer_id']),
   totalScore: toNullableNumber(pickFirstDefined(score, ['totalScore', 'total_score'])),
   maxScore: toNullableNumber(pickFirstDefined(score, ['maxScore', 'max_score'])),
   comment: pickFirstDefined(score, ['comment', 'reviewComment', 'review_comment'], ''),
+  aiConfidence: toNullableNumber(pickFirstDefined(score, ['aiConfidence', 'ai_confidence'])),
+  aiReasoning: pickFirstDefined(score, ['aiReasoning', 'ai_reasoning'], ''),
+  isFinal: Boolean(pickFirstDefined(score, ['isFinal', 'is_final'], false)),
   dimensionScores: Array.isArray(pickFirstDefined(score, ['dimensionScores', 'dimension_scores'], []))
     ? pickFirstDefined(score, ['dimensionScores', 'dimension_scores'], [])
     : [],
+});
+
+export const normalizeSubmissionStats = (stats = {}) => ({
+  total: toNullableNumber(pickFirstDefined(stats, ['total', 'totalSubmissions', 'total_submissions'])) || 0,
+  pending: toNullableNumber(pickFirstDefined(stats, ['pending', 'pendingCount', 'pending_count'])) || 0,
+  scoring: toNullableNumber(pickFirstDefined(stats, ['scoring', 'scoringCount', 'scoring_count'])) || 0,
+  scored: toNullableNumber(pickFirstDefined(stats, ['scored', 'scoredCount', 'scored_count'])) || 0,
+  returned: toNullableNumber(pickFirstDefined(stats, ['returned', 'returnedCount', 'returned_count'])) || 0,
+  averageScore: toNullableNumber(pickFirstDefined(stats, ['averageScore', 'average_score', 'avgScore', 'avg_score'])),
 });
 
 export const getMySubmissionProjects = () => {
@@ -90,10 +104,62 @@ export const getMySubmissionScore = (submissionId) => {
   return service.get('/submissions/my/score', { params: { submissionId } });
 };
 
+export const getSubmissionList = (params = {}) => {
+  const defaultParams = { page: 1, size: 10, ...params };
+  return service.get('/submissions', { params: defaultParams });
+};
+
+export const getSubmissionStats = (params = {}) => {
+  return service.get('/submissions/stats', { params });
+};
+
+export const exportSubmissions = (params = {}) => {
+  return service.get('/submissions/export', { params, responseType: 'blob' });
+};
+
+export const getGradingSubmissionList = (params = {}) => {
+  const defaultParams = { page: 1, size: 10, ...params };
+  return service.get('/submissions/grading-list', { params: defaultParams });
+};
+
+export const getSubmissionDetail = (submissionId) => {
+  return service.get(`/submissions/${submissionId}`);
+};
+
+export const getSubmissionAiScore = (submissionId) => {
+  return service.get(`/submissions/${submissionId}/ai-score`);
+};
+
+export const submitSubmissionScore = (submissionId, params) => {
+  return service.post(`/submissions/${submissionId}/score`, params);
+};
+
+export const finalizeSubmissionScore = (submissionId, params = {}) => {
+  return service.put(`/submissions/${submissionId}/score/finalize`, params);
+};
+
+export const returnSubmission = (submissionId, params) => {
+  return service.post(`/submissions/${submissionId}/return`, params);
+};
+
+export const getGradingStats = (params = {}) => {
+  return service.get('/submissions/grading-stats', { params });
+};
+
 export const submissionApi = {
   getMySubmissionProjects,
   getMySubmission,
   createSubmission,
   getMySubmissionHistory,
   getMySubmissionScore,
+  getSubmissionList,
+  getSubmissionStats,
+  exportSubmissions,
+  getGradingSubmissionList,
+  getSubmissionDetail,
+  getSubmissionAiScore,
+  submitSubmissionScore,
+  finalizeSubmissionScore,
+  returnSubmission,
+  getGradingStats,
 };
